@@ -9,6 +9,18 @@ Welcome to the VirtuaLearn3D (VL3D) framework for artificial intelligence
 applied to point-wise tasks in 3D point clouds.
 
 
+
+
+## Fork
+This version of the VL3D framework is a fork made for the sake of
+reproducibility. Research on the entire region of Galicia from the
+ALS PNOA-II dataset has been done with this version.
+
+
+
+
+
+
 ## Install
 
 ### Machine learning install
