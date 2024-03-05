@@ -138,7 +138,7 @@ class RBFFeatExtractLayer(Layer):
                 'RBFFeatExtractLayer does not support a kernel function of '
                 f'type "{self.kernel_function_type}".'
             )
-        # Initialize to None attributes (derived when building)
+        # Attributes initialized to None (derived when building)
         self.Q = None  # Kernel's structure matrix
         self.built_Q = built_Q  # True if built, false otherwise
         self.omega = None  # Trainable kernel's size (think about curvature)
@@ -211,6 +211,7 @@ class RBFFeatExtractLayer(Layer):
                 name='omega'
             )
             self.built_omega = True
+        # TODO Pending: Add self.built = True
 
     def call(self, inputs, training=False, mask=False):
         r"""
@@ -284,9 +285,11 @@ class RBFFeatExtractLayer(Layer):
         :return: The computed Markov kernel function.
         :rtype: :class:`tf.Tensor`
         """
-        # TODO Rethink : Solve, it is implemented as Gaussian
         omega_squared = self.omega * self.omega
-        return tf.exp(-tf.transpose(D_squared, [0, 2, 1]) / omega_squared)
+        return tf.exp(
+            -tf.transpose(tf.sqrt(D_squared), [0, 2, 1]) /
+            omega_squared
+        )
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
@@ -387,6 +390,7 @@ class RBFFeatExtractLayer(Layer):
             omegaD_name='$\\omega_{i}$',
             kernel_type=self.kernel_function_type
         ).plot(out_prefix=out_prefix)
+        # Log time
         end = time.perf_counter()
         LOGGING.LOGGER.debug(
             'Representation of RBF feature extraction layer exported to '

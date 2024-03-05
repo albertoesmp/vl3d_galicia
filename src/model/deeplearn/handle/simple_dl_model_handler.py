@@ -17,11 +17,11 @@ from src.plot.training_history_plot import TrainingHistoryPlot
 from src.utils.dict_utils import DictUtils
 from src.inout.io_utils import IOUtils
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
+from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 import tensorflow as tf
 from tensorflow.python.framework.errors_impl import ResourceExhaustedError as \
     TFResourceExhaustedError
-
 from sklearn.preprocessing import LabelBinarizer
 import numpy as np
 import copy
@@ -71,6 +71,10 @@ class SimpleDLModelHandler(DLModelHandler):
         :meth:`simple_dl_model_handler.SimpleDLModelHandler.build_compilation_args`
         .
     :vartype compilation_args: dict
+    :ivar fit_verbose: Whether to use silent mode (0), show a progress bar (1),
+        or print one line per epoch (2). Alternatively, "auto" can be used
+        which typically means (1).
+    :vartype fit_verbose: str or int
     """
     # ---   INIT   --- #
     # ---------------- #
@@ -83,14 +87,29 @@ class SimpleDLModelHandler(DLModelHandler):
         """
         # Call parent's init
         super().__init__(arch, **kwargs)
+        # Set defaults from VL3DCFG
+        kwargs = DictUtils.add_defaults(
+            kwargs,
+            VL3DCFG['MODEL']['SimpleDLModelHandler']
+        )
         # Assign member attributes
         self.summary_report_path = kwargs.get('summary_report_path', None)
         self.training_history_dir = kwargs.get('training_history_dir', None)
+        # TODO Rethink : RBF and FSL dirs should belong to the model? externalize them somehow?
         self.feat_struct_repr_dir = kwargs.get(
             'features_structuring_representation_dir', None
         )
         self.rbf_feat_extract_repr_dir = kwargs.get(
             'rbf_feature_extraction_representation_dir', None
+        )
+        self.rbf_feat_processing_repr_dir = kwargs.get(
+            'rbf_feature_processing_representation_dir', None
+        )
+        self.kpconv_representation_dir = kwargs.get(
+            'kpconv_representation_dir', None
+        )
+        self.skpconv_representation_dir = kwargs.get(
+            'skpconv_representation_dir', None
         )
         self.out_prefix = kwargs.get('out_prefix', None)
         self.training_epochs = kwargs.get('training_epochs', 100)
@@ -104,10 +123,12 @@ class SimpleDLModelHandler(DLModelHandler):
         )
         self.early_stopping = kwargs.get('early_stopping', None)
         self.compilation_args = kwargs.get('compilation_args', None)
+        self.fit_verbose = kwargs.get('fit_verbose', "auto")
+        self.predict_verbose = kwargs.get('predict_verbose', "auto")
 
     # ---   MODEL HANDLER   --- #
     # ------------------------- #
-    def _fit(self, X, y, F=None):
+    def _fit(self, X, y):
         """
         See :class:`.DLModelHandler` and
         :meth:`dl_model_handler.DLModelHandler._fit`.
@@ -215,6 +236,9 @@ class SimpleDLModelHandler(DLModelHandler):
         fit_cache_map = {
             'fsl_dir_path': self.feat_struct_repr_dir,
             'rbf_dir_path': self.rbf_feat_extract_repr_dir,
+            'rbf_feat_processing_dir_path': self.rbf_feat_processing_repr_dir,
+            'kpconv_representation_dir': self.kpconv_representation_dir,
+            'skpconv_representation_dir': self.skpconv_representation_dir,
             'out_prefix': self.out_prefix,
             'X': X,
             'y_rf': y_rf,
@@ -231,7 +255,8 @@ class SimpleDLModelHandler(DLModelHandler):
             X, y_rf,
             epochs=self.training_epochs,
             callbacks=callbacks,
-            batch_size=self.batch_size
+            batch_size=self.batch_size,
+            verbose=self.fit_verbose
         )
         # Post-fit logic
         if hasattr(self.arch, 'posfit_logic_callback'):
@@ -243,7 +268,7 @@ class SimpleDLModelHandler(DLModelHandler):
             self.history = fit_cache_map['history']
         return self.history
 
-    def _predict(self, X, F=None, y=None, zout=None, plots_and_reports=True):
+    def _predict(self, X, y=None, zout=None, plots_and_reports=True):
         """
         See :class:`.DLModelHandler` and
         :meth:`dl_model_handler.DLModelHandler._predict`.
@@ -255,7 +280,11 @@ class SimpleDLModelHandler(DLModelHandler):
             'plots_and_reports': plots_and_reports
         })
         try:
-            zhat_rf = self.compiled.predict(X_rf, batch_size=self.batch_size)
+             zhat_rf = self.compiled.predict(
+                X_rf,
+                batch_size=self.batch_size,
+                verbose=self.predict_verbose
+            )
         except TFResourceExhaustedError as resexherr:
             LOGGING.LOGGER.debug(
                 'SimpleDLModelHandler could not compute predictions for '
@@ -284,7 +313,7 @@ class SimpleDLModelHandler(DLModelHandler):
         # Return
         return yhat
 
-    def compile(self, X=None, y=None, F=None, y_rf=None, **kwargs):
+    def compile(self, X=None, y=None, y_rf=None, **kwargs):
         """
         See :class:`.DLModelHandler` and
         :meth:`dl_model_handler.DLModelHandler.compile`.
@@ -313,7 +342,7 @@ class SimpleDLModelHandler(DLModelHandler):
             )
         # Compile
         self.compiled.compile(
-            # run_eagerly=True,  # Uncomment for better debugging (but slower)
+            run_eagerly=VL3DCFG['MODEL']['SimpleDLModelHandler']['run_eagerly'],
             **comp_args
         )
         return self
@@ -347,6 +376,53 @@ class SimpleDLModelHandler(DLModelHandler):
             if 'early_stopping' in spec_handling_keys:
                 self.early_stopping = spec_handling['early_stopping']
 
+    def update_paths(self, model_args):
+        """
+        Consider the current specification of model handling arguments to
+        update the paths.
+        """
+        # Nothing to do if no specification is given
+        if model_args is None:
+            return
+        # Update model paths
+        model_handling = model_args.get('model_handling', None)
+        if model_handling is not None:
+            self.summary_report_path = model_handling['summary_report_path']
+            self.training_history_dir = model_handling['training_history_dir']
+            self.checkpoint_path = model_handling['checkpoint_path']
+            self.feat_struct_repr_dir = model_handling.get(
+                'features_structuring_representation_dir',
+                self.feat_struct_repr_dir
+            )
+            self.rbf_feat_extract_repr_dir = model_handling.get(
+                'rbf_feat_extract_repr_dir',
+                self.rbf_feat_extract_repr_dir
+            )
+            self.rbf_feat_processing_repr_dir = model_handling.get(
+                'rbf_feat_processing_repr_dir',
+                self.rbf_feat_processing_repr_dir
+            )
+            self.kpconv_representation_dir = model_handling.get(
+                'kpconv_representation_dir', self.kpconv_representation_dir
+            )
+            self.skpconv_representation_dir = model_handling.get(
+                'skpconv_representation_dir', self.skpconv_representation_dir
+            )
+        # Update architecture paths
+        if self.arch is not None:
+            self.arch.architecture_graph_path = \
+                model_args['architecture_graph_path']
+            # Update pre-procesor paths
+            pre_processor = None
+            if self.arch.pre_runnable is not None:
+                if hasattr(self.arch.pre_runnable, "pre_processor"):
+                    pre_processor = \
+                        self.arch.pre_runnable.pre_processor
+            if pre_processor is not None:
+                pre_processor.update_paths(model_args.get(
+                    'pre_processing', None
+                ))
+
     # ---  MODEL HANDLING TASKS  --- #
     # ------------------------------ #
     def build_callbacks(self):
@@ -370,7 +446,6 @@ class SimpleDLModelHandler(DLModelHandler):
                 **self.early_stopping
             ))
         return callbacks
-
 
     # ---  UTIL METHODS  --- #
     # ---------------------- #
@@ -695,6 +770,10 @@ class SimpleDLModelHandler(DLModelHandler):
         state['training_history_dir'] = self.training_history_dir
         state['feat_struct_repr_dir'] = self.feat_struct_repr_dir
         state['rbf_feat_extract_repr_dir'] = self.rbf_feat_extract_repr_dir
+        state['rbf_feat_processing_repr_dir'] = \
+            self.rbf_feat_processing_repr_dir
+        state['kpconv_representation_dir'] = self.kpconv_representation_dir
+        state['skpconv_representation_dir'] = self.skpconv_representation_dir
         state['out_prefix'] = self.out_prefix
         state['training_epochs'] = self.training_epochs
         state['batch_size'] = self.batch_size
@@ -705,6 +784,8 @@ class SimpleDLModelHandler(DLModelHandler):
         state['learning_rate_on_plateau'] = self.learning_rate_on_plateau
         state['early_stopping'] = self.early_stopping
         state['compilation_args'] = self.compilation_args
+        state['fit_verbose'] = self.fit_verbose
+        state['predict_verbose'] = self.predict_verbose
         # Return Simple DL Model Handler state (for serialization)
         return state
 
@@ -726,6 +807,15 @@ class SimpleDLModelHandler(DLModelHandler):
         self.rbf_feat_extract_repr_dir = state.get(
             'rbf_feat_extract_repr_dir', None
         )
+        self.rbf_feat_processing_repr_dir = state.get(
+            'rbf_feat_processing_repr_dir', None
+        )
+        self.kpconv_representation_dir = state.get(
+            'kpconv_representation_dir', None
+        )
+        self.skpconv_representation_dir = state.get(
+            'skpconv_representation_dir', None
+        )
         self.out_prefix = state['out_prefix']
         self.training_epochs = state['training_epochs']
         self.batch_size = state['batch_size']
@@ -735,3 +825,5 @@ class SimpleDLModelHandler(DLModelHandler):
         self.learning_rate_on_plateau = state['learning_rate_on_plateau']
         self.early_stopping = state['early_stopping']
         self.compilation_args = state['compilation_args']
+        self.fit_verbose = state['fit_verbose']
+        self.predict_verbose = state['predict_verbose']

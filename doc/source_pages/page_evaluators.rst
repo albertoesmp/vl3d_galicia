@@ -84,6 +84,10 @@ quick visualization.
     * ``"F1"`` F1 score (harmonic mean of precision and recall).
     * ``"IoU"`` Intersection over union (also known as Jaccard index).
 
+-- ``ignore_classes``
+    Optional list of classes to be ignored when computing the evaluation
+    metrics. Any point whose label matches a class in this list will be
+    excluded.
 
 -- ``report_path``
     Path to write the evaluation of the classification to a text file.
@@ -177,6 +181,11 @@ export a point cloud and many plots to the `uncertainty` directory.
 -- ``class_names``
     A list with the names for the classes. These names will be used to
     represent the classes in the plots and the reports.
+
+-- ``ignore_classes``
+    Optional list of classes to be ignored when computing the uncertainty
+    metrics. Any point whose label matches a class in this list will be
+    excluded.
 
 -- ``include_probabilities``
     Whether to include the probabilities in the output point cloud (True) or
@@ -479,6 +488,11 @@ likelihood in a different color channel.
 -- ``reverse_rows``
     Boolean flag to control whether to reverse the rows of the grid (True) or
     not (False). The default is the reversed order, i.e., True.
+
+-- ``nthreads``
+    The number of threads for the parallel computation of the grids.
+    By default, just one thread is used. The value -1 implies using as many
+    threads as available cores.
 
 
 **Output**

@@ -12,6 +12,8 @@ from src.model.deeplearn.layer.rbf_feat_extract_layer import \
     RBFFeatExtractLayer
 from src.model.deeplearn.layer.features_structuring_layer import \
     FeaturesStructuringLayer
+from src.utils.dict_utils import DictUtils
+from src.main.main_config import VL3DCFG
 import tensorflow as tf
 
 
@@ -35,6 +37,12 @@ class RBFNet(Architecture, ABC):
         if kwargs.get('arch_name', None) is None:
             kwargs['arch_name'] = 'RBFNet'
         super().__init__(**kwargs)
+        # Set defaults from VL3DCFG
+        kwargs = DictUtils.add_defaults(
+            kwargs,
+            VL3DCFG['MODEL']['RBFNet']
+        )
+        # Assign attributes
         self.fnames = kwargs.get('fnames', None)
         # Update the preprocessing logic
         self.pre_runnable = PointNetPreProcessor(**kwargs['pre_processing'])
@@ -76,18 +84,7 @@ class RBFNet(Architecture, ABC):
         :return: Built layer.
         :rtype: :class:`tf.Tensor`
         """
-        # Handle coordinates as input
-        self.X = tf.keras.layers.Input(shape=(None, 3), name='Xin')
-        # Handle input features, if any
-        if self.fnames is not None:
-            self.F = tf.keras.layers.Input(
-                shape=(None, len(self.fnames)),
-                name='Fin'
-            )
-        # Return
-        if self.F is None:
-            return self.X
-        return [self.X, self.F]
+        return PointNet.build_point_net_input(self)
 
     def build_hidden(self, x, **kwargs):
         """
@@ -150,7 +147,7 @@ class RBFNet(Architecture, ABC):
             # Store RBF output
             self.rbf_output_tensors.append(_x)
         x = tf.keras.layers.Concatenate(name='rbf_concat')(
-            self.rbf_output_tensors,
+            self.rbf_output_tensors
         )
         # Apply enhancement if requested
         if self.enhanced_dim is not None:
@@ -277,6 +274,7 @@ class RBFNet(Architecture, ABC):
         self.tnet_kernel_initializer = state['tnet_kernel_initializer']
         # Call parent's set state
         super().__setstate__(state)
+        # Track rbf layers
         self.rbf_layers = [
             layer
             for layer in self.nn.layers

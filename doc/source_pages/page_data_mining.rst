@@ -340,6 +340,7 @@ below shows how to define a :class:`.SmoothFeatsMiner`:
 
     {
         "miner": "SmoothFeatures",
+        "nan_policy": "propagate",
         "chunk_size": 1000000,
         "subchunk_size": 1000,
         "neighborhood": {
@@ -359,6 +360,14 @@ threads.
 
 
 **Arguments**
+
+-- ``nan_policy``
+    It can be ``"propagate"`` (default) so NaN features will be included
+    in computations (potentially leading to NaN smooth features).
+    Alternatively, it can be ``"replace"`` so NaN values are replaced with the
+    feature-wise mean for each neighborhood. However, using ``"replace"`` leads
+    to longer executions times. Therefore, ``"propagate"`` should be used
+    always that NaN handling is not necessary.
 
 -- ``chunk_size``
     How many points per chunk must be considered for parallel computations.
@@ -427,23 +436,23 @@ neighbor.
 .. code-block:: json
 
     {
-		"miner": "TakeClosestMiner",
-		"fnames": [
-			"HSV_Hrad", "HSV_S", "HSV_V",
-			"floor_distance_r50.0_sep0.35",
-			"eigenvalue_sum_r0.3", "omnivariance_r0.3", "eigenentropy_r0.3",
-			"anisotropy_r0.3", "planarity_r0.3", "linearity_r0.3",
-			"PCA1_r0.3", "PCA2_r0.3",
-			"surface_variation_r0.3", "sphericity_r0.3", "verticality_r0.3",
-	  	],
-		"pcloud_pool": [
-			"/home/point_clouds/point_cloud_A.laz",
-			"/home/point_clouds/point_cloud_B.laz",
-			"/home/point_clouds/point_cloud_C.laz"
-		],
-		"distance_upper_bound": 0.1,
-		"nthreads": 12
-	}
+        "miner": "TakeClosestMiner",
+        "fnames": [
+            "HSV_Hrad", "HSV_S", "HSV_V",
+            "floor_distance_r50.0_sep0.35",
+            "eigenvalue_sum_r0.3", "omnivariance_r0.3", "eigenentropy_r0.3",
+            "anisotropy_r0.3", "planarity_r0.3", "linearity_r0.3",
+            "PCA1_r0.3", "PCA2_r0.3",
+            "surface_variation_r0.3", "sphericity_r0.3", "verticality_r0.3",
+        ],
+        "pcloud_pool": [
+            "/home/point_clouds/point_cloud_A.laz",
+            "/home/point_clouds/point_cloud_B.laz",
+            "/home/point_clouds/point_cloud_C.laz"
+        ],
+        "distance_upper_bound": 0.1,
+        "nthreads": 12
+    }
 
 The JSON above defines a :class:`.TakeClosestMiner` that finds the features of
 the closest point in a pool of three point clouds. Neighbors further than
@@ -456,6 +465,14 @@ neighbor.
 -- ``fnames``
     The names of the features that must be taken from the closest neighbor in
     the pool.
+
+-- ``frenames``
+    An optional list with the name of the output features. When not given, the
+    output features will be named as specified by ``fnames``.
+
+-- ``y_default``
+    An optional value to be considered as the default label/class. If not
+    given, it will be the max integer supported by the system.
 
 -- ``pcloud_pool``
     A list with the paths to the point clouds composing the pool.
