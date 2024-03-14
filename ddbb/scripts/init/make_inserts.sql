@@ -278,3 +278,13 @@ INSERT INTO uncertainty_metrics(name, description)
         'The greater this difference, the lower the class ambiguity.'
     )
     ON CONFLICT DO NOTHING;
+
+-- TABLE: geographic_regions
+INSERT INTO geographic_regions(name, admin_level, geocode_area) VALUES
+    ('Galicia', 4, 'Galicia'),
+    ('A Coruña', 6, 'Coruña'),
+    ('Pontevedra', 6, 'Pontevedra'),
+    ('Lugo', 6, 'Lugo'),
+    ('Ourense', 6, 'Ourense')
+    ON CONFLICT DO NOTHING;
+

@@ -78,7 +78,8 @@ def analyze_pclouds(pclouds_dir):
         gc.collect()
         # Update counters
         update_counters(
-            counters, X, y, coruna_geom, pvedra_geom, lugo_geom, ourense_geom
+            counters, X, y, coruna_geom, pvedra_geom, lugo_geom, ourense_geom,
+            fname
         )
         # Report end of iteration
         end = time.perf_counter()
@@ -116,6 +117,7 @@ def analyze_pclouds(pclouds_dir):
         'ourense_points': counters['ourense_points'],
         'ourense_noise': counters['ourense_noise'],
         'ourense_overlap': counters['ourense_overlap'],
+        'scenes': counters['scenes']
     }
     output['galicia_clean'] = output['galicia_points'] - \
         output['galicia_noise'] - output['galicia_overlap']
@@ -150,12 +152,13 @@ def init_counters():
         'lugo_overlap': 0,
         'ourense_points': 0,
         'ourense_noise': 0,
-        'ourense_overlap': 0
+        'ourense_overlap': 0,
+        'scenes': []
     }
 
 
 def update_counters(
-    counters, X, y, coruna_geom, pvedra_geom, lugo_geom, ourense_geom
+    counters, X, y, coruna_geom, pvedra_geom, lugo_geom, ourense_geom, fname
 ):
     # Function to update counters for each subregion
     def update_subregion_counters(
@@ -171,17 +174,41 @@ def update_counters(
         counters[f'{name}_overlap'] += np.count_nonzero(
             ymask == classes.pnoa2['overlap']
         )
+        return len(Xmask)
     # Update Galicia counts
     counters['galicia_points'] += len(X)
     counters['galicia_noise'] += np.count_nonzero(y == classes.pnoa2['noise'])
     counters['galicia_overlap'] += np.count_nonzero(y == classes.pnoa2['overlap'])
     # Update counts for each province
     Xsup = []
-    update_subregion_counters(counters, X, y, coruna_geom, 'coruna', Xsup=Xsup)
+    coruna_points = update_subregion_counters(
+        counters, X, y, coruna_geom, 'coruna', Xsup=Xsup
+    )
     Xsup = Xsup[0]
-    update_subregion_counters(counters, X, y, pvedra_geom, 'pvedra', Xsup=Xsup)
-    update_subregion_counters(counters, X, y, lugo_geom, 'lugo', Xsup=Xsup)
-    update_subregion_counters(counters, X, y, ourense_geom, 'ourense', Xsup=Xsup)
+    pvedra_points = update_subregion_counters(
+        counters, X, y, pvedra_geom, 'pvedra', Xsup=Xsup
+    )
+    lugo_points = update_subregion_counters(
+        counters, X, y, lugo_geom, 'lugo', Xsup=Xsup
+    )
+    ourense_points = update_subregion_counters(
+        counters, X, y, ourense_geom, 'ourense', Xsup=Xsup
+    )
+    # Update scene counts (and other data)
+    a, b = np.min(X, axis=0), np.max(X, axis=0)
+    counters['scenes'].append({
+        'name': fname,
+        'points': len(X),
+        'coruna_points': coruna_points,
+        'pvedra_points': pvedra_points,
+        'lugo_points': lugo_points,
+        'ourense_points': ourense_points,
+        'pxmin': a[0],
+        'pymin': a[1],
+        'pxmax': b[0],
+        'pymax': b[1]
+    })
+
 
 def print_csv_format(analysis):
     print('\n')
@@ -228,6 +255,7 @@ def print_csv_format(analysis):
             )
         )
 
+
 def print_latex_format(analysis):
     print('\nLatex table body:\n')
     for region_id, region_name, sensor in zip(
@@ -249,8 +277,8 @@ def print_latex_format(analysis):
         overlap = analysis[f'{region_id}_overlap']/points if points != 0 else 0
         clean = analysis[f'{region_id}_clean']/points if points != 0 else 0
         print(
-            '{region}&{sensor}&{points:.2f}&{area:.2f}&{noise:.2f}&'
-            '{overlap:.2f}&{clean:.2f}\\\\'.format(
+            '{region} & {sensor} & {points:.2f} & {area:.2f} & {noise:.2f} & '
+            '{overlap:.2f} & {clean:.2f} \\\\'.format(
                 region=region_name,
                 sensor=sensor,
                 points=points/1e6,
@@ -262,6 +290,116 @@ def print_latex_format(analysis):
         )
     print('\n-----------------------------------------------------------\n\n')
 
+
+def export_sql_inserts(analysis, pclouds_dir):
+    # Prepare variables
+    outpath = os.path.join(pclouds_dir, 'ddbb_inserts.sql')
+    scenes = analysis['scenes']
+    num_scenes = len(scenes)
+    num_scenes_minus_one = num_scenes - 1
+    # TODO Remove ---
+    print(scenes[0])
+    # --- TODO Remove
+    # Open file for write
+    with open(outpath, 'w') as outf:
+        # Write INSERT senentece for datasets table
+        outf.write(
+            '-- TABLE: datasets\n'
+            'INSERT INTO datasets '
+            '(name, num_points, pxmin, pymin, pxmax, pymax) VALUES\n'
+        )
+        # Add VALUES to INSERT sentence for datasets table for each scene
+        for i, scene in enumerate(scenes):
+            outf.write(
+                '\t('
+                f"'{scene['name']}',"
+                f'{scene["points"]},'
+                f'{scene["pxmin"]},'
+                f'{scene["pymin"]},'
+                f'{scene["pxmax"]},'
+                f'{scene["pymax"]}'
+                ')'
+            )
+            if i < num_scenes_minus_one:
+                outf.write(',')
+            outf.write('\n')
+        outf.write('\tON CONFLICT DO NOTHING;\n')
+        # Write INSERT senentece for datasets table
+        outf.write(
+            '\n-- TABLE: dataset_regions\n'
+            'INSERT INTO dataset_regions '
+            '(dataset_id, region_id, num_points) VALUES\n\t'
+        )
+        write_comma = False
+        for i, scene in enumerate(scenes):
+            if scene['coruna_points'] > 0:
+                if write_comma:
+                    outf.write(',(\n')
+                else:
+                    outf.write('(\n')
+                outf.write(
+                    '\t\t(SELECT id '
+                    'FROM datasets '
+                    f"WHERE name like '{scene['name']}'),\n"
+                    '\t\t(SELECT id '
+                    'FROM geographic_regions '
+                    "WHERE LOWER(name) like '%a coruña'),\n"
+                    f'\t\t{scene["coruna_points"]}\n'
+                    '\t)'
+                )
+                write_comma = True
+            if scene['pvedra_points'] > 0:
+                if write_comma:
+                    outf.write(',(\n')
+                else:
+                    outf.write('(\n')
+                outf.write(
+                    '\t\t(SELECT id '
+                    'FROM datasets '
+                    f"WHERE name like '{scene['name']}'),\n"
+                    '\t\t(SELECT id '
+                    'FROM geographic_regions '
+                    "WHERE LOWER(name) like '%pontevedra'),\n"
+                    f'\t\t{scene["pvedra_points"]}\n'
+                    '\t)'
+                )
+                write_comma = True
+            if scene['lugo_points'] > 0:
+                if write_comma:
+                    outf.write(',(\n')
+                else:
+                    outf.write('(\n')
+                outf.write(
+                    '\t\t(SELECT id '
+                    'FROM datasets '
+                    f"WHERE name like '{scene['name']}'),\n"
+                    '\t\t(SELECT id '
+                    'FROM geographic_regions '
+                    "WHERE LOWER(name) like '%lugo'),\n"
+                    f'\t\t{scene["lugo_points"]}\n'
+                    '\t)'
+                )
+                write_comma = True
+            if scene['ourense_points'] > 0:
+                if write_comma:
+                    outf.write(',(\n')
+                else:
+                    outf.write('(\n')
+                outf.write(
+                    '\t\t(SELECT id '
+                    'FROM datasets '
+                    f"WHERE name like '{scene['name']}'),\n"
+                    '\t\t(SELECT id '
+                    'FROM geographic_regions '
+                    "WHERE LOWER(name) like '%ourense'),\n"
+                    f'\t\t{scene["ourense_points"]}\n'
+                    '\t)'
+                )
+                write_comma = True
+        outf.write('\n\tON CONFLICT DO NOTHING;\n')
+    print(f'SQL insert script exported to "{outpath}"')
+
+
 # ---   M A I N   --- #
 # ------------------- #
 if __name__ == '__main__':
@@ -270,6 +408,7 @@ if __name__ == '__main__':
     analysis = analyze_pclouds(pclouds_dir)
     print_latex_format(analysis)
     print_csv_format(analysis)
+    export_sql_inserts(analysis, pclouds_dir)
     end = time.perf_counter()
     print(f'\n\nAnalyze dataset script run in {end-start:.3f} seconds')
 

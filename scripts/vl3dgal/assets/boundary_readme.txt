@@ -50,7 +50,7 @@ out skel qt;
 
 # Overpass query to obtain Ourense boundary
 [out:json][timeout:25];
-{{geocodeArea:Lugo}}->.searchArea;
+{{geocodeArea:Ourense}}->.searchArea;
 (
   relation["boundary"="administrative"]["admin_level"="6"](area.searchArea);
 );

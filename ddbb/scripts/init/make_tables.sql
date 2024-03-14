@@ -213,7 +213,7 @@ CREATE TABLE training_histories(
 DROP TABLE IF EXISTS datasets cascade;
 CREATE TABLE datasets(
     id bigserial PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     num_points BIGINT NOT NULL,
     num_references BIGINT,
     pxmin FLOAT,
@@ -514,4 +514,26 @@ CREATE TABLE resultset_plots(
     FOREIGN KEY(plot_id) REFERENCES plots(id),
     FOREIGN KEY(plot_format_id) REFERENCES plot_formats(id),
     PRIMARY KEY(resultset_id, plot_id)
+);
+
+-- TABLE: geographic_regions
+DROP TABLE IF EXISTS geographic_regions cascade;
+CREATE TABLE geographic_regions(
+    id bigserial PRIMARY KEY,
+    name VARCHAR(256) UNIQUE NOT NULL,
+    admin_level INT NOT NULL DEFAULT -1,
+    geocode_area TEXT UNIQUE,
+    notes TEXT
+);
+
+-- TABLE: dataset_regions
+DROP TABLE IF EXISTS dataset_regions cascade;
+CREATE TABLE dataset_regions(
+    dataset_id BIGINT NOT NULL,
+    region_id BIGINT NOT NULL,
+    num_points BIGINT,
+    notes TEXT,
+    FOREIGN KEY(dataset_id) REFERENCES datasets(id),
+    FOREIGN KEY(region_id) REFERENCES geographic_regions(id),
+    PRIMARY KEY(dataset_id, region_id)
 );
