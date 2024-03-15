@@ -297,9 +297,6 @@ def export_sql_inserts(analysis, pclouds_dir):
     scenes = analysis['scenes']
     num_scenes = len(scenes)
     num_scenes_minus_one = num_scenes - 1
-    # TODO Remove ---
-    print(scenes[0])
-    # --- TODO Remove
     # Open file for write
     with open(outpath, 'w') as outf:
         # Write INSERT senentece for datasets table
@@ -332,6 +329,22 @@ def export_sql_inserts(analysis, pclouds_dir):
         )
         write_comma = False
         for i, scene in enumerate(scenes):
+            if scene['points'] > 0:
+                if write_comma:
+                    outf.write(',(\n')
+                else:
+                    outf.write('(\n')
+                outf.write(
+                    '\t\t(SELECT id '
+                    'FROM datasets '
+                    f"WHERE name like '{scene['name']}'),\n"
+                    '\t\t(SELECT id '
+                    'FROM geographic_regions '
+                    "WHERE LOWER(name) like '%galicia'),\n"
+                    f'\t\t{scene["points"]}\n'
+                    '\t)'
+                )
+                write_comma = True
             if scene['coruna_points'] > 0:
                 if write_comma:
                     outf.write(',(\n')
