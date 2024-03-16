@@ -203,6 +203,31 @@ INSERT INTO classes (name, description)
     ),(
         'Building',
         'Buildings are a particular type of structure.'
+    ),(
+        'Noise',
+        'Points that do not bring reliable information.'
+    ),(
+        'Overlap',
+        'Points that belong to a region covered by many passes (typically the worst quality points are labeled as overlap).'
+    ),(
+        'Ground',
+        'Points representing the ground or terrain.'
+    ),(
+        'Water',
+        'Points acquired by scanning water regions like seas or rivers.'
+    ),(
+        'Bridge',
+        'Points representing manmade bridges.'
+    ),( 
+        'Other',
+        'Points that do not belong to any of the other classes in the dataset.'
+    ),(
+        'Ignore',
+        'Points that can be safely ignored by a classifier (e.g., unlabeled points for semisupervised learning).'
+    ),(
+        'Unclassified',
+        'Points for which there is no known class. Note that a point labeled as Ignore may be just a convenience '
+        'including points for which labels are known. Unclassified implies that there is no known class for the point.'
     ) ON CONFLICT DO NOTHING;
 
 -- TABLE: plots

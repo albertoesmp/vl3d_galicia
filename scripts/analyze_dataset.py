@@ -10,19 +10,41 @@ import vl3dgal.las_utils as lasu
 import vl3dgal.assets as assets
 import vl3dgal.classes as classes
 from vl3dgal.point_inside import points_inside_geometry
-import laspy
 import numpy as np
 import sys
 import os
 import time
 import gc
 
+# ---   CONSTANTS   --- #
+# --------------------- #
+# The different classifications tasks
+CLASSIF_TYPES = [
+    'ORIGINAL', 'VEGETATION', 'LMH_VEGETATION', 'BUILDING', 'BUILD_VEG'
+]
+# The class names in the database
+CLASS_NAMES = {
+    'unclassified': 'Unclassified',
+    'ground': 'Ground',
+    'lowveg': 'Low vegetation',
+    'midveg': 'Mid vegetation',
+    'highveg': 'High vegetation',
+    'building': 'Building',
+    'noise': 'Noise',
+    'water': 'Water',
+    'overlap': 'Overlap',
+    'bridge': 'Bridge',
+    'vegetation': 'Vegetation',
+    'other': 'Other',
+    'ignore': 'Ignore'
+}
+
 
 # ---  METHODS  --- #
 # ----------------- #
 def print_help():
     print(
-'''USAGE of analyze_dataset.py
+        '''USAGE of analyze_dataset.py
 
         1: Path to a directory containing many LAS/LAZ files
 
@@ -166,7 +188,7 @@ def update_counters(
     ):
         mask = points_inside_geometry(X, geom, Xsup=Xsup)
         Xmask = X[mask]
-        ymask= y[mask]
+        ymask = y[mask]
         counters[f'{name}_points'] += len(Xmask)
         counters[f'{name}_noise'] += np.count_nonzero(
             ymask == classes.pnoa2['noise']
@@ -176,9 +198,20 @@ def update_counters(
         )
         return len(Xmask)
     # Update Galicia counts
-    counters['galicia_points'] += len(X)
-    counters['galicia_noise'] += np.count_nonzero(y == classes.pnoa2['noise'])
-    counters['galicia_overlap'] += np.count_nonzero(y == classes.pnoa2['overlap'])
+    galicia_points = len(X)
+    galicia_unclassified = np.count_nonzero(y == classes.pnoa2['unclassified'])
+    galicia_ground = np.count_nonzero(y == classes.pnoa2['ground'])
+    galicia_lowveg = np.count_nonzero(y == classes.pnoa2['lowveg'])
+    galicia_midveg = np.count_nonzero(y == classes.pnoa2['midveg'])
+    galicia_highveg = np.count_nonzero(y == classes.pnoa2['highveg'])
+    galicia_building = np.count_nonzero(y == classes.pnoa2['building'])
+    galicia_noise = np.count_nonzero(y == classes.pnoa2['noise'])
+    galicia_water = np.count_nonzero(y == classes.pnoa2['water'])
+    galicia_overlap = np.count_nonzero(y == classes.pnoa2['overlap'])
+    galicia_bridge = np.count_nonzero(y == classes.pnoa2['bridge'])
+    counters['galicia_points'] += galicia_points
+    counters['galicia_noise'] += galicia_noise
+    counters['galicia_overlap'] += galicia_overlap
     # Update counts for each province
     Xsup = []
     coruna_points = update_subregion_counters(
@@ -198,11 +231,21 @@ def update_counters(
     a, b = np.min(X, axis=0), np.max(X, axis=0)
     counters['scenes'].append({
         'name': fname,
-        'points': len(X),
+        'points': galicia_points,
         'coruna_points': coruna_points,
         'pvedra_points': pvedra_points,
         'lugo_points': lugo_points,
         'ourense_points': ourense_points,
+        'unclassified': galicia_unclassified,
+        'ground': galicia_ground,
+        'lowveg': galicia_lowveg,
+        'midveg': galicia_midveg,
+        'highveg': galicia_highveg,
+        'building': galicia_building,
+        'noise': galicia_noise,
+        'water': galicia_water,
+        'overlap': galicia_overlap,
+        'bridge': galicia_bridge,
         'pxmin': a[0],
         'pymin': a[1],
         'pxmax': b[0],
@@ -295,21 +338,30 @@ def export_sql_inserts(analysis, pclouds_dir):
     # Prepare variables
     outpath = os.path.join(pclouds_dir, 'ddbb_inserts.sql')
     scenes = analysis['scenes']
-    num_scenes = len(scenes)
-    num_scenes_minus_one = num_scenes - 1
     # Open file for write
     with open(outpath, 'w') as outf:
-        # Write INSERT senentece for datasets table
-        outf.write(
-            '-- TABLE: datasets\n'
-            'INSERT INTO datasets '
-            '(name, num_points, pxmin, pymin, pxmax, pymax) VALUES\n'
-        )
-        # Add VALUES to INSERT sentence for datasets table for each scene
-        for i, scene in enumerate(scenes):
+        export_sql_datasets(scenes, outf)
+        export_sql_dataset_metas(scenes, outf)
+        export_sql_dataset_regions(scenes, outf)
+        export_sql_class_distributions(scenes, outf)
+    print(f'SQL insert script exported to "{outpath}"')
+
+
+def export_sql_datasets(scenes, outf):
+    num_scenes_minus_one = len(scenes)-1
+    num_classif_types_minus_one = len(CLASSIF_TYPES)-1
+    # Write INSERT senentece for datasets table
+    outf.write(
+        '-- TABLE: datasets\n'
+        'INSERT INTO datasets '
+        '(name, num_points, pxmin, pymin, pxmax, pymax) VALUES\n'
+    )
+    # Add VALUES to INSERT sentence for datasets table for each scene
+    for i, scene in enumerate(scenes):
+        for j, classif_type in enumerate(CLASSIF_TYPES):
             outf.write(
                 '\t('
-                f"'{scene['name']}',"
+                f"'{scene['name'][:-4]}_{classif_type}',"
                 f'{scene["points"]},'
                 f'{scene["pxmin"]},'
                 f'{scene["pymin"]},'
@@ -317,100 +369,238 @@ def export_sql_inserts(analysis, pclouds_dir):
                 f'{scene["pymax"]}'
                 ')'
             )
-            if i < num_scenes_minus_one:
-                outf.write(',')
-            outf.write('\n')
-        outf.write('\tON CONFLICT DO NOTHING;\n')
-        # Write INSERT senentece for datasets table
+            if i < num_scenes_minus_one or j < num_classif_types_minus_one:
+                outf.write(',\n')
+    outf.write('\n\tON CONFLICT DO NOTHING;\n')
+
+
+def export_sql_dataset_metas(scenes, outf):
+    # Write INSERT sentence for dataset_metas table
+    outf.write(
+        '\n-- TABLE: dataset_metas\n'
+        'INSERT INTO dataset_metas (dataset_id, meta_id) VALUES\n'
+    )
+    # Add VALUES to INSERT sentence for dataset_metas table
+    for i, scene in enumerate(scenes):
+        for j, classif_type in enumerate(CLASSIF_TYPES):
+            if i != 0 or j != 0:
+                outf.write(',\n')
+            outf.write(
+                '\t('
+                '\n\t\t(SELECT id FROM datasets WHERE name like '
+                f"'{scene['name'][:-4]}_{classif_type}'),"
+                '\n\t\t(SELECT id FROM metadatasets WHERE name like '
+                "'PNOA-II GALICIA')"
+                ')'
+            )
+    outf.write('\n\tON CONFLICT DO NOTHING;\n')
+
+
+def export_sql_dataset_regions(scenes, outf):
+    # Write INSERT sentence for dataset_regions table
+    outf.write(
+        '\n-- TABLE: dataset_regions\n'
+        'INSERT INTO dataset_regions '
+        '(dataset_id, region_id, num_points) VALUES\n\t'
+    )
+    # Add VALUES to INSERT sentence for dataset_regions table
+    write_comma = False
+    for i, scene in enumerate(scenes):
+        for classif_type in CLASSIF_TYPES:
+            write_comma = _export_sql_dataset_regions(
+                scene, outf, f'{scene["name"][:-4]}_{classif_type}',
+                'points', 'galicia', write_comma
+            )
+            write_comma = _export_sql_dataset_regions(
+                scene, outf, f'{scene["name"][:-4]}_{classif_type}',
+                'coruna_points', 'a coruña', write_comma
+            )
+            write_comma = _export_sql_dataset_regions(
+                scene, outf, f'{scene["name"][:-4]}_{classif_type}',
+                'pvedra_points', 'pontevedra', write_comma
+            )
+            write_comma = _export_sql_dataset_regions(
+                scene, outf, f'{scene["name"][:-4]}_{classif_type}',
+                'lugo_points', 'lugo', write_comma
+            )
+            write_comma = _export_sql_dataset_regions(
+                scene, outf, f'{scene["name"][:-4]}_{classif_type}',
+                'ourense_points', 'ourense', write_comma
+            )
+    outf.write('\n\tON CONFLICT DO NOTHING;\n')
+
+
+def _export_sql_dataset_regions(scene, outf, name, key, strlike, write_comma):
+    if scene[key] > 0:
+        if write_comma:
+            outf.write(',(\n')
+        else:
+            outf.write('(\n')
         outf.write(
-            '\n-- TABLE: dataset_regions\n'
-            'INSERT INTO dataset_regions '
-            '(dataset_id, region_id, num_points) VALUES\n\t'
+            '\t\t(SELECT id FROM datasets '
+            f"WHERE name like '{name}'),\n"
+            '\t\t(SELECT id FROM geographic_regions '
+            f"WHERE LOWER(name) like '%{strlike}'),\n"
+            f'\t\t{scene[key]}\n\t)'
         )
-        write_comma = False
-        for i, scene in enumerate(scenes):
-            if scene['points'] > 0:
-                if write_comma:
-                    outf.write(',(\n')
-                else:
-                    outf.write('(\n')
-                outf.write(
-                    '\t\t(SELECT id '
-                    'FROM datasets '
-                    f"WHERE name like '{scene['name']}'),\n"
-                    '\t\t(SELECT id '
-                    'FROM geographic_regions '
-                    "WHERE LOWER(name) like '%galicia'),\n"
-                    f'\t\t{scene["points"]}\n'
-                    '\t)'
-                )
-                write_comma = True
-            if scene['coruna_points'] > 0:
-                if write_comma:
-                    outf.write(',(\n')
-                else:
-                    outf.write('(\n')
-                outf.write(
-                    '\t\t(SELECT id '
-                    'FROM datasets '
-                    f"WHERE name like '{scene['name']}'),\n"
-                    '\t\t(SELECT id '
-                    'FROM geographic_regions '
-                    "WHERE LOWER(name) like '%a coruña'),\n"
-                    f'\t\t{scene["coruna_points"]}\n'
-                    '\t)'
-                )
-                write_comma = True
-            if scene['pvedra_points'] > 0:
-                if write_comma:
-                    outf.write(',(\n')
-                else:
-                    outf.write('(\n')
-                outf.write(
-                    '\t\t(SELECT id '
-                    'FROM datasets '
-                    f"WHERE name like '{scene['name']}'),\n"
-                    '\t\t(SELECT id '
-                    'FROM geographic_regions '
-                    "WHERE LOWER(name) like '%pontevedra'),\n"
-                    f'\t\t{scene["pvedra_points"]}\n'
-                    '\t)'
-                )
-                write_comma = True
-            if scene['lugo_points'] > 0:
-                if write_comma:
-                    outf.write(',(\n')
-                else:
-                    outf.write('(\n')
-                outf.write(
-                    '\t\t(SELECT id '
-                    'FROM datasets '
-                    f"WHERE name like '{scene['name']}'),\n"
-                    '\t\t(SELECT id '
-                    'FROM geographic_regions '
-                    "WHERE LOWER(name) like '%lugo'),\n"
-                    f'\t\t{scene["lugo_points"]}\n'
-                    '\t)'
-                )
-                write_comma = True
-            if scene['ourense_points'] > 0:
-                if write_comma:
-                    outf.write(',(\n')
-                else:
-                    outf.write('(\n')
-                outf.write(
-                    '\t\t(SELECT id '
-                    'FROM datasets '
-                    f"WHERE name like '{scene['name']}'),\n"
-                    '\t\t(SELECT id '
-                    'FROM geographic_regions '
-                    "WHERE LOWER(name) like '%ourense'),\n"
-                    f'\t\t{scene["ourense_points"]}\n'
-                    '\t)'
-                )
-                write_comma = True
-        outf.write('\n\tON CONFLICT DO NOTHING;\n')
-    print(f'SQL insert script exported to "{outpath}"')
+        write_comma = True
+    return write_comma
+
+def export_sql_class_distributions(scenes, outf):
+    # Write INSERT sentence for class_distributions table
+    outf.write(
+        '\n-- TABLE: class_distributions\n'
+        'INSERT INTO class_distributions (dataset_id, class_id, recount) '
+        'VALUES\n\t'
+    )
+    # Add VALUES to INSERT sentence for class_distributions table
+    write_comma = False
+    export_funs = [
+        _export_class_distribution_original,
+        _export_class_distribution_vegetation,
+        _export_class_distribution_lmh_vegetation,
+        _export_class_distribution_building,
+        _export_class_distribution_build_veg
+    ]
+    for i, scene in enumerate(scenes):
+        for export_fun in export_funs:
+            write_comma = export_fun(scene, outf, write_comma)
+    outf.write('\n\tON CONFLICT DO NOTHING;\n')
+
+
+def _export_class_distribution_original(scene, outf, write_comma):
+    dataset_name = f"{scene['name'][:-4]}_ORIGINAL"
+    class_keys = [key for key in classes.pnoa2.keys()]
+    for class_key in class_keys:
+        if scene[class_key] > 0:
+            if write_comma:
+                outf.write(',(\n')
+            else:
+                outf.write('(\n')
+            outf.write(
+                '\t\t(SELECT id FROM datasets '
+                f"WHERE name like '{dataset_name}'),\n"
+                '\t\t(SELECT id FROM classes '
+                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f'\t\t{scene[class_key]}\n\t)'
+            )
+            write_comma = True
+    return write_comma
+
+
+def _export_class_distribution_vegetation(scene, outf, write_comma):
+    dataset_name = f"{scene['name'][:-4]}_VEGETATION"
+    class_keys = ['vegetation', 'other', 'ignore']
+    assoc_class_keys = [
+        ['lowveg', 'midveg', 'highveg'],
+        ['ground', 'building', 'water', 'bridge'],
+        ['unclassified', 'noise', 'overlap']
+    ]
+    for i, class_key in enumerate(class_keys):
+        count = 0
+        for assoc_class_key in assoc_class_keys[i]:
+            count += scene[assoc_class_key]
+        if count > 0:
+            if write_comma:
+                outf.write(',(\n')
+            else:
+                outf.write('(\n')
+            outf.write(
+                '\t\t(SELECT id FROM datasets '
+                f"WHERE name like '{dataset_name}'),\n"
+                '\t\t(SELECT id FROM classes '
+                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f'\t\t{count}\n\t)'
+            )
+            write_comma = True
+    return write_comma
+
+
+def _export_class_distribution_lmh_vegetation(scene, outf, write_comma):
+    dataset_name = f"{scene['name'][:-4]}_LMH_VEGETATION"
+    class_keys = ['lowveg', 'midveg', 'highveg', 'other', 'ignore']
+    assoc_class_keys = [
+        ['lowveg'],
+        ['midveg'],
+        ['highveg'],
+        ['ground', 'building', 'water', 'bridge'],
+        ['unclassified', 'noise', 'overlap']
+    ]
+    for i, class_key in enumerate(class_keys):
+        count = 0
+        for assoc_class_key in assoc_class_keys[i]:
+            count += scene[assoc_class_key]
+        if count > 0:
+            if write_comma:
+                outf.write(',(\n')
+            else:
+                outf.write('(\n')
+            outf.write(
+                '\t\t(SELECT id FROM datasets '
+                f"WHERE name like '{dataset_name}'),\n"
+                '\t\t(SELECT id FROM classes '
+                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f'\t\t{count}\n\t)'
+            )
+            write_comma = True
+    return write_comma
+
+
+def _export_class_distribution_building(scene, outf, write_comma):
+    dataset_name = f"{scene['name'][:-4]}_BUILDING"
+    class_keys = ['building', 'other', 'ignore']
+    assoc_class_keys = [
+        ['building'],
+        ['ground', 'lowveg', 'midveg', 'highveg', 'water', 'bridge'],
+        ['unclassified', 'noise', 'overlap']
+    ]
+    for i, class_key in enumerate(class_keys):
+        count = 0
+        for assoc_class_key in assoc_class_keys[i]:
+            count += scene[assoc_class_key]
+        if count > 0:
+            if write_comma:
+                outf.write(',(\n')
+            else:
+                outf.write('(\n')
+            outf.write(
+                '\t\t(SELECT id FROM datasets '
+                f"WHERE name like '{dataset_name}'),\n"
+                '\t\t(SELECT id FROM classes '
+                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f'\t\t{count}\n\t)'
+            )
+            write_comma = True
+    return write_comma
+
+
+def _export_class_distribution_build_veg(scene, outf, write_comma):
+    dataset_name = f"{scene['name'][:-4]}_BUILD_VEG"
+    class_keys = ['building', 'vegetation', 'other', 'ignore']
+    assoc_class_keys = [
+        ['building'],
+        ['lowveg', 'midveg', 'highveg'],
+        ['ground', 'water', 'bridge'],
+        ['unclassified', 'noise', 'overlap']
+    ]
+    for i, class_key in enumerate(class_keys):
+        count = 0
+        for assoc_class_key in assoc_class_keys[i]:
+            count += scene[assoc_class_key]
+        if count > 0:
+            if write_comma:
+                outf.write(',(\n')
+            else:
+                outf.write('(\n')
+            outf.write(
+                '\t\t(SELECT id FROM datasets '
+                f"WHERE name like '{dataset_name}'),\n"
+                '\t\t(SELECT id FROM classes '
+                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f'\t\t{count}\n\t)'
+            )
+            write_comma = True
+    return write_comma
 
 
 # ---   M A I N   --- #

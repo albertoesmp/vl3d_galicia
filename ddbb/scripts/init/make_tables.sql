@@ -478,8 +478,8 @@ CREATE TABLE classwise_resultsets(
 );
 
 -- TABLE: class_distributions
-DROP TABLE IF EXISTS classwise_distributions cascade;
-CREATE TABLE classwise_distributions(
+DROP TABLE IF EXISTS class_distributions cascade;
+CREATE TABLE class_distributions(
     dataset_id BIGINT NOT NULL,
     class_id INT NOT NULL,
     recount BIGINT NOT NULL,
