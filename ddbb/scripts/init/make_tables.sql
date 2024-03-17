@@ -489,6 +489,18 @@ CREATE TABLE class_distributions(
     PRIMARY KEY(dataset_id, class_id)
 );
 
+-- TABLE: predicted_class_distributions
+DROP TABLE IF EXISTS predicted_class_distributions cascade;
+CREATE TABLE predicted_class_distributions(
+    resultset_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    recount BIGINT NOT NULL,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    PRIMARY KEY(resultset_id, class_id)
+);
+
 -- TABLE: resultset_confusions
 DROP TABLE IF EXISTS resultset_confusions cascade;
 CREATE TABLE resultset_confusions(

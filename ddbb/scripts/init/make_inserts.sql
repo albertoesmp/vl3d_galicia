@@ -260,6 +260,24 @@ INSERT INTO plots (name, description)
     (
         'Learning rate history',
         'Plot representing the learning rate training history.'
+    ),(
+        'Validation confusion matrix',
+        'The confusion matrix on the validation data.'
+    ),(
+        'Point-wise entropy',
+        'The point-wise entropy violin plot.'
+    ),(
+        'Class ambiguity',
+        'The point-wise class ambiguity violin plot.'
+    ),(
+        'Weighted entropy',
+        'The point-wise weighted entropy violing plot.'
+    ),(
+        'Cluster-wise entropy',
+        'The cluster-wise entropy violin plot.'
+    ),(
+        'Validation receptive fields distribution',
+        'The representation of the receptive fields generated from the validation dataset.'
     ) ON CONFLICT DO NOTHING;
 
 -- TABLE: plot_formats
@@ -313,3 +331,35 @@ INSERT INTO geographic_regions(name, admin_level, geocode_area) VALUES
     ('Ourense', 6, 'Ourense')
     ON CONFLICT DO NOTHING;
 
+
+-- TABLE: model_families
+INSERT INTO model_families(name, description) VALUES
+    ('Sequential', 'A sequential neural network architecture.'),
+    ('Hierarchical autoencoder', 'A hierarchical autoencoder neural network architecture.')
+    ON CONFLICT DO NOTHING;
+
+-- TABLE: model_subfamilies
+INSERT INTO model_subfamilies(name, description) VALUES
+    ('PointNet', 'A model based on the PointNet operator.'),
+    ('KPConv', 'A model baised on Kernel-Point Convolutions.')
+    ON CONFLICT DO NOTHING;
+
+-- TABLE: tasks
+INSERT INTO tasks (type, description) VALUES
+    ('Point-wise classification', 'Classify each point in the point cloud.'),
+    ('Point-wise regression', 'Predict a continuous value for each point in the point cloud.')
+    ON CONFLICT DO NOTHING;
+
+-- TABLE: model_types
+INSERT INTO model_types(specification, family_id, subfamily_id, notes) VALUES
+    (
+        '{}',
+        (SELECT id FROM model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'A null model type that should not be used unless for development, debugging, and bug fixing purposes.'
+    ) ON CONFLICT DO NOTHING;
+
+-- TABLE: models
+INSERT INTO models(model_type_id, framework_id, notes) VALUES
+    (1, 1, 'Null model for development, testing, and debugging purposes only.')
+    ON CONFLICT DO NOTHING;
