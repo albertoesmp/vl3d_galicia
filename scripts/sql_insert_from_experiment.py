@@ -9,17 +9,12 @@
 # ---  IMPORTS  --- #
 # ----------------- #
 import vl3dgal.las_utils as lasu
-import vl3dgal.assets as assets
 import vl3dgal.classes as classes
-from vl3dgal.point_inside import points_inside_geometry
-import laspy
 import numpy as np
 import base64
-import re
 import sys
 import os
 import time
-import gc
 
 
 # ---  CONSTANTS  --- #
@@ -164,7 +159,7 @@ def analyze_confusion_matrix(experiment_dir):
 def analyze_uncertainties(experiment_dir):
     # Read point cloud
     inpath = handle_input_file(experiment_dir, 'uncertainty')
-    las = laspy.read(inpath)
+    las = lasu.read_las(inpath, print_time=False)
     # Find classes
     task, classes = find_classes_from_las(las)
     # Extract entropies

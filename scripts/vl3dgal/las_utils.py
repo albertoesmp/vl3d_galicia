@@ -13,16 +13,18 @@ import time
 # --------------------------------------- #
 # ---   P U B L I C   M E T H O D S   --- #
 # --------------------------------------- #
-def read_las(fpath):
+def read_las(fpath, print_time=True):
     """
     :param fpath: Path to the LAS/LAZ file to be read
     :return: The read LAS data
     """
-    print(f'Reading "{fpath}" ...')
-    start = time.perf_counter()
+    if print_time:
+        print(f'Reading "{fpath}" ...')
+        start = time.perf_counter()
     las = laspy.read(fpath)
-    end = time.perf_counter()
-    print(f'"{fpath}" read in {end-start:.3f} seconds.')
+    if print_time:
+        end = time.perf_counter()
+        print(f'"{fpath}" read in {end-start:.3f} seconds.')
     return las
 
 
