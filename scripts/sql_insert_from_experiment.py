@@ -14,6 +14,7 @@ import vl3dgal.classes as classes
 from vl3dgal.point_inside import points_inside_geometry
 import laspy
 import numpy as np
+import base64
 import re
 import sys
 import os
@@ -168,35 +169,43 @@ def analyze_uncertainties(experiment_dir):
 
 
 def load_class_distribution_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'class_distribution_plot')
+    return digest_figure(inpath)
 
 
 def load_confusion_matrix_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'confusion_matrix_plot')
+    return digest_figure(inpath)
 
 
 def load_pwise_entropy_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'pwise_entropy_plot')
+    return digest_figure(inpath)
 
 
 def load_class_ambiguity_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'class_ambiguity_plot')
+    return digest_figure(inpath)
 
 
 def load_weighted_entropy_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'weighted_entropy_plot')
+    return digest_figure(inpath)
 
 
 def load_cwise_entropy_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'cwise_entropy_plot')
+    return digest_figure(inpath)
 
 
 def load_rf_distribution_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'rf_distribution_plot')
+    return digest_figure(inpath)
 
 
 def load_class_reduction_plot(experiment_dir):
-    return None  # TODO Rethink : Implement
+    inpath = handle_input_file(experiment_dir, 'class_reduce_plot')
+    return digest_figure(inpath)
 
 
 def handle_input_file(experiment_dir, key):
@@ -210,6 +219,25 @@ def handle_input_file(experiment_dir, key):
 
 def readline(f):
     return f.readline().rstrip("\n")
+
+def digest_figure(inpath):
+    try:
+        frmat = inpath[inpath.rindex('.')+1:]
+        fmt_low = frmat.lower()
+        if fmt_low not in ['svg', 'png', 'gif', 'bmp', 'svg', 'geotiff', 'tiff']:
+            raise ValueError(
+                'Given path points to a file with an unexpected extension '
+                f'"{frmt}"'
+            )
+        with open(inpath, 'rb') as infile:
+            bytea = infile.read()
+        return {
+            'format': frmat,
+            'bytea': base64.b64encode(bytea).decode('utf-8')
+        }
+    except Exception as ex:
+        print(f'Failed to read figure at "{inpath}"')
+        raise ex
 
 def print_sql_inserts(analysis, dataset_name):
     # Insert global evaluation
@@ -269,7 +297,56 @@ def print_sql_inserts(analysis, dataset_name):
                 f'\t\t{cmat[i, j]}'
             )
     print('\t) ON CONFLICT DO NOTHING;\n')
-    # TODO Rethink : Implement
+    # TODO Rethink : Implement inserts from LAS/LAZ
+    # Insert figures
+    # TODO Rethink : Implement pending figures
+    print_sql_insert_figure(
+        analysis['class_distribution_plot'],
+        'Class distribution'
+    )
+    print_sql_insert_figure(
+        analysis['confusion_matrix_plot'],
+        'Validation confusion matrix'
+    )
+    print_sql_insert_figure(
+        analysis['pwise_entropy_plot'],
+        'Point-wise entropy'
+    )
+    print_sql_insert_figure(
+        analysis['class_ambiguity_plot'],
+        'Class ambiguity'
+    )
+    print_sql_insert_figure(
+        analysis['weighted_entropy_plot'],
+        'Weighted entropy'
+    )
+    print_sql_insert_figure(
+        analysis['cwise_entropy_plot'],
+        'Cluster-wise entropy'
+    )
+    print_sql_insert_figure(
+        analysis['rf_distribution_plot'],
+        'Validation receptive fields distribution'
+    )
+    print_sql_insert_figure(
+        analysis['class_reduce_plot'],
+        'Class reduction distribution'
+    )
+
+
+def print_sql_insert_figure(figdict, plot_name):
+    print(
+        'INSERT INTO resultset_plots '
+        '(resultset_id, plot_id, plot_bin, plot_format_id) VALUES\n'
+        '\t(\n'
+        f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+        f"\t\t(SELECT id FROM plots WHERE name like '{plot_name}'),\n"
+        f"\t\t'{figdict['bytea']}'::bytea,\n"
+        f"\t\t(SELECT id FROM plot_formats WHERE LOWER(name) like '%{figdict['format']}%')\n"
+        '\t) ON CONFLICT DO NOTHING;\n'
+    )
+    # Note that plots inserted like this must be obtained with a query similar
+    # to: SELECT encode(plot_bin, 'escape') FROM resultset_plot
 
 
 # ---   M A I N   --- #
