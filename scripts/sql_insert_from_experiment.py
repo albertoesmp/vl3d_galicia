@@ -257,7 +257,7 @@ def handle_input_file(experiment_dir, key):
     inpath = os.path.join(experiment_dir, PATHS[key])
     if not os.path.isfile(inpath):
         raise FileNotFoundError(
-            f'Cannot find input file at: "inpath"'
+            f'Cannot find input file at: "{inpath}"'
         )
     return inpath
 
