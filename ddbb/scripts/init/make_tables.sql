@@ -449,7 +449,128 @@ CREATE TABLE uncertainty_resultsets(
     q7 FLOAT,
     q8 FLOAT,
     q9 FLOAT,
-    notes TEXT
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(metric_id) REFERENCES uncertainty_metrics(id),
+    PRIMARY KEY(resultset_id, metric_id)
+);
+
+-- TABLE: classwise_uncertainty_resultsets
+DROP TABLE IF EXISTS classwise_uncertainty_resultsets cascade;
+CREATE TABLE classwise_uncertainty_resultsets(
+    resultset_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    metric_id INT NOT NULL,
+    mean FLOAT,
+    stdev FLOAT,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    FOREIGN KEY(metric_id) REFERENCES uncertainty_metrics(id),
+    PRIMARY KEY(resultset_id, class_id, metric_id)
+);
+
+-- TABLE: predictive_uncertainty_resultsets
+DROP TABLE IF EXISTS predictive_uncertainty_resultsets cascade;
+CREATE TABLE predictive_uncertainty_resultsets(
+    resultset_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    metric_id INT NOT NULL,
+    mean FLOAT,
+    stdev FLOAT,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    FOREIGN KEY(metric_id) REFERENCES uncertainty_metrics(id),
+    PRIMARY KEY(resultset_id, class_id, metric_id)
+);
+
+-- TABLE: likelihood_resultsets
+DROP TABLE IF EXISTS likelihood_resultsets cascade;
+CREATE TABLE likelihood_resultsets(
+    resultset_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    mean FLOAT,
+    stdev FLOAT,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    PRIMARY KEY(resultset_id, class_id)
+);
+
+-- TABLE: classwise_likelihood_resultsets
+DROP TABLE IF EXISTS classwise_likelihood_resultsets cascade;
+CREATE TABLE classwise_likelihood_resultsets(
+    resultset_id BIGINT NOT NULL,
+    ref_class_id INT NOT NULL,
+    class_id INT NOT NULL,
+    mean FLOAT,
+    stdev FLOAT,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(ref_class_id) REFERENCES classes(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    PRIMARY KEY(resultset_id, ref_class_id, class_id)
+);
+
+-- TABLE: predictive_likelihood_resultsets
+DROP TABLE IF EXISTS predictive_likelihood_resultsets cascade;
+CREATE TABLE predictive_likelihood_resultsets(
+    resultset_id BIGINT NOT NULL,
+    pred_class_id INT NOT NULL,
+    class_id INT NOT NULL,
+    mean FLOAT,
+    stdev FLOAT,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY(pred_class_id) REFERENCES classes(id),
+    FOREIGN KEY(class_id) REFERENCES classes(id),
+    PRIMARY KEY(resultset_id, pred_class_id, class_id)
 );
 
 -- TABLE: classes

@@ -16,30 +16,6 @@ import os
 import time
 import gc
 
-# ---   CONSTANTS   --- #
-# --------------------- #
-# The different classifications tasks
-CLASSIF_TYPES = [
-    'ORIGINAL', 'VEGETATION', 'LMH_VEGETATION', 'BUILDING', 'BUILD_VEG'
-]
-# The class names in the database
-CLASS_NAMES = {
-    'unclassified': 'Unclassified',
-    'ground': 'Ground',
-    'lowveg': 'Low vegetation',
-    'midveg': 'Mid vegetation',
-    'highveg': 'High vegetation',
-    'building': 'Building',
-    'noise': 'Noise',
-    'water': 'Water',
-    'overlap': 'Overlap',
-    'bridge': 'Bridge',
-    'vegetation': 'Vegetation',
-    'other': 'Other',
-    'ignore': 'Ignore'
-}
-
-
 # ---  METHODS  --- #
 # ----------------- #
 def print_help():
@@ -349,7 +325,7 @@ def export_sql_inserts(analysis, pclouds_dir):
 
 def export_sql_datasets(scenes, outf):
     num_scenes_minus_one = len(scenes)-1
-    num_classif_types_minus_one = len(CLASSIF_TYPES)-1
+    num_classif_types_minus_one = len(classes.CLASSIF_TYPES)-1
     # Write INSERT senentece for datasets table
     outf.write(
         '-- TABLE: datasets\n'
@@ -358,7 +334,7 @@ def export_sql_datasets(scenes, outf):
     )
     # Add VALUES to INSERT sentence for datasets table for each scene
     for i, scene in enumerate(scenes):
-        for j, classif_type in enumerate(CLASSIF_TYPES):
+        for j, classif_type in enumerate(classes.CLASSIF_TYPES):
             outf.write(
                 '\t('
                 f"'{scene['name'][:-4]}_{classif_type}',"
@@ -382,7 +358,7 @@ def export_sql_dataset_metas(scenes, outf):
     )
     # Add VALUES to INSERT sentence for dataset_metas table
     for i, scene in enumerate(scenes):
-        for j, classif_type in enumerate(CLASSIF_TYPES):
+        for j, classif_type in enumerate(classes.CLASSIF_TYPES):
             if i != 0 or j != 0:
                 outf.write(',\n')
             outf.write(
@@ -406,7 +382,7 @@ def export_sql_dataset_regions(scenes, outf):
     # Add VALUES to INSERT sentence for dataset_regions table
     write_comma = False
     for i, scene in enumerate(scenes):
-        for classif_type in CLASSIF_TYPES:
+        for classif_type in classes.CLASSIF_TYPES:
             write_comma = _export_sql_dataset_regions(
                 scene, outf, f'{scene["name"][:-4]}_{classif_type}',
                 'points', 'galicia', write_comma
@@ -481,7 +457,7 @@ def _export_class_distribution_original(scene, outf, write_comma):
                 '\t\t(SELECT id FROM datasets '
                 f"WHERE name like '{dataset_name}'),\n"
                 '\t\t(SELECT id FROM classes '
-                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f"WHERE LOWER(name) like '{classes.CLASS_NAMES[class_key].lower()}'),\n"
                 f'\t\t{scene[class_key]}\n\t)'
             )
             write_comma = True
@@ -509,7 +485,7 @@ def _export_class_distribution_vegetation(scene, outf, write_comma):
                 '\t\t(SELECT id FROM datasets '
                 f"WHERE name like '{dataset_name}'),\n"
                 '\t\t(SELECT id FROM classes '
-                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f"WHERE LOWER(name) like '{classes.CLASS_NAMES[class_key].lower()}'),\n"
                 f'\t\t{count}\n\t)'
             )
             write_comma = True
@@ -539,7 +515,7 @@ def _export_class_distribution_lmh_vegetation(scene, outf, write_comma):
                 '\t\t(SELECT id FROM datasets '
                 f"WHERE name like '{dataset_name}'),\n"
                 '\t\t(SELECT id FROM classes '
-                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f"WHERE LOWER(name) like '{classes.CLASS_NAMES[class_key].lower()}'),\n"
                 f'\t\t{count}\n\t)'
             )
             write_comma = True
@@ -567,7 +543,7 @@ def _export_class_distribution_building(scene, outf, write_comma):
                 '\t\t(SELECT id FROM datasets '
                 f"WHERE name like '{dataset_name}'),\n"
                 '\t\t(SELECT id FROM classes '
-                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f"WHERE LOWER(name) like '{classes.CLASS_NAMES[class_key].lower()}'),\n"
                 f'\t\t{count}\n\t)'
             )
             write_comma = True
@@ -596,7 +572,7 @@ def _export_class_distribution_build_veg(scene, outf, write_comma):
                 '\t\t(SELECT id FROM datasets '
                 f"WHERE name like '{dataset_name}'),\n"
                 '\t\t(SELECT id FROM classes '
-                f"WHERE LOWER(name) like '{CLASS_NAMES[class_key].lower()}'),\n"
+                f"WHERE LOWER(name) like '{classes.CLASS_NAMES[class_key].lower()}'),\n"
                 f'\t\t{count}\n\t)'
             )
             write_comma = True

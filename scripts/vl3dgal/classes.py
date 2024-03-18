@@ -19,3 +19,25 @@ pnoa2 = {
     'overlap': 12,
     'bridge': 17
 }
+
+# The different classifications tasks
+CLASSIF_TYPES = [
+    'ORIGINAL', 'VEGETATION', 'LMH_VEGETATION', 'BUILDING', 'BUILD_VEG'
+]
+
+# The class names in the database as values (keys are assoc. internal names)
+CLASS_NAMES = {
+    'unclassified': 'Unclassified',
+    'ground': 'Ground',
+    'lowveg': 'Low vegetation',
+    'midveg': 'Mid vegetation',
+    'highveg': 'High vegetation',
+    'building': 'Building',
+    'noise': 'Noise',
+    'water': 'Water',
+    'overlap': 'Overlap',
+    'bridge': 'Bridge',
+    'vegetation': 'Vegetation',
+    'other': 'Other',
+    'ignore': 'Ignore'
+}

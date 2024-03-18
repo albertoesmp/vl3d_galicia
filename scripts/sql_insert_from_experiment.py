@@ -29,7 +29,6 @@ PATHS = {  # Paths relative to the root directory
     'class_eval': 'report/class_eval.log',
     'global_eval': 'report/global_eval.log',
     'confusion_matrix': 'report/confusion_matrix.log',
-    'predicted': 'predicted.laz',
     'uncertainty': 'uncertainty/uncertainty.laz',
     'class_distribution_plot': 'plot/class_distribution.svg',
     'confusion_matrix_plot': 'plot/confusion_matrix.svg',
@@ -41,6 +40,9 @@ PATHS = {  # Paths relative to the root directory
     'class_reduce_plot': 'class_reduction.svg'
 }
 MODEL_ID = 1  # The id of the model in the models table of the database
+CLASSES = [  # The classes representing the classification task
+    'vegetation'
+]  # See keys from vl3dgal.classes.CLASS_NAMES
 
 
 # ---  METHODS  --- #
@@ -83,7 +85,6 @@ def analyze_experiment(experiment_dir):
         'class_eval': analyze_class_eval(experiment_dir),
         'global_eval': analyze_global_eval(experiment_dir),
         'confusion_matrix': analyze_confusion_matrix(experiment_dir),
-        'predicted': analyze_predictions(experiment_dir),
         'uncertainty': analyze_uncertainties(experiment_dir),
         'class_distribution_plot': load_class_distribution_plot(experiment_dir),
         'confusion_matrix_plot': load_confusion_matrix_plot(experiment_dir),
@@ -160,12 +161,61 @@ def analyze_confusion_matrix(experiment_dir):
     return np.array(cmat)
 
 
-def analyze_predictions(experiment_dir):
-    return None  # TODO Rethink : Implement
-
-
 def analyze_uncertainties(experiment_dir):
-    return None  # TODO Rethink : Implement
+    # Read point cloud
+    inpath = handle_input_file(experiment_dir, 'uncertainty')
+    las = laspy.read(inpath)
+    # Find classes
+    task, classes = find_classes_from_las(las)
+    # Extract entropies
+    pwe = las['PointWiseEntropy']
+    we = las['WeightedEntropy']
+    cwe = las['ClusterWiseEntropy']
+    ca = las['ClassAmbiguity']
+    # Entropy of point i given it is labeled as class x
+    y = las.classification
+    pwe_by_class = make_class_wise_uncertainty(pwe, y, classes)
+    we_by_class = make_class_wise_uncertainty(we, y, classes)
+    cwe_by_class = make_class_wise_uncertainty(cwe, y, classes)
+    ca_by_class = make_class_wise_uncertainty(ca, y, classes)
+    # Entropy of point i given it is predicted as x
+    yhat = las['Prediction']
+    pwe_by_pred = make_class_wise_uncertainty(pwe, yhat, classes)
+    we_by_pred = make_class_wise_uncertainty(we, yhat, classes)
+    cwe_by_pred = make_class_wise_uncertainty(cwe, yhat, classes)
+    ca_by_pred = make_class_wise_uncertainty(ca, yhat, classes)
+    # Extract likelihoods
+    lkhd = [make_uncertainty_dict(las[classi]) for classi in classes]
+    # Extract likelihood given points belong to class x
+    lkhd_by_class = [
+        make_class_wise_uncertainty(las[classi], y, classes)
+        for classi in classes
+    ]
+    # Extract likelihood given points were predicted as x
+    lkhd_by_pred = [
+        make_class_wise_uncertainty(las[classi], yhat, classes)
+        for classi in classes
+    ]
+    # Return
+    return {
+        'pwise_entropy': make_uncertainty_dict(pwe),
+        'weighted_entropy': make_uncertainty_dict(we),
+        'cwise_entropy': make_uncertainty_dict(cwe),
+        'class_ambiguity': make_uncertainty_dict(ca),
+        'pwise_entropy_by_class': pwe_by_class,
+        'weighted_entropy_by_class': we_by_class,
+        'cwise_entropy_by_class': cwe_by_class,
+        'class_ambiguity_by_class': ca_by_class,
+        'pwise_entropy_by_pred': pwe_by_pred,
+        'weighted_entropy_by_pred': we_by_pred,
+        'cwise_entropy_by_pred': cwe_by_pred,
+        'class_ambiguity_by_pred': ca_by_pred,
+        'classif_type': task,
+        'classes': classes,
+        'likelihood': lkhd,
+        'likelihood_by_class': lkhd_by_class,
+        'likelihood_by_pred': lkhd_by_pred
+    }
 
 
 def load_class_distribution_plot(experiment_dir):
@@ -239,6 +289,57 @@ def digest_figure(inpath):
         print(f'Failed to read figure at "{inpath}"')
         raise ex
 
+def find_classes_from_las(las):
+    # Check LMH
+    has_midveg = False
+    try:
+        x = las['midveg']
+        has_midveg = True
+    except Exception as ex:
+        pass
+    if has_midveg:
+        return 'LHM_VEGETATION', ['lowveg', 'midveg', 'highveg', 'other', 'ignore']
+    # Check building
+    has_building = False
+    try:
+        x = las['building']
+        has_building = True
+    except Exception as ex:
+        pass
+    # Check vegetation
+    has_vegetation = False
+    try:
+        x = las['vegetation']
+        has_vegetation = True
+    except Exception as ex:
+        pass
+    # Return
+    if has_building:
+        if has_vegetation:
+            return 'BUILD_VEG', ['vegetation', 'building', 'other', 'ignore']
+        return 'BUILDING', ['building', 'other', 'ignore']
+    elif has_vegetation:
+        return 'VEGETATION', ['vegetation', 'other', 'ignore']
+    else:
+        raise ValueError('Unexpected combination of classes.')
+
+
+def make_uncertainty_dict(x):
+    return {
+        'mean': np.mean(x),
+        'stdev': np.std(x),
+        'Q': np.quantile(x, [i/10 for i in range(1, 10)])
+    }
+
+def make_class_wise_uncertainty(x, y, classes):
+    cwu = {}
+    for i, classi in enumerate(classes):
+        I = y == i
+        if np.count_nonzero(I) > 0:
+            cwu[classi] = make_uncertainty_dict(x[I])
+    return cwu
+
+
 def print_sql_inserts(analysis, dataset_name):
     # Insert global evaluation
     geval = analysis['global_eval']
@@ -297,9 +398,155 @@ def print_sql_inserts(analysis, dataset_name):
                 f'\t\t{cmat[i, j]}'
             )
     print('\t) ON CONFLICT DO NOTHING;\n')
-    # TODO Rethink : Implement inserts from LAS/LAZ
+    # Insert uncertainties and likelihoods
+    uncertainty = analysis['uncertainty']
+    print(
+        'INSERT INTO uncertainty_resultsets '
+        '(resultset_id, metric_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    print_uncertainty_sql_values(
+        'Point-wise entropy', uncertainty['pwise_entropy'], last=False
+    )
+    print_uncertainty_sql_values(
+        'Weighted point-wise entropy', uncertainty['weighted_entropy'], last=False
+    )
+    print_uncertainty_sql_values(
+        'Cluster-wise entropy', uncertainty['cwise_entropy'], last=False
+    )
+    print_uncertainty_sql_values(
+        'Class ambiguity', uncertainty['class_ambiguity'], last=True
+    )
+    print(
+        'INSERT INTO likelihood_resultsets '
+        '(resultset_id, class_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    for i, likelihood in enumerate(uncertainty['likelihood']):
+        print_likelihood_sql_values(
+            classes.CLASS_NAMES[uncertainty['classes'][i]],
+            likelihood,
+            last=i==len(uncertainty['likelihood'])-1
+        )
+    print(
+        'INSERT INTO classwise_uncertainty_resultsets '
+        '(resultset_id, class_id, metric_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    pwe = uncertainty['pwise_entropy_by_class']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in pwe:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Point-wise entropy',
+            classes.CLASS_NAMES[classi],
+            pwe[classi],
+            last=False
+        )
+    we = uncertainty['weighted_entropy_by_class']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in we:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Weighted point-wise entropy',
+            classes.CLASS_NAMES[classi],
+            we[classi],
+            last=False
+        )
+    cwe = uncertainty['cwise_entropy_by_class']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in cwe:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Cluster-wise entropy',
+            classes.CLASS_NAMES[classi],
+            we[classi],
+            last=False
+        )
+    ca = uncertainty['class_ambiguity_by_class']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in ca:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Class ambiguity',
+            classes.CLASS_NAMES[classi],
+            ca[classi],
+            last=i==len(uncertainty['class_ambiguity_by_class'])-1
+        )
+    print(
+        'INSERT INTO predictive_uncertainty_resultsets '
+        '(resultset_id, class_id, metric_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    pwe = uncertainty['pwise_entropy_by_pred']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in pwe:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Point-wise entropy',
+            classes.CLASS_NAMES[classi],
+            pwe[classi],
+            last=False
+        )
+    we = uncertainty['weighted_entropy_by_pred']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in we:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Weighted point-wise entropy',
+            classes.CLASS_NAMES[classi],
+            we[classi],
+            last=False
+        )
+    cwe = uncertainty['cwise_entropy_by_pred']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in cwe:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Cluster-wise entropy',
+            classes.CLASS_NAMES[classi],
+            we[classi],
+            last=False
+        )
+    ca = uncertainty['class_ambiguity_by_pred']
+    for i, classi in enumerate(uncertainty['classes']):
+        if classi not in ca:
+            continue
+        print_uncertainty_by_class_sql_values(
+            'Class ambiguity',
+            classes.CLASS_NAMES[classi],
+            ca[classi],
+            last=i==len(uncertainty['class_ambiguity_by_pred'])-1
+        )
+    print(
+        'INSERT INTO classwise_likelihood_resultsets '
+        '(resultset_id, class_id, ref_class_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    lbc = uncertainty['likelihood_by_class']
+    for i, classi in enumerate(uncertainty['classes']):
+        for j, (lbcij_class, lbcij_metrics) in enumerate(lbc[i].items()):
+            print_likelihood_by_class_sql_values(
+                classes.CLASS_NAMES[uncertainty['classes'][i]],
+                classes.CLASS_NAMES[lbcij_class],
+                lbcij_metrics,
+                last=j==len(lbc[i])-1 and i==len(uncertainty['classes'])-1
+            )
+    print(
+        'INSERT INTO predictive_likelihood_resultsets '
+        '(resultset_id, class_id, pred_class_id, mean, stdev, '
+        'q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES'
+    )
+    lbc = uncertainty['likelihood_by_pred']
+    for i, classi in enumerate(uncertainty['classes']):
+        for j, (lbcij_class, lbcij_metrics) in enumerate(lbc[i].items()):
+            print_likelihood_by_class_sql_values(
+                classes.CLASS_NAMES[uncertainty['classes'][i]],
+                classes.CLASS_NAMES[lbcij_class],
+                lbcij_metrics,
+                last=j==len(lbc[i])-1 and i==len(uncertainty['classes'])-1
+            )
     # Insert figures
-    # TODO Rethink : Implement pending figures
     print_sql_insert_figure(
         analysis['class_distribution_plot'],
         'Class distribution'
@@ -349,13 +596,76 @@ def print_sql_insert_figure(figdict, plot_name):
     # to: SELECT encode(plot_bin, 'escape') FROM resultset_plot
 
 
+def print_uncertainty_sql_values(metric_name, x, last=False):
+    end_line = '\t),'
+    if last:
+        end_line = '\t) ON CONFLICT DO NOTHING;\n'
+    print(
+        '\t(\n'
+        f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+        f"\t\t(SELECT id FROM uncertainty_metrics WHERE name = '{metric_name}'),\n"
+        f'\t\t{x["mean"]},\n'
+        f'\t\t{x["stdev"]},\n'
+        f'\t\t{",".join(x["Q"].astype(str))}\n'
+        f'{end_line}'
+    )
+
+
+def print_likelihood_sql_values(class_name, x, last=False):
+    end_line = '\t),'
+    if last:
+        end_line = '\t) ON CONFLICT DO NOTHING;\n'
+    print(
+        '\t(\n'
+        f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+        f"\t\t(SELECT id FROM classes WHERE name = '{class_name}'),\n"
+        f'\t\t{x["mean"]},\n'
+        f'\t\t{x["stdev"]},\n'
+        f'\t\t{",".join(x["Q"].astype(str))}\n'
+        f'{end_line}'
+    )
+
+
+def print_uncertainty_by_class_sql_values(metric_name, class_name, x, last=False):
+    end_line = '\t),'
+    if last:
+        end_line = '\t) ON CONFLICT DO NOTHING;\n'
+    print(
+        '\t(\n'
+        f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+        f"\t\t(SELECT id FROM classes WHERE name = '{class_name}'), \n"
+        f"\t\t(SELECT id FROM uncertainty_metrics WHERE name = '{metric_name}'),\n"
+        f'\t\t{x["mean"]},\n'
+        f'\t\t{x["stdev"]},\n'
+        f'\t\t{",".join(x["Q"].astype(str))}\n'
+        f'{end_line}'
+    )
+
+
+def print_likelihood_by_class_sql_values(
+    class_name, ref_class_name, x, last=False
+):
+    end_line = '\t),'
+    if last:
+        end_line = '\t) ON CONFLICT DO NOTHING;\n'
+    print(
+        '\t(\n'
+        f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+        f"\t\t(SELECT id FROM classes WHERE name = '{class_name}'), \n"
+        f"\t\t(SELECT id FROM classes WHERE name = '{ref_class_name}'),\n"
+        f'\t\t{x["mean"]},\n'
+        f'\t\t{x["stdev"]},\n'
+        f'\t\t{",".join(x["Q"].astype(str))}\n'
+        f'{end_line}'
+    )
+
+
 # ---   M A I N   --- #
 # ------------------- #
 if __name__ == '__main__':
     start = time.perf_counter()
     experiment_dir, dataset_name = parse_args()
     analysis = analyze_experiment(experiment_dir)
-    printerr(analysis)  # TODO Remove
     print_sql_inserts(analysis, dataset_name)
     end = time.perf_counter()
     printerr(
