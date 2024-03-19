@@ -171,6 +171,18 @@ INSERT INTO machines (
         'The FinisTerrae-III nodes with NVIDIA A100 GPUs'
     ) ON CONFLICT DO NOTHING;
 
+-- TABLE: training_metrics
+INSERT INTO training_metrics(name, description) VALUES
+    ('Loss', 'The loss function.'),
+    ('Learning rate', 'The leraning rate.'),
+    ('Categorical accuracy', 'The categorical accuracy (typically for multiclass classification).'),
+    ('Binary accuracy', 'The binary accuracy (typically for binary classification).'),
+    ('Precision', 'The precision (typically for binary classification).'),
+    ('Recall', 'The recall (typically for binary classification).'),
+    ('F1 score', 'The F1 score (typically for binary classification).'),
+    ('Intersection over Union', 'The Intersection over Union (IoU), also known as Jaccard index.')
+    ON CONFLICT DO NOTHING;
+
 -- TABLE: metadatasets
 INSERT INTO metadatasets (name, description, url, owner, open_access, unrestricted_open_access)
     VALUES ('PNOA-II GALICIA',
@@ -256,10 +268,4809 @@ INSERT INTO plots (name, description)
     ),(
         'Loss history',
         'Plot representing the training history of the loss function.'
-    ),
-    (
+    ),(
         'Learning rate history',
         'Plot representing the learning rate training history.'
+    ),(
+        'KPConv_d1_1 init',
+        'Initialized KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 init',
+        'Initialized strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 trained',
+        'Trained KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 trained',
+        'Trained strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 1.'
+    ),(
+        'SKPConv_d1_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 1.'
+    ),(
+        'KPConv_d1_2 init',
+        'Initialized KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 init',
+        'Initialized strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 trained',
+        'Trained KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 trained',
+        'Trained strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 1.'
+    ),(
+        'SKPConv_d1_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 1.'
+    ),(
+        'KPConv_d1_3 init',
+        'Initialized KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 init',
+        'Initialized strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 trained',
+        'Trained KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 trained',
+        'Trained strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 1.'
+    ),(
+        'SKPConv_d1_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 1.'
+    ),(
+        'KPConv_d1_4 init',
+        'Initialized KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 init',
+        'Initialized strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 trained',
+        'Trained KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 trained',
+        'Trained strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 1.'
+    ),(
+        'SKPConv_d1_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 1.'
+    ),(
+        'KPConv_d1_5 init',
+        'Initialized KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 init',
+        'Initialized strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 trained',
+        'Trained KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 trained',
+        'Trained strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 1.'
+    ),(
+        'SKPConv_d1_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 1.'
+    ),(
+        'KPConv_d1_6 init',
+        'Initialized KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 init',
+        'Initialized strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 trained',
+        'Trained KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 trained',
+        'Trained strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 1.'
+    ),(
+        'SKPConv_d1_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 1.'
+    ),(
+        'KPConv_d1_7 init',
+        'Initialized KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 init',
+        'Initialized strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 trained',
+        'Trained KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 trained',
+        'Trained strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 1.'
+    ),(
+        'SKPConv_d1_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 1.'
+    ),(
+        'KPConv_d1_8 init',
+        'Initialized KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 init',
+        'Initialized strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 trained',
+        'Trained KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 trained',
+        'Trained strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 1.'
+    ),(
+        'SKPConv_d1_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 1.'
+    ),(
+        'KPConv_d1_9 init',
+        'Initialized KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 init',
+        'Initialized strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 trained',
+        'Trained KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 trained',
+        'Trained strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 1.'
+    ),(
+        'SKPConv_d1_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 1.'
+    ),(
+        'KPConv_d1_10 init',
+        'Initialized KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 init',
+        'Initialized strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 trained',
+        'Trained KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 trained',
+        'Trained strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d1_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 1.'
+    ),(
+        'SKPConv_d1_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 1.'
+    ),(
+        'KPConv_d2_1 init',
+        'Initialized KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 init',
+        'Initialized strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 trained',
+        'Trained KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 trained',
+        'Trained strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 2.'
+    ),(
+        'SKPConv_d2_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 2.'
+    ),(
+        'KPConv_d2_2 init',
+        'Initialized KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 init',
+        'Initialized strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 trained',
+        'Trained KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 trained',
+        'Trained strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 2.'
+    ),(
+        'SKPConv_d2_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 2.'
+    ),(
+        'KPConv_d2_3 init',
+        'Initialized KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 init',
+        'Initialized strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 trained',
+        'Trained KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 trained',
+        'Trained strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 2.'
+    ),(
+        'SKPConv_d2_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 2.'
+    ),(
+        'KPConv_d2_4 init',
+        'Initialized KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 init',
+        'Initialized strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 trained',
+        'Trained KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 trained',
+        'Trained strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 2.'
+    ),(
+        'SKPConv_d2_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 2.'
+    ),(
+        'KPConv_d2_5 init',
+        'Initialized KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 init',
+        'Initialized strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 trained',
+        'Trained KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 trained',
+        'Trained strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 2.'
+    ),(
+        'SKPConv_d2_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 2.'
+    ),(
+        'KPConv_d2_6 init',
+        'Initialized KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 init',
+        'Initialized strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 trained',
+        'Trained KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 trained',
+        'Trained strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 2.'
+    ),(
+        'SKPConv_d2_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 2.'
+    ),(
+        'KPConv_d2_7 init',
+        'Initialized KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 init',
+        'Initialized strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 trained',
+        'Trained KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 trained',
+        'Trained strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 2.'
+    ),(
+        'SKPConv_d2_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 2.'
+    ),(
+        'KPConv_d2_8 init',
+        'Initialized KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 init',
+        'Initialized strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 trained',
+        'Trained KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 trained',
+        'Trained strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 2.'
+    ),(
+        'SKPConv_d2_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 2.'
+    ),(
+        'KPConv_d2_9 init',
+        'Initialized KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 init',
+        'Initialized strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 trained',
+        'Trained KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 trained',
+        'Trained strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 2.'
+    ),(
+        'SKPConv_d2_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 2.'
+    ),(
+        'KPConv_d2_10 init',
+        'Initialized KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 init',
+        'Initialized strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 trained',
+        'Trained KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 trained',
+        'Trained strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d2_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 2.'
+    ),(
+        'SKPConv_d2_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 2.'
+    ),(
+        'KPConv_d3_1 init',
+        'Initialized KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 init',
+        'Initialized strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 trained',
+        'Trained KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 trained',
+        'Trained strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 3.'
+    ),(
+        'SKPConv_d3_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 3.'
+    ),(
+        'KPConv_d3_2 init',
+        'Initialized KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 init',
+        'Initialized strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 trained',
+        'Trained KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 trained',
+        'Trained strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 3.'
+    ),(
+        'SKPConv_d3_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 3.'
+    ),(
+        'KPConv_d3_3 init',
+        'Initialized KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 init',
+        'Initialized strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 trained',
+        'Trained KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 trained',
+        'Trained strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 3.'
+    ),(
+        'SKPConv_d3_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 3.'
+    ),(
+        'KPConv_d3_4 init',
+        'Initialized KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 init',
+        'Initialized strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 trained',
+        'Trained KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 trained',
+        'Trained strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 3.'
+    ),(
+        'SKPConv_d3_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 3.'
+    ),(
+        'KPConv_d3_5 init',
+        'Initialized KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 init',
+        'Initialized strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 trained',
+        'Trained KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 trained',
+        'Trained strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 3.'
+    ),(
+        'SKPConv_d3_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 3.'
+    ),(
+        'KPConv_d3_6 init',
+        'Initialized KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 init',
+        'Initialized strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 trained',
+        'Trained KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 trained',
+        'Trained strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 3.'
+    ),(
+        'SKPConv_d3_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 3.'
+    ),(
+        'KPConv_d3_7 init',
+        'Initialized KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 init',
+        'Initialized strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 trained',
+        'Trained KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 trained',
+        'Trained strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 3.'
+    ),(
+        'SKPConv_d3_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 3.'
+    ),(
+        'KPConv_d3_8 init',
+        'Initialized KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 init',
+        'Initialized strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 trained',
+        'Trained KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 trained',
+        'Trained strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 3.'
+    ),(
+        'SKPConv_d3_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 3.'
+    ),(
+        'KPConv_d3_9 init',
+        'Initialized KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 init',
+        'Initialized strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 trained',
+        'Trained KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 trained',
+        'Trained strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 3.'
+    ),(
+        'SKPConv_d3_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 3.'
+    ),(
+        'KPConv_d3_10 init',
+        'Initialized KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 init',
+        'Initialized strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 trained',
+        'Trained KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 trained',
+        'Trained strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d3_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 3.'
+    ),(
+        'SKPConv_d3_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 3.'
+    ),(
+        'KPConv_d4_1 init',
+        'Initialized KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 init',
+        'Initialized strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 trained',
+        'Trained KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 trained',
+        'Trained strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 4.'
+    ),(
+        'SKPConv_d4_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 4.'
+    ),(
+        'KPConv_d4_2 init',
+        'Initialized KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 init',
+        'Initialized strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 trained',
+        'Trained KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 trained',
+        'Trained strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 4.'
+    ),(
+        'SKPConv_d4_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 4.'
+    ),(
+        'KPConv_d4_3 init',
+        'Initialized KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 init',
+        'Initialized strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 trained',
+        'Trained KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 trained',
+        'Trained strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 4.'
+    ),(
+        'SKPConv_d4_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 4.'
+    ),(
+        'KPConv_d4_4 init',
+        'Initialized KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 init',
+        'Initialized strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 trained',
+        'Trained KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 trained',
+        'Trained strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 4.'
+    ),(
+        'SKPConv_d4_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 4.'
+    ),(
+        'KPConv_d4_5 init',
+        'Initialized KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 init',
+        'Initialized strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 trained',
+        'Trained KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 trained',
+        'Trained strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 4.'
+    ),(
+        'SKPConv_d4_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 4.'
+    ),(
+        'KPConv_d4_6 init',
+        'Initialized KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 init',
+        'Initialized strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 trained',
+        'Trained KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 trained',
+        'Trained strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 4.'
+    ),(
+        'SKPConv_d4_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 4.'
+    ),(
+        'KPConv_d4_7 init',
+        'Initialized KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 init',
+        'Initialized strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 trained',
+        'Trained KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 trained',
+        'Trained strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 4.'
+    ),(
+        'SKPConv_d4_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 4.'
+    ),(
+        'KPConv_d4_8 init',
+        'Initialized KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 init',
+        'Initialized strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 trained',
+        'Trained KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 trained',
+        'Trained strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 4.'
+    ),(
+        'SKPConv_d4_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 4.'
+    ),(
+        'KPConv_d4_9 init',
+        'Initialized KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 init',
+        'Initialized strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 trained',
+        'Trained KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 trained',
+        'Trained strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 4.'
+    ),(
+        'SKPConv_d4_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 4.'
+    ),(
+        'KPConv_d4_10 init',
+        'Initialized KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 init',
+        'Initialized strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 trained',
+        'Trained KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 trained',
+        'Trained strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d4_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 4.'
+    ),(
+        'SKPConv_d4_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 4.'
+    ),(
+        'KPConv_d5_1 init',
+        'Initialized KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 init',
+        'Initialized strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 trained',
+        'Trained KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 trained',
+        'Trained strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 5.'
+    ),(
+        'SKPConv_d5_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 5.'
+    ),(
+        'KPConv_d5_2 init',
+        'Initialized KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 init',
+        'Initialized strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 trained',
+        'Trained KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 trained',
+        'Trained strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 5.'
+    ),(
+        'SKPConv_d5_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 5.'
+    ),(
+        'KPConv_d5_3 init',
+        'Initialized KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 init',
+        'Initialized strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 trained',
+        'Trained KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 trained',
+        'Trained strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 5.'
+    ),(
+        'SKPConv_d5_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 5.'
+    ),(
+        'KPConv_d5_4 init',
+        'Initialized KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 init',
+        'Initialized strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 trained',
+        'Trained KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 trained',
+        'Trained strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 5.'
+    ),(
+        'SKPConv_d5_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 5.'
+    ),(
+        'KPConv_d5_5 init',
+        'Initialized KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 init',
+        'Initialized strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 trained',
+        'Trained KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 trained',
+        'Trained strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 5.'
+    ),(
+        'SKPConv_d5_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 5.'
+    ),(
+        'KPConv_d5_6 init',
+        'Initialized KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 init',
+        'Initialized strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 trained',
+        'Trained KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 trained',
+        'Trained strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 5.'
+    ),(
+        'SKPConv_d5_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 5.'
+    ),(
+        'KPConv_d5_7 init',
+        'Initialized KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 init',
+        'Initialized strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 trained',
+        'Trained KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 trained',
+        'Trained strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 5.'
+    ),(
+        'SKPConv_d5_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 5.'
+    ),(
+        'KPConv_d5_8 init',
+        'Initialized KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 init',
+        'Initialized strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 trained',
+        'Trained KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 trained',
+        'Trained strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 5.'
+    ),(
+        'SKPConv_d5_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 5.'
+    ),(
+        'KPConv_d5_9 init',
+        'Initialized KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 init',
+        'Initialized strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 trained',
+        'Trained KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 trained',
+        'Trained strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 5.'
+    ),(
+        'SKPConv_d5_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 5.'
+    ),(
+        'KPConv_d5_10 init',
+        'Initialized KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 init',
+        'Initialized strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 trained',
+        'Trained KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 trained',
+        'Trained strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d5_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 5.'
+    ),(
+        'SKPConv_d5_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 5.'
+    ),(
+        'KPConv_d6_1 init',
+        'Initialized KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 init',
+        'Initialized strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 trained',
+        'Trained KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 trained',
+        'Trained strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 6.'
+    ),(
+        'SKPConv_d6_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 6.'
+    ),(
+        'KPConv_d6_2 init',
+        'Initialized KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 init',
+        'Initialized strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 trained',
+        'Trained KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 trained',
+        'Trained strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 6.'
+    ),(
+        'SKPConv_d6_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 6.'
+    ),(
+        'KPConv_d6_3 init',
+        'Initialized KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 init',
+        'Initialized strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 trained',
+        'Trained KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 trained',
+        'Trained strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 6.'
+    ),(
+        'SKPConv_d6_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 6.'
+    ),(
+        'KPConv_d6_4 init',
+        'Initialized KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 init',
+        'Initialized strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 trained',
+        'Trained KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 trained',
+        'Trained strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 6.'
+    ),(
+        'SKPConv_d6_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 6.'
+    ),(
+        'KPConv_d6_5 init',
+        'Initialized KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 init',
+        'Initialized strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 trained',
+        'Trained KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 trained',
+        'Trained strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 6.'
+    ),(
+        'SKPConv_d6_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 6.'
+    ),(
+        'KPConv_d6_6 init',
+        'Initialized KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 init',
+        'Initialized strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 trained',
+        'Trained KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 trained',
+        'Trained strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 6.'
+    ),(
+        'SKPConv_d6_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 6.'
+    ),(
+        'KPConv_d6_7 init',
+        'Initialized KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 init',
+        'Initialized strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 trained',
+        'Trained KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 trained',
+        'Trained strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 6.'
+    ),(
+        'SKPConv_d6_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 6.'
+    ),(
+        'KPConv_d6_8 init',
+        'Initialized KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 init',
+        'Initialized strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 trained',
+        'Trained KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 trained',
+        'Trained strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 6.'
+    ),(
+        'SKPConv_d6_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 6.'
+    ),(
+        'KPConv_d6_9 init',
+        'Initialized KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 init',
+        'Initialized strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 trained',
+        'Trained KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 trained',
+        'Trained strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 6.'
+    ),(
+        'SKPConv_d6_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 6.'
+    ),(
+        'KPConv_d6_10 init',
+        'Initialized KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 init',
+        'Initialized strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 trained',
+        'Trained KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 trained',
+        'Trained strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d6_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 6.'
+    ),(
+        'SKPConv_d6_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 6.'
+    ),(
+        'KPConv_d7_1 init',
+        'Initialized KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 init',
+        'Initialized strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 trained',
+        'Trained KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 trained',
+        'Trained strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 7.'
+    ),(
+        'SKPConv_d7_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 7.'
+    ),(
+        'KPConv_d7_2 init',
+        'Initialized KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 init',
+        'Initialized strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 trained',
+        'Trained KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 trained',
+        'Trained strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 7.'
+    ),(
+        'SKPConv_d7_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 7.'
+    ),(
+        'KPConv_d7_3 init',
+        'Initialized KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 init',
+        'Initialized strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 trained',
+        'Trained KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 trained',
+        'Trained strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 7.'
+    ),(
+        'SKPConv_d7_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 7.'
+    ),(
+        'KPConv_d7_4 init',
+        'Initialized KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 init',
+        'Initialized strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 trained',
+        'Trained KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 trained',
+        'Trained strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 7.'
+    ),(
+        'SKPConv_d7_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 7.'
+    ),(
+        'KPConv_d7_5 init',
+        'Initialized KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 init',
+        'Initialized strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 trained',
+        'Trained KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 trained',
+        'Trained strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 7.'
+    ),(
+        'SKPConv_d7_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 7.'
+    ),(
+        'KPConv_d7_6 init',
+        'Initialized KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 init',
+        'Initialized strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 trained',
+        'Trained KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 trained',
+        'Trained strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 7.'
+    ),(
+        'SKPConv_d7_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 7.'
+    ),(
+        'KPConv_d7_7 init',
+        'Initialized KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 init',
+        'Initialized strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 trained',
+        'Trained KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 trained',
+        'Trained strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 7.'
+    ),(
+        'SKPConv_d7_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 7.'
+    ),(
+        'KPConv_d7_8 init',
+        'Initialized KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 init',
+        'Initialized strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 trained',
+        'Trained KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 trained',
+        'Trained strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 7.'
+    ),(
+        'SKPConv_d7_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 7.'
+    ),(
+        'KPConv_d7_9 init',
+        'Initialized KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 init',
+        'Initialized strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 trained',
+        'Trained KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 trained',
+        'Trained strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 7.'
+    ),(
+        'SKPConv_d7_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 7.'
+    ),(
+        'KPConv_d7_10 init',
+        'Initialized KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 init',
+        'Initialized strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 trained',
+        'Trained KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 trained',
+        'Trained strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d7_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 7.'
+    ),(
+        'SKPConv_d7_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 7.'
+    ),(
+        'KPConv_d8_1 init',
+        'Initialized KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 init',
+        'Initialized strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 trained',
+        'Trained KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 trained',
+        'Trained strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 8.'
+    ),(
+        'SKPConv_d8_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 8.'
+    ),(
+        'KPConv_d8_2 init',
+        'Initialized KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 init',
+        'Initialized strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 trained',
+        'Trained KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 trained',
+        'Trained strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 8.'
+    ),(
+        'SKPConv_d8_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 8.'
+    ),(
+        'KPConv_d8_3 init',
+        'Initialized KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 init',
+        'Initialized strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 trained',
+        'Trained KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 trained',
+        'Trained strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 8.'
+    ),(
+        'SKPConv_d8_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 8.'
+    ),(
+        'KPConv_d8_4 init',
+        'Initialized KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 init',
+        'Initialized strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 trained',
+        'Trained KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 trained',
+        'Trained strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 8.'
+    ),(
+        'SKPConv_d8_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 8.'
+    ),(
+        'KPConv_d8_5 init',
+        'Initialized KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 init',
+        'Initialized strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 trained',
+        'Trained KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 trained',
+        'Trained strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 8.'
+    ),(
+        'SKPConv_d8_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 8.'
+    ),(
+        'KPConv_d8_6 init',
+        'Initialized KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 init',
+        'Initialized strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 trained',
+        'Trained KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 trained',
+        'Trained strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 8.'
+    ),(
+        'SKPConv_d8_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 8.'
+    ),(
+        'KPConv_d8_7 init',
+        'Initialized KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 init',
+        'Initialized strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 trained',
+        'Trained KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 trained',
+        'Trained strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 8.'
+    ),(
+        'SKPConv_d8_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 8.'
+    ),(
+        'KPConv_d8_8 init',
+        'Initialized KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 init',
+        'Initialized strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 trained',
+        'Trained KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 trained',
+        'Trained strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 8.'
+    ),(
+        'SKPConv_d8_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 8.'
+    ),(
+        'KPConv_d8_9 init',
+        'Initialized KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 init',
+        'Initialized strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 trained',
+        'Trained KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 trained',
+        'Trained strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 8.'
+    ),(
+        'SKPConv_d8_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 8.'
+    ),(
+        'KPConv_d8_10 init',
+        'Initialized KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 init',
+        'Initialized strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 trained',
+        'Trained KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 trained',
+        'Trained strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d8_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 8.'
+    ),(
+        'SKPConv_d8_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 8.'
+    ),(
+        'KPConv_d9_1 init',
+        'Initialized KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 init',
+        'Initialized strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 trained',
+        'Trained KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 trained',
+        'Trained strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 9.'
+    ),(
+        'SKPConv_d9_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 9.'
+    ),(
+        'KPConv_d9_2 init',
+        'Initialized KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 init',
+        'Initialized strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 trained',
+        'Trained KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 trained',
+        'Trained strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 9.'
+    ),(
+        'SKPConv_d9_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 9.'
+    ),(
+        'KPConv_d9_3 init',
+        'Initialized KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 init',
+        'Initialized strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 trained',
+        'Trained KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 trained',
+        'Trained strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 9.'
+    ),(
+        'SKPConv_d9_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 9.'
+    ),(
+        'KPConv_d9_4 init',
+        'Initialized KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 init',
+        'Initialized strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 trained',
+        'Trained KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 trained',
+        'Trained strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 9.'
+    ),(
+        'SKPConv_d9_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 9.'
+    ),(
+        'KPConv_d9_5 init',
+        'Initialized KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 init',
+        'Initialized strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 trained',
+        'Trained KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 trained',
+        'Trained strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 9.'
+    ),(
+        'SKPConv_d9_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 9.'
+    ),(
+        'KPConv_d9_6 init',
+        'Initialized KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 init',
+        'Initialized strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 trained',
+        'Trained KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 trained',
+        'Trained strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 9.'
+    ),(
+        'SKPConv_d9_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 9.'
+    ),(
+        'KPConv_d9_7 init',
+        'Initialized KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 init',
+        'Initialized strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 trained',
+        'Trained KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 trained',
+        'Trained strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 9.'
+    ),(
+        'SKPConv_d9_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 9.'
+    ),(
+        'KPConv_d9_8 init',
+        'Initialized KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 init',
+        'Initialized strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 trained',
+        'Trained KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 trained',
+        'Trained strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 9.'
+    ),(
+        'SKPConv_d9_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 9.'
+    ),(
+        'KPConv_d9_9 init',
+        'Initialized KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 init',
+        'Initialized strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 trained',
+        'Trained KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 trained',
+        'Trained strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 9.'
+    ),(
+        'SKPConv_d9_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 9.'
+    ),(
+        'KPConv_d9_10 init',
+        'Initialized KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 init',
+        'Initialized strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 trained',
+        'Trained KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 trained',
+        'Trained strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d9_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 9.'
+    ),(
+        'SKPConv_d9_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 9.'
+    ),(
+        'KPConv_d10_1 init',
+        'Initialized KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 init',
+        'Initialized strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 trained',
+        'Trained KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 trained',
+        'Trained strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 diff',
+        'Training update (difference) of the KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 diff',
+        'Training update (difference) of the strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 init hist',
+        'Histogram of initialized KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 init hist',
+        'Histogram of initialized strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 trained hist',
+        'Histogram of trained KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 trained hist',
+        'Histogram of trained strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 init Q',
+        'Structure space of the initialized KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 init Q',
+        'Structure space of the initialized strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_1 trained Q',
+        'Structure space of the trained KPConv layer 1 at depth 10.'
+    ),(
+        'SKPConv_d10_1 trained Q',
+        'Structure space of the trained strided KPConv layer 1 at depth 10.'
+    ),(
+        'KPConv_d10_2 init',
+        'Initialized KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 init',
+        'Initialized strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 trained',
+        'Trained KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 trained',
+        'Trained strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 diff',
+        'Training update (difference) of the KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 diff',
+        'Training update (difference) of the strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 init hist',
+        'Histogram of initialized KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 init hist',
+        'Histogram of initialized strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 trained hist',
+        'Histogram of trained KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 trained hist',
+        'Histogram of trained strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 init Q',
+        'Structure space of the initialized KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 init Q',
+        'Structure space of the initialized strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_2 trained Q',
+        'Structure space of the trained KPConv layer 2 at depth 10.'
+    ),(
+        'SKPConv_d10_2 trained Q',
+        'Structure space of the trained strided KPConv layer 2 at depth 10.'
+    ),(
+        'KPConv_d10_3 init',
+        'Initialized KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 init',
+        'Initialized strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 trained',
+        'Trained KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 trained',
+        'Trained strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 diff',
+        'Training update (difference) of the KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 diff',
+        'Training update (difference) of the strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 init hist',
+        'Histogram of initialized KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 init hist',
+        'Histogram of initialized strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 trained hist',
+        'Histogram of trained KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 trained hist',
+        'Histogram of trained strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 init Q',
+        'Structure space of the initialized KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 init Q',
+        'Structure space of the initialized strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_3 trained Q',
+        'Structure space of the trained KPConv layer 3 at depth 10.'
+    ),(
+        'SKPConv_d10_3 trained Q',
+        'Structure space of the trained strided KPConv layer 3 at depth 10.'
+    ),(
+        'KPConv_d10_4 init',
+        'Initialized KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 init',
+        'Initialized strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 trained',
+        'Trained KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 trained',
+        'Trained strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 diff',
+        'Training update (difference) of the KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 diff',
+        'Training update (difference) of the strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 init hist',
+        'Histogram of initialized KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 init hist',
+        'Histogram of initialized strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 trained hist',
+        'Histogram of trained KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 trained hist',
+        'Histogram of trained strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 init Q',
+        'Structure space of the initialized KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 init Q',
+        'Structure space of the initialized strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_4 trained Q',
+        'Structure space of the trained KPConv layer 4 at depth 10.'
+    ),(
+        'SKPConv_d10_4 trained Q',
+        'Structure space of the trained strided KPConv layer 4 at depth 10.'
+    ),(
+        'KPConv_d10_5 init',
+        'Initialized KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 init',
+        'Initialized strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 trained',
+        'Trained KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 trained',
+        'Trained strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 diff',
+        'Training update (difference) of the KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 diff',
+        'Training update (difference) of the strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 init hist',
+        'Histogram of initialized KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 init hist',
+        'Histogram of initialized strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 trained hist',
+        'Histogram of trained KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 trained hist',
+        'Histogram of trained strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 init Q',
+        'Structure space of the initialized KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 init Q',
+        'Structure space of the initialized strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_5 trained Q',
+        'Structure space of the trained KPConv layer 5 at depth 10.'
+    ),(
+        'SKPConv_d10_5 trained Q',
+        'Structure space of the trained strided KPConv layer 5 at depth 10.'
+    ),(
+        'KPConv_d10_6 init',
+        'Initialized KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 init',
+        'Initialized strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 trained',
+        'Trained KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 trained',
+        'Trained strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 diff',
+        'Training update (difference) of the KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 diff',
+        'Training update (difference) of the strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 init hist',
+        'Histogram of initialized KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 init hist',
+        'Histogram of initialized strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 trained hist',
+        'Histogram of trained KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 trained hist',
+        'Histogram of trained strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 init Q',
+        'Structure space of the initialized KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 init Q',
+        'Structure space of the initialized strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_6 trained Q',
+        'Structure space of the trained KPConv layer 6 at depth 10.'
+    ),(
+        'SKPConv_d10_6 trained Q',
+        'Structure space of the trained strided KPConv layer 6 at depth 10.'
+    ),(
+        'KPConv_d10_7 init',
+        'Initialized KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 init',
+        'Initialized strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 trained',
+        'Trained KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 trained',
+        'Trained strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 diff',
+        'Training update (difference) of the KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 diff',
+        'Training update (difference) of the strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 init hist',
+        'Histogram of initialized KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 init hist',
+        'Histogram of initialized strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 trained hist',
+        'Histogram of trained KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 trained hist',
+        'Histogram of trained strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 init Q',
+        'Structure space of the initialized KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 init Q',
+        'Structure space of the initialized strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_7 trained Q',
+        'Structure space of the trained KPConv layer 7 at depth 10.'
+    ),(
+        'SKPConv_d10_7 trained Q',
+        'Structure space of the trained strided KPConv layer 7 at depth 10.'
+    ),(
+        'KPConv_d10_8 init',
+        'Initialized KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 init',
+        'Initialized strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 trained',
+        'Trained KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 trained',
+        'Trained strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 diff',
+        'Training update (difference) of the KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 diff',
+        'Training update (difference) of the strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 init hist',
+        'Histogram of initialized KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 init hist',
+        'Histogram of initialized strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 trained hist',
+        'Histogram of trained KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 trained hist',
+        'Histogram of trained strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 init Q',
+        'Structure space of the initialized KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 init Q',
+        'Structure space of the initialized strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_8 trained Q',
+        'Structure space of the trained KPConv layer 8 at depth 10.'
+    ),(
+        'SKPConv_d10_8 trained Q',
+        'Structure space of the trained strided KPConv layer 8 at depth 10.'
+    ),(
+        'KPConv_d10_9 init',
+        'Initialized KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 init',
+        'Initialized strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 trained',
+        'Trained KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 trained',
+        'Trained strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 diff',
+        'Training update (difference) of the KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 diff',
+        'Training update (difference) of the strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 init hist',
+        'Histogram of initialized KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 init hist',
+        'Histogram of initialized strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 trained hist',
+        'Histogram of trained KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 trained hist',
+        'Histogram of trained strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 init Q',
+        'Structure space of the initialized KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 init Q',
+        'Structure space of the initialized strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_9 trained Q',
+        'Structure space of the trained KPConv layer 9 at depth 10.'
+    ),(
+        'SKPConv_d10_9 trained Q',
+        'Structure space of the trained strided KPConv layer 9 at depth 10.'
+    ),(
+        'KPConv_d10_10 init',
+        'Initialized KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 init',
+        'Initialized strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 trained',
+        'Trained KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 trained',
+        'Trained strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 diff',
+        'Training update (difference) of the KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 diff',
+        'Training update (difference) of the strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 init hist',
+        'Histogram of initialized KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 init hist',
+        'Histogram of initialized strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 trained hist',
+        'Histogram of trained KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 trained hist',
+        'Histogram of trained strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 diff hist',
+        'Histogram of training update (difference) of the KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 diff hist',
+        'Histogram of training update (difference) of the strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 init Q',
+        'Structure space of the initialized KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 init Q',
+        'Structure space of the initialized strided KPConv layer 10 at depth 10.'
+    ),(
+        'KPConv_d10_10 trained Q',
+        'Structure space of the trained KPConv layer 10 at depth 10.'
+    ),(
+        'SKPConv_d10_10 trained Q',
+        'Structure space of the trained strided KPConv layer 10 at depth 10.'
     ),(
         'Validation confusion matrix',
         'The confusion matrix on the validation data.'

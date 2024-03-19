@@ -10,6 +10,7 @@ CREATE TABLE models (
     model_type_id BIGINT NOT NULL,
     framework_id BIGINT NOT NULL,
     model_bin bytea,
+    model_summary TEXT,
     notes TEXT,
     foreign key(predecessor_id) references models(id)
 );
@@ -203,6 +204,15 @@ CREATE TABLE training_histories(
     max_value_epoch INT NOT NULL,
     mean_value FLOAT NOT NULL,
     stdev_value FLOAT NOT NULL,
+    q1 FLOAT,
+    q2 FLOAT,
+    q3 FLOAT,
+    q4 FLOAT,
+    q5 FLOAT,
+    q6 FLOAT,
+    q7 FLOAT,
+    q8 FLOAT,
+    q9 FLOAT,
     notes TEXT,
     FOREIGN KEY(model_id) REFERENCES models(id),
     FOREIGN KEY(metric_id) REFERENCES training_metrics(id),

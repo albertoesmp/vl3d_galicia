@@ -5,6 +5,7 @@
 #   SQL insert-like sentences.
 # ----------------------------------------------------------------------------
 
+# TODO Rethink : Add RF distirbution numbers (not only plot) to ddbb
 
 # ---  IMPORTS  --- #
 # ----------------- #
@@ -24,6 +25,7 @@ PATHS = {  # Paths relative to the root directory
     'class_eval': 'report/class_eval.log',
     'global_eval': 'report/global_eval.log',
     'confusion_matrix': 'report/confusion_matrix.log',
+    'rf_distribution': 'training_eval/receptive_fields_distribution.log',
     'uncertainty': 'uncertainty/uncertainty.laz',
     'class_distribution_plot': 'plot/class_distribution.svg',
     'confusion_matrix_plot': 'plot/confusion_matrix.svg',
@@ -253,8 +255,10 @@ def load_class_reduction_plot(experiment_dir):
     return digest_figure(inpath)
 
 
-def handle_input_file(experiment_dir, key):
-    inpath = os.path.join(experiment_dir, PATHS[key])
+def handle_input_file(experiment_dir, key, paths=None):
+    if paths is None:
+        paths = PATHS
+    inpath = os.path.join(experiment_dir, paths[key])
     if not os.path.isfile(inpath):
         raise FileNotFoundError(
             f'Cannot find input file at: "{inpath}"'
@@ -265,6 +269,7 @@ def handle_input_file(experiment_dir, key):
 def readline(f):
     return f.readline().rstrip("\n")
 
+
 def digest_figure(inpath):
     try:
         frmat = inpath[inpath.rindex('.')+1:]
@@ -272,7 +277,7 @@ def digest_figure(inpath):
         if fmt_low not in ['svg', 'png', 'gif', 'bmp', 'svg', 'geotiff', 'tiff']:
             raise ValueError(
                 'Given path points to a file with an unexpected extension '
-                f'"{frmt}"'
+                f'"{frmat}"'
             )
         with open(inpath, 'rb') as infile:
             bytea = infile.read()
@@ -283,6 +288,7 @@ def digest_figure(inpath):
     except Exception as ex:
         print(f'Failed to read figure at "{inpath}"')
         raise ex
+
 
 def find_classes_from_las(las):
     # Check LMH
