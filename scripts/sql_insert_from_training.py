@@ -9,7 +9,8 @@
 # ---  IMPORTS  --- #
 # ----------------- #
 import vl3dgal.classes as classes
-from sql_insert_from_experiment import handle_input_file,digest_figure
+from sql_insert_from_experiment import handle_input_file,digest_figure, \
+    analyze_rf_distribution
 import pandas as pd
 import numpy as np
 import base64
@@ -17,7 +18,6 @@ import sys
 import os
 import time
 
-# TODO Rethink : Add RF distirbution numbers (not only plot) to ddbb
 
 # ---  CONSTANTS  --- #
 # ------------------- #
@@ -95,6 +95,9 @@ def analyze_experiment(training_json_path, experiment_dir):
     return {
         'training_json': training_json,
         'model_summary': analyze_model_summary(training_dir),
+        'trf_distribution': analyze_rf_distribution(
+            training_dir, key='trf_distribution', paths=PATHS
+        ),
         'training_history': analyze_training_history(training_dir),
         'model_graph': load_model_graph(training_dir),
         'class_distribution_plot': load_class_distribution_plot(training_dir),
@@ -294,6 +297,28 @@ def print_sql_inserts(analysis):
             f'\t\t{",".join([str(q) for q in metric["Q"]])}'
         )
     print('\t) ON CONFLICT DO NOTHING;\n')
+    # Insert training receptive field distribution
+    trfdistr = analysis['trf_distribution']
+    print(
+        'INSERT INTO training_receptive_field_distributions '
+        '(model_id, class_id, pred_count, pred_rf_count, ref_count, ref_rf_count) VALUES'
+    )
+    for i, distr in enumerate(trfdistr):
+        print(
+            '\t(\n'
+            f"\t\t(SELECT currval(pg_get_serial_sequence('models', 'id'))),\n"
+            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{distr['class_name']}'),\n"
+            f'\t\t{distr["pred_count"]},\n'
+            f'\t\t{distr["pred_rf_count"]},\n'
+            f'\t\t{distr["ref_count"]},\n'
+            f'\t\t{distr["ref_rf_count"]}\n',
+            end=''
+        )
+        if i < len(trfdistr)-1:
+            print('\t),')
+        else:
+            print('\t)')
+    print('\tON CONFLICT DO NOTHING;\n')
     # Insert figures
     print_sql_insert_figure(
         analysis['model_graph'],

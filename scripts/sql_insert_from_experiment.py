@@ -5,7 +5,6 @@
 #   SQL insert-like sentences.
 # ----------------------------------------------------------------------------
 
-# TODO Rethink : Add RF distirbution numbers (not only plot) to ddbb
 
 # ---  IMPORTS  --- #
 # ----------------- #
@@ -82,6 +81,7 @@ def analyze_experiment(experiment_dir):
         'class_eval': analyze_class_eval(experiment_dir),
         'global_eval': analyze_global_eval(experiment_dir),
         'confusion_matrix': analyze_confusion_matrix(experiment_dir),
+        'rf_distribution': analyze_rf_distribution(experiment_dir),
         'uncertainty': analyze_uncertainties(experiment_dir),
         'class_distribution_plot': load_class_distribution_plot(experiment_dir),
         'confusion_matrix_plot': load_confusion_matrix_plot(experiment_dir),
@@ -122,7 +122,7 @@ def analyze_class_eval(experiment_dir):
             record = [line[:22].strip(' '), line[22:]]
             scores = [float(x) for x in record[1].split(',')]
             evals.append({
-                'class_name': record[0],
+                'class_name': record[0].strip(" "),
                 'p': scores[0],
                 'r': scores[1],
                 'f1': scores[2],
@@ -156,6 +156,29 @@ def analyze_confusion_matrix(experiment_dir):
             cmat.append([float(x) for x in line.split(',')])
             line = readline(infile)
     return np.array(cmat)
+
+
+def analyze_rf_distribution(experiment_dir, key='rf_distribution', paths=None):
+    inpath = handle_input_file(experiment_dir, key, paths=paths)
+    rf_distributions = []
+    with open(inpath, 'r') as infile:
+        readline(infile)  # Skip first line
+        line = readline(infile)
+        while len(line) > 0:
+            if line[:4] == 'SUM':  # Skip last row with SUM of all values
+                continue
+            fields = line.split(',')
+            rf_distribution = {
+                'class_name': fields[0].strip(" "),
+                'pred_count': fields[1],
+                'pred_rf_count': fields[3],
+            }
+            if len(fields) > 5:
+                rf_distribution['ref_count'] = fields[5]
+                rf_distribution['ref_rf_count'] = fields[7]
+            rf_distributions.append(rf_distribution)
+            line = readline(infile)
+    return rf_distributions
 
 
 def analyze_uncertainties(experiment_dir):
@@ -371,11 +394,31 @@ def print_sql_inserts(analysis, dataset_name):
         print(
             '\t(\n'
             f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
-            f"\t\t(SELECT id FROM classes where LOWER(classes.name) like '{distr['class_name']}'),\n"
+            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{distr['class_name']}'),\n"
             f'\t\t{distr["recount"]}\n',
             end=''
         )
         if i < len(cdistr)-1:
+            print('\t),')
+        else:
+            print('\t)')
+    print('\tON CONFLICT DO NOTHING;\n')
+    # Insert receptive field distribution
+    rfdistr = analysis['rf_distribution']
+    print(
+        'INSERT INTO receptive_field_distributions '
+        '(resultset_id, class_id, pred_count, pred_rf_count) VALUES'
+    )
+    for i, distr in enumerate(rfdistr):
+        print(
+            '\t(\n'
+            f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{distr['class_name']}'),\n"
+            f'\t\t{distr["pred_count"]},\n'
+            f'\t\t{distr["pred_rf_count"]}',
+            end=''
+        )
+        if i < len(rfdistr)-1:
             print('\t),')
         else:
             print('\t)')

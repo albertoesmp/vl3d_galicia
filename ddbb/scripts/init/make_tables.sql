@@ -632,6 +632,36 @@ CREATE TABLE predicted_class_distributions(
     PRIMARY KEY(resultset_id, class_id)
 );
 
+-- TABLE: receptive_field_distributions
+DROP TABLE IF EXISTS receptive_field_distributions cascade;
+CREATE TABLE receptive_field_distributions(
+    resultset_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    pred_count BIGINT,
+    pred_rf_count BIGINT,
+    ref_count BIGINT,
+    ref_rf_count BIGINT,
+    notes TEXT,
+    FOREIGN KEY(resultset_id) REFERENCES resultsets(id),
+    FOREIGN KEY (class_id) REFERENCES classes(id),
+    PRIMARY KEY(resultset_id, class_id)
+);
+
+-- TABLE: training_receptive_field_distributions
+DROP TABLE IF EXISTS training_receptive_field_distributions cascade;
+CREATE TABLE training_receptive_field_distributions(
+    model_id BIGINT NOT NULL,
+    class_id INT NOT NULL,
+    pred_count BIGINT,
+    pred_rf_count BIGINT,
+    ref_count BIGINT,
+    ref_rf_count BIGINT,
+    notes TEXT,
+    FOREIGN KEY(model_id) REFERENCES models(id),
+    FOREIGN KEY (class_id) REFERENCES classes(id),
+    PRIMARY KEY(model_id, class_id)
+);
+
 -- TABLE: resultset_confusions
 DROP TABLE IF EXISTS resultset_confusions cascade;
 CREATE TABLE resultset_confusions(
