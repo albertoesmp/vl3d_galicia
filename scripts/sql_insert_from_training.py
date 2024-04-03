@@ -47,7 +47,7 @@ CLASSES = [  # The classes representing the classification task
 # ----------------- #
 def print_help():
     print(
-'''USAGE of analyze_dataset.py
+'''USAGE of sql_insert_from_training.py
 
         1: Path to the training JSON
 

@@ -45,7 +45,7 @@ CLASSES = [  # The classes representing the classification task
 # ----------------- #
 def print_help():
     print(
-'''USAGE of analyze_dataset.py
+'''USAGE of sql_insert_from_experiment.py
 
         1: Path to a root directory containing the data of the experiments
 
