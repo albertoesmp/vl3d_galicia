@@ -465,6 +465,14 @@ CREATE TABLE uncertainty_resultsets(
     PRIMARY KEY(resultset_id, metric_id)
 );
 
+-- TABLE: classes
+DROP TABLE IF EXISTS classes cascade;
+CREATE TABLE classes(
+    id serial PRIMARY KEY,
+    name VARCHAR(60) NOT NULL,
+    description TEXT
+);
+
 -- TABLE: classwise_uncertainty_resultsets
 DROP TABLE IF EXISTS classwise_uncertainty_resultsets cascade;
 CREATE TABLE classwise_uncertainty_resultsets(
@@ -583,13 +591,6 @@ CREATE TABLE predictive_likelihood_resultsets(
     PRIMARY KEY(resultset_id, pred_class_id, class_id)
 );
 
--- TABLE: classes
-DROP TABLE IF EXISTS classes cascade;
-CREATE TABLE classes(
-    id serial PRIMARY KEY,
-    name VARCHAR(60) NOT NULL,
-    description TEXT
-);
 
 -- TABLE: classwise_resultsets
 DROP TABLE IF EXISTS classwise_resultsets cascade;
