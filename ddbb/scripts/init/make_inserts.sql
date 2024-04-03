@@ -5168,9 +5168,250 @@ INSERT INTO model_types(specification, family_id, subfamily_id, notes) VALUES
         (SELECT id FROM model_families WHERE LOWER(name) like 'sequential'),
         (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
         'A null model type that should not be used unless for development, debugging, and bug fixing purposes.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on X for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIr for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIrRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on X for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIr for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIrRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on X for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIr for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIrRGB for vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on X for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIr for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIrRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on X for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIr for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIrRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on X for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIr for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIrRGB for low/mid/high vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on X for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIr for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIrRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on X for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIr for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIrRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on X for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIr for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIrRGB for building classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on X for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIr for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XRGB for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet on XIrRGB for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on X for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIr for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XRGB for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
+        'PointNet++ on XIrRGB for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on X for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIr for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XRGB for building and vegetation classification.'
+    ), (
+        '{}',
+        (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
+        (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
+        'KPConv on XIrRGB for building and vegetation classification.'
     ) ON CONFLICT DO NOTHING;
 
 -- TABLE: models
 INSERT INTO models(model_type_id, framework_id, notes) VALUES
     (1, 1, 'Null model for development, testing, and debugging purposes only.')
     ON CONFLICT DO NOTHING;
+
