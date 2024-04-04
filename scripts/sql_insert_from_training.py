@@ -14,6 +14,7 @@ from sql_insert_from_experiment import handle_input_file,digest_figure, \
 import pandas as pd
 import numpy as np
 import base64
+import re
 import sys
 import os
 import time
@@ -37,7 +38,6 @@ PATHS = {  # Paths relative to the root directory
     'kpconv_plots': 'training_eval/kpconv_layers/',
     'skpconv_plots': 'training_eval/skpconv_layers/'
 }
-MODEL_ID = 1  # The id of the model in the models table of the database
 CLASSES = [  # The classes representing the classification task
     'vegetation'
 ]  # See keys from vl3dgal.classes.CLASS_NAMES
@@ -84,22 +84,33 @@ def parse_args():
 
 
 def analyze_experiment(training_json_path, experiment_dir):
+    def parse_model_name(regexp, input_str, model_name):
+        if model_name is not None:
+            return model_name
+        result = regexp.findall(input_str)
+        if len(result) > 0:
+            return result[0][1:-1]
     # Read training json
     training_json = ''
+    regexp = re.compile('/kpc_final_[A-Za-z]*/')
+    model_name = None
     with open(training_json_path, 'r') as infile:
         line = infile.readline()
         while len(line) > 0:
+            model_name = parse_model_name(regexp, line, model_name)
             training_json += line
             line = infile.readline()
     # Return analysis results
     return {
+        'model_name': model_name,
         'training_json': training_json,
         'model_summary': analyze_model_summary(training_dir),
         'trf_distribution': analyze_rf_distribution(
             training_dir, key='trf_distribution', paths=PATHS
         ),
         'training_history': analyze_training_history(training_dir),
-        'model_graph': load_model_graph(training_dir),
+        # TODO Rethink : Model graph is commented due to missing lib at FT-III
+        #'model_graph': load_model_graph(training_dir),
         'class_distribution_plot': load_class_distribution_plot(training_dir),
         'confusion_matrix_plot': load_confusion_matrix_plot(training_dir),
         'trf_distribution_plot': load_trf_distribution_plot(training_dir),
@@ -142,9 +153,9 @@ def analyze_training_history(training_dir):
             'start_value': v[0],
             'end_value': v[len(v)-1],
             'min_value': v.min(),
-            'min_value_epoch': v.argmin(),
+            'min_value_epoch': v.idxmin(),
             'max_value': v.max(),
-            'max_value_epoch': v.argmax(),
+            'max_value_epoch': v.idxmax(),
             'mean_value': v.mean(),
             'stdev_value': v.std(),
             'Q': v.quantile([i/10 for i in range(1, 10)]).to_numpy()
@@ -251,22 +262,24 @@ def print_sql_inserts(analysis):
             subfamily_name = 'KPConv'
     print(
         'INSERT INTO model_types '
-        '(specification, family_id, subfamily_id) VALUES\n'
+        '(specification, family_id, subfamily_id, notes) VALUES\n'
         '\t('
         f"\t\t'{training_json}',\n"
         f"\t\t(SELECT id FROM model_families WHERE name = '{family_name}'),\n"
-        f"\t\t(SELECT id FROM model_subfamilies WHERE name = '{subfamily_name}')\n"
+        f"\t\t(SELECT id FROM model_subfamilies WHERE name = '{subfamily_name}'),\n"
+        f"\t\t'{analysis['model_name']}'\n"
         '\t) ON CONFLICT DO NOTHING;\n'
     )
     # Insert model
     summary = analysis['model_summary'].replace("'", "''")
     print(
         'INSERT INTO models '
-        '(model_type_id, framework_id, model_summary) VALUES\n'
+        '(model_type_id, framework_id, model_summary, notes) VALUES\n'
         '\t('
         "\t\t(SELECT currval(pg_get_serial_sequence('model_types', 'id'))),\n"
         '\t\t1,\n'
-        f'\t\t\'{summary}\'\n'
+        f'\t\t\'{summary}\',\n'
+        f"\t\t'{analysis['model_name']}'\n"
         '\t) ON CONFLICT DO NOTHING;\n'
     )
     # Insert training_histories
@@ -320,10 +333,11 @@ def print_sql_inserts(analysis):
             print('\t)')
     print('\tON CONFLICT DO NOTHING;\n')
     # Insert figures
-    print_sql_insert_figure(
-        analysis['model_graph'],
-        'Model graph'
-    )
+    # TODO Rethink : Model graph is commented due to missing lib at FT-III
+    #print_sql_insert_figure(
+    #    analysis['model_graph'],
+    #    'Model graph'
+    #)
     print_sql_insert_figure(
         analysis['class_distribution_plot'],
         'Class distribution'
@@ -435,7 +449,7 @@ def print_sql_insert_figure(figdict, plot_name):
         'INSERT INTO model_plots '
         '(model_id, plot_id, plot_bin, plot_format_id) VALUES\n'
         '\t(\n'
-        f"\t\t(SELECT currval(pg_get_serial_sequence('model_types', 'id'))),\n"
+        f"\t\t(SELECT currval(pg_get_serial_sequence('models', 'id'))),\n"
         f"\t\t(SELECT id FROM plots WHERE name like '{plot_name}'),\n"
         f"\t\t'{figdict['bytea']}'::bytea,\n"
         f"\t\t(SELECT id FROM plot_formats WHERE LOWER(name) like '%{figdict['format']}%')\n"

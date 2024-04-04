@@ -25,7 +25,7 @@ PATHS = {  # Paths relative to the root directory
     'global_eval': 'report/global_eval.log',
     'confusion_matrix': 'report/confusion_matrix.log',
     'rf_distribution': 'training_eval/receptive_fields_distribution.log',
-    'uncertainty': 'uncertainty/uncertainty.laz',
+    'uncertainty': 'uncertainty/uncertainty.las',
     'class_distribution_plot': 'plot/class_distribution.svg',
     'confusion_matrix_plot': 'plot/confusion_matrix.svg',
     'pwise_entropy_plot': 'uncertainty/point_wise_entropy_figure.svg',
@@ -35,7 +35,8 @@ PATHS = {  # Paths relative to the root directory
     'rf_distribution_plot': 'training_eval/receptive_fields_distribution.svg',
     'class_reduce_plot': 'class_reduction.svg'
 }
-MODEL_ID = 1  # The id of the model in the models table of the database
+# The id of the model in the models table of the database
+MODEL_ID = os.environ.get('MODEL_ID', 1)
 CLASSES = [  # The classes representing the classification task
     'vegetation'
 ]  # See keys from vl3dgal.classes.CLASS_NAMES
@@ -384,6 +385,24 @@ def print_sql_inserts(analysis, dataset_name):
         '\t\tnow()\n'
         '\t) ON CONFLICT DO NOTHING;\n'
     )
+    # Insert classwise evaluation
+    cevals = analysis['class_eval']
+    print(
+        'INSERT INTO classwise_resultsets '
+        '(resultset_id, class_id, p, r, f1, iou) VALUES\n'
+    )
+    for i, ceval in enumerate(cevals):
+        print(
+            f"\t(\n"
+            f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
+            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{ceval['class_name']}'),\n"
+            f"\t\t{ceval['p']}, {ceval['r']}, {ceval['f1']}, {ceval['iou']}"
+        )
+        if i < len(cevals)-1:
+            print('\t),')
+        else:
+            print('\t)')
+    print('\tON CONFLICT DO NOTHING;\n')
     # Insert class distribution
     cdistr = analysis['class_distribution']
     print(
@@ -709,6 +728,7 @@ def print_likelihood_by_class_sql_values(
 if __name__ == '__main__':
     start = time.perf_counter()
     experiment_dir, dataset_name = parse_args()
+    printerr(f'MODEL_ID: {MODEL_ID}')
     analysis = analyze_experiment(experiment_dir)
     print_sql_inserts(analysis, dataset_name)
     end = time.perf_counter()
