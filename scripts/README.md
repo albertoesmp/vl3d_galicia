@@ -1,6 +1,6 @@
 # Ejecución clasificación PNOA2 en Galicia
 
-1 - Cambiar las rutas de las variables `VL3D_DIR` y `VL3D_SCRIPT` en `cesga/vl3d_cesga_env.sh` para que apunten a este repositorio y hacer source del script.
+1 - Cambiar las rutas de las variables `VL3D_DIR` y `VL3D_SCRIPT` en `cesga/vl3d_cesga_env.sh` para que apunten a este repositorio y hacer source del script. También VL3D_ENV para que apunte a vuestro entorno de conda para este proyecto.
 
 2 - Definir rutas **absolutas** al modelo elegido para el experimento. Deben definirse en el script `scripts/experiment_generation/replace_paths.sh`. 
 
