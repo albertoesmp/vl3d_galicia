@@ -19,7 +19,4 @@ WarningTestSuites:
     - RBFFeatExtractLayerTest
     - RBFFeatProcessingLayerTest
     - ModelSerializationTest
-  C++:
-    - VL3DPPBindingTest
-    - VL3DPPBackendTest
 ...
