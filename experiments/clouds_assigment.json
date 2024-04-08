@@ -1,0 +1,726 @@
+{
+    "usccimyg": {
+        "nPoints": 12116447870,
+        "nGroups": 28,
+        "groups": {
+            "0": {
+                "nPoints": 428218182,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_1_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_5_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_8_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_11_minmaxnorm.laz"
+                ]
+            },
+            "1": {
+                "nPoints": 435279811,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_15_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_18_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_21_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_24_minmaxnorm.laz"
+                ]
+            },
+            "2": {
+                "nPoints": 430730759,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_27_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_30_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_33_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_36_minmaxnorm.laz"
+                ]
+            },
+            "3": {
+                "nPoints": 433765832,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_51_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_54_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_57_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_59_minmaxnorm.laz"
+                ]
+            },
+            "4": {
+                "nPoints": 451057893,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_63_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_66_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_69_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_72_minmaxnorm.laz"
+                ]
+            },
+            "5": {
+                "nPoints": 423219445,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_75_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_78_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_81_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_84_minmaxnorm.laz"
+                ]
+            },
+            "6": {
+                "nPoints": 438592471,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_85_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_88_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_92_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_95_minmaxnorm.laz"
+                ]
+            },
+            "7": {
+                "nPoints": 432367884,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_98_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_101_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_104_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_107_minmaxnorm.laz"
+                ]
+            },
+            "8": {
+                "nPoints": 428563640,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_110_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_113_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_117_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_120_minmaxnorm.laz"
+                ]
+            },
+            "9": {
+                "nPoints": 432797889,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_123_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_126_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_129_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_132_minmaxnorm.laz"
+                ]
+            },
+            "10": {
+                "nPoints": 428760534,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_135_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_137_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_140_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_142_minmaxnorm.laz"
+                ]
+            },
+            "11": {
+                "nPoints": 426929472,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_146_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_150_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_153_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_154_minmaxnorm.laz"
+                ]
+            },
+            "12": {
+                "nPoints": 430063388,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_158_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_160_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_164_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_166_minmaxnorm.laz"
+                ]
+            },
+            "13": {
+                "nPoints": 430510647,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_170_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_174_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_177_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_179_minmaxnorm.laz"
+                ]
+            },
+            "14": {
+                "nPoints": 433303510,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_183_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_185_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_187_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_190_minmaxnorm.laz"
+                ]
+            },
+            "15": {
+                "nPoints": 494403857,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_193_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_196_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_199_minmaxnorm.laz"
+                ]
+            },
+            "16": {
+                "nPoints": 474671315,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_202_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_205_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_208_minmaxnorm.laz"
+                ]
+            },
+            "17": {
+                "nPoints": 454839515,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_211_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_214_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_217_minmaxnorm.laz"
+                ]
+            },
+            "18": {
+                "nPoints": 446449750,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_220_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_223_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_226_minmaxnorm.laz"
+                ]
+            },
+            "19": {
+                "nPoints": 453729598,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_229_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_232_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_235_minmaxnorm.laz"
+                ]
+            },
+            "20": {
+                "nPoints": 464593087,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_238_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_241_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_244_minmaxnorm.laz"
+                ]
+            },
+            "21": {
+                "nPoints": 484335875,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_247_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_250_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_253_minmaxnorm.laz"
+                ]
+            },
+            "22": {
+                "nPoints": 477318303,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_256_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_259_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_262_minmaxnorm.laz"
+                ]
+            },
+            "23": {
+                "nPoints": 466796461,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_265_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_268_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_271_minmaxnorm.laz"
+                ]
+            },
+            "24": {
+                "nPoints": 331543603,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_274_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_277_minmaxnorm.laz"
+                ]
+            },
+            "25": {
+                "nPoints": 333822530,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_280_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_283_minmaxnorm.laz"
+                ]
+            },
+            "26": {
+                "nPoints": 427250551,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_286_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_289_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_40_minmaxnorm.laz"
+                ]
+            },
+            "27": {
+                "nPoints": 322532068,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_43_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_46_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_49_minmaxnorm.laz"
+                ]
+            }
+        }
+    },
+    "usccisra": {
+        "nPoints": 12102907795,
+        "nGroups": 28,
+        "groups": {
+            "0": {
+                "nPoints": 425438183,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_2_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_4_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_7_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_10_minmaxnorm.laz"
+                ]
+            },
+            "1": {
+                "nPoints": 424831373,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_13_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_16_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_19_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_22_minmaxnorm.laz"
+                ]
+            },
+            "2": {
+                "nPoints": 438429342,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_25_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_28_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_31_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_35_minmaxnorm.laz"
+                ]
+            },
+            "3": {
+                "nPoints": 438865924,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_38_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_53_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_55_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_60_minmaxnorm.laz"
+                ]
+            },
+            "4": {
+                "nPoints": 438946542,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_62_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_65_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_68_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_71_minmaxnorm.laz"
+                ]
+            },
+            "5": {
+                "nPoints": 438676217,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_74_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_76_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_79_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_82_minmaxnorm.laz"
+                ]
+            },
+            "6": {
+                "nPoints": 428280538,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_86_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_89_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_91_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_94_minmaxnorm.laz"
+                ]
+            },
+            "7": {
+                "nPoints": 435328576,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_97_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_100_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_103_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_106_minmaxnorm.laz"
+                ]
+            },
+            "8": {
+                "nPoints": 426480863,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_109_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_112_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_115_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_118_minmaxnorm.laz"
+                ]
+            },
+            "9": {
+                "nPoints": 436650349,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_121_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_124_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_127_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_130_minmaxnorm.laz"
+                ]
+            },
+            "10": {
+                "nPoints": 430002946,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_134_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_138_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_141_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_144_minmaxnorm.laz"
+                ]
+            },
+            "11": {
+                "nPoints": 428702694,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_145_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_148_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_151_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_156_minmaxnorm.laz"
+                ]
+            },
+            "12": {
+                "nPoints": 431288108,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_159_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_162_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_163_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_168_minmaxnorm.laz"
+                ]
+            },
+            "13": {
+                "nPoints": 427494049,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_171_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_173_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_176_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_178_minmaxnorm.laz"
+                ]
+            },
+            "14": {
+                "nPoints": 482255000,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_181_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_184_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_188_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_191_minmaxnorm.laz"
+                ]
+            },
+            "15": {
+                "nPoints": 497930115,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_194_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_197_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_200_minmaxnorm.laz"
+                ]
+            },
+            "16": {
+                "nPoints": 474458569,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_204_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_207_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_210_minmaxnorm.laz"
+                ]
+            },
+            "17": {
+                "nPoints": 454094664,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_213_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_216_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_219_minmaxnorm.laz"
+                ]
+            },
+            "18": {
+                "nPoints": 463345902,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_222_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_225_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_228_minmaxnorm.laz"
+                ]
+            },
+            "19": {
+                "nPoints": 447275286,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_231_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_234_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_237_minmaxnorm.laz"
+                ]
+            },
+            "20": {
+                "nPoints": 479198253,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_240_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_243_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_246_minmaxnorm.laz"
+                ]
+            },
+            "21": {
+                "nPoints": 482731697,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_249_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_252_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_255_minmaxnorm.laz"
+                ]
+            },
+            "22": {
+                "nPoints": 457635311,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_258_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_261_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_264_minmaxnorm.laz"
+                ]
+            },
+            "23": {
+                "nPoints": 479590022,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_266_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_269_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_273_minmaxnorm.laz"
+                ]
+            },
+            "24": {
+                "nPoints": 328382761,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_276_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_279_minmaxnorm.laz"
+                ]
+            },
+            "25": {
+                "nPoints": 492974972,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_282_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_285_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_288_minmaxnorm.laz"
+                ]
+            },
+            "26": {
+                "nPoints": 405612811,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_291_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_39_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_42_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_45_minmaxnorm.laz"
+                ]
+            },
+            "27": {
+                "nPoints": 108006728,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_48_minmaxnorm.laz"
+                ]
+            }
+        }
+    },
+    "usccisss": {
+        "nPoints": 12150227721,
+        "nGroups": 27,
+        "groups": {
+            "0": {
+                "nPoints": 427067798,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_3_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_6_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_9_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_12_minmaxnorm.laz"
+                ]
+            },
+            "1": {
+                "nPoints": 425503403,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_14_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_17_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_20_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_23_minmaxnorm.laz"
+                ]
+            },
+            "2": {
+                "nPoints": 434980429,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_26_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_29_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_32_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_34_minmaxnorm.laz"
+                ]
+            },
+            "3": {
+                "nPoints": 436473427,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_37_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_52_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_56_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_58_minmaxnorm.laz"
+                ]
+            },
+            "4": {
+                "nPoints": 438502647,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_61_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_64_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_67_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_70_minmaxnorm.laz"
+                ]
+            },
+            "5": {
+                "nPoints": 443815897,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_73_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_77_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_80_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_83_minmaxnorm.laz"
+                ]
+            },
+            "6": {
+                "nPoints": 440682101,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_87_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_90_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_93_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_96_minmaxnorm.laz"
+                ]
+            },
+            "7": {
+                "nPoints": 433176052,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_99_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_102_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_105_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_108_minmaxnorm.laz"
+                ]
+            },
+            "8": {
+                "nPoints": 418640422,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_111_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_114_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_116_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_119_minmaxnorm.laz"
+                ]
+            },
+            "9": {
+                "nPoints": 430617088,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_122_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_125_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_128_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_131_minmaxnorm.laz"
+                ]
+            },
+            "10": {
+                "nPoints": 434241086,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_133_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_136_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_139_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_143_minmaxnorm.laz"
+                ]
+            },
+            "11": {
+                "nPoints": 426057933,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_147_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_149_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_152_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_155_minmaxnorm.laz"
+                ]
+            },
+            "12": {
+                "nPoints": 430099241,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_157_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_161_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_165_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_167_minmaxnorm.laz"
+                ]
+            },
+            "13": {
+                "nPoints": 430572855,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_169_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_172_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_175_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_180_minmaxnorm.laz"
+                ]
+            },
+            "14": {
+                "nPoints": 492706231,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_182_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_186_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_189_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_192_minmaxnorm.laz"
+                ]
+            },
+            "15": {
+                "nPoints": 484791075,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_195_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_198_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_201_minmaxnorm.laz"
+                ]
+            },
+            "16": {
+                "nPoints": 475561213,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_203_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_206_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_209_minmaxnorm.laz"
+                ]
+            },
+            "17": {
+                "nPoints": 450062657,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_212_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_215_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_218_minmaxnorm.laz"
+                ]
+            },
+            "18": {
+                "nPoints": 454121462,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_221_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_224_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_227_minmaxnorm.laz"
+                ]
+            },
+            "19": {
+                "nPoints": 453772683,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_230_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_233_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_236_minmaxnorm.laz"
+                ]
+            },
+            "20": {
+                "nPoints": 476507691,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_239_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_242_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_245_minmaxnorm.laz"
+                ]
+            },
+            "21": {
+                "nPoints": 484806404,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_248_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_251_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_254_minmaxnorm.laz"
+                ]
+            },
+            "22": {
+                "nPoints": 466817440,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_257_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_260_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_263_minmaxnorm.laz"
+                ]
+            },
+            "23": {
+                "nPoints": 458365216,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_267_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_270_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_272_minmaxnorm.laz"
+                ]
+            },
+            "24": {
+                "nPoints": 484701724,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_275_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_278_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_281_minmaxnorm.laz"
+                ]
+            },
+            "25": {
+                "nPoints": 484294149,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_284_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_287_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_290_minmaxnorm.laz"
+                ]
+            },
+            "26": {
+                "nPoints": 433289397,
+                "cloud": [
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_41_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_44_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_47_minmaxnorm.laz",
+                    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_50_minmaxnorm.laz"
+                ]
+            }
+        }
+    }
+}
