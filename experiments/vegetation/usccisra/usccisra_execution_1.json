@@ -1,13 +1,11 @@
 {
     "in_pcloud": [
         "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_13_minmaxnorm.laz",
-        "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_16_minmaxnorm.laz",
         "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_19_minmaxnorm.laz",
         "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_22_minmaxnorm.laz"
     ],
     "out_pcloud": [
         "path_to_output_clouds/MERGE_13/*",
-        "path_to_output_clouds/MERGE_16/*",
         "path_to_output_clouds/MERGE_19/*",
         "path_to_output_clouds/MERGE_22/*"
     ],
