@@ -10,8 +10,15 @@
 
 4 - Checkear que el source dentro de `scripts/slurm/work.sh` apunta al `cesga/vl3d_cesga_env.sh` del punto 1.
 
-5 - Checkear que dentro de `scripts/slurm/work.sh` se van a leer los .json del correspondiente experimento.
+5 - Checkear que dentro de `scripts/slurm/launch.sh` se van a leer los .json del correspondiente experimento.
+
+6 - Cambiad el email de `scripts/slurm/work.sh` por el vuestro.
 
 6 - `./scripts/slurm/launch.sh`
 
 7 - Que los dioses del Round-Robin estén con todos nosotros.
+
+
+# Notas
+
+- Ruta modelo usado para vegetacion: /mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T3/pipe
