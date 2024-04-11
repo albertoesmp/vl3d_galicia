@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Get path of this script
-SCRIPT=$(readlink -f "$0")
-echo $SCRIPT
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd $SCRIPTPATH
-
 # getopts input dir
 while getopts ":i:" opt; do
   case ${opt} in
@@ -18,9 +12,9 @@ while getopts ":i:" opt; do
   esac
 done
 
-pipe_path="/home/usc/ci/myg/store2/vl3d/models/kpc_final_X/T2/pipe/KPC_T2.pipe"
-nn_path="/home/usc/ci/myg/store2/vl3d/models/kpc_final_X/T2/pipe/KPC_T2.keras"
-output_path="/home/usc/ci/myg/store2/vl3d/models/kpc_final_X/T2/preds"
+pipe_path="/home/usc/ci/myg/Codigos/vl3d_galicia/models/vegetation/KPC_T3.pipe"
+nn_path="/home/usc/ci/myg/Codigos/vl3d_galicia/models/vegetation/KPC_T3.keras"
+output_path="/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/vegetation"
 
 for file in $JSON_DIR/*.json
 do
