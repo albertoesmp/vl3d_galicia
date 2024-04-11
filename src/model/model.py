@@ -122,7 +122,7 @@ class Model:
             self.hypertuner = hypertuner_class(
                 **hypertuner_class.extract_tuner_args(self.hypertuner)
             )
-        # Get feature names straight forward
+        # Get feature names straightforward
         self.fnames = kwargs.get("fnames", None)
         # Validate feature names
         if self.fnames is None:

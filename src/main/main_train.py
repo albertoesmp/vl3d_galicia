@@ -109,6 +109,9 @@ class MainTrain:
         model_low = model.lower()
         if model_low == 'randomforestclassifier':
             return RandomForestClassificationModel
+        if model_low == 'receptivefieldmachinelearning':
+            from src.model.fps_decorated_model import RFMLModel
+            return RFMLModel
         if model_low == 'pointnetpwiseclassifier':
             return PointNetPwiseClassifModel
         if model_low == 'rbfnetpwiseclassifier':

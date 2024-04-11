@@ -70,7 +70,7 @@ class ReceptiveFieldFPS(ReceptiveField):
         :Keyword Arguments:
             *   *num_points* (``int``) --
                 The number of points :math:`R` the input points must be reduced
-                too.
+                to.
                 In other words, for a given number of input points :math:`m_1`,
                 the reduced number of points will be :math:`R`. For another,
                 let us say different (i.e., :math:`m_1 \neq m_2`) number of
