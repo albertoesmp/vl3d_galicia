@@ -2,7 +2,10 @@
 # ------------------- #
 from src.main.vl3d_exception import VL3DException
 from src.utils.ptransf.receptive_field_fps import ReceptiveFieldFPS
+from src.utils.str_utils import StrUtils
 from scipy.spatial.kdtree import KDTree as KDT
+import numpy as np
+
 
 # ---   CLASS   --- #
 # ----------------- #
@@ -25,13 +28,17 @@ class FPSDecoratorTransformer:
             FPSDecoratorTransformer.
 
         :Keyword Arguments:
-            *   *num_points* (``int``) --
+            *   *num_points* (``int`` or ``str``) --
                 The number of points :math:`R` the input points must be reduced
                 to.
                 In other words, for a given number of input points :math:`m_1`,
                 the reduced number of points will be :math:`R`. For another,
                 let us say different (i.e., :math:`m_1 \neq m_2`) number of
                 points, the reduced number of points will also be :math:`R`.
+                Alternatively, it can be given as a string. If so, it is
+                understood as an expression that can be evaluated, where "m"
+                is the number of input points. For instance: "m/2" means the
+                FPS will consider half of the input points.
             * *num_encoding_neighbors* (``int``) --
                 How many closest neighbors consider when doing reductions.
                 For instance, for three encoding neighbors reducing a value
@@ -114,10 +121,17 @@ class FPSDecoratorTransformer:
         :return:
         """
         # TODO Rethink : Finish doxygen doc
+        # Handle num points
+        num_points = self.num_points
+        if isinstance(num_points, str):  # If string, evaluate expression
+            m = X.shape[0]  # Number of input points (for the expression)
+            num_points = eval(StrUtils.to_numpy_expr(num_points))
         # Build support points
+        num_points = eval(self.num_points) if isinstance(self.num_points, str)\
+            else self.num_points
         rep_X = ReceptiveFieldFPS.compute_fps_on_3D_pcloud(
             X,
-            num_points=self.num_points,
+            num_points=num_points,
             fast=self.fast
         )
         # Compute encoding neighborhoods
@@ -140,12 +154,11 @@ class FPSDecoratorTransformer:
         if self.release_encoding_neighborhoods:
             self.N = None
         # Encode features for representation
-        rep_F = None if F is None else self.propagate(F)
+        rep_F = None if F is None else self.reduce(F)
         # Encode classes for representation
-        rep_y = None if y is None else self.propagate(y)
+        rep_y = None if y is None else self.reduce(y)
         # Return
         return rep_X, rep_F, rep_y
-
 
     def transform_pcloud(self, pcloud, fnames=None, out_prefix=None):
         """
@@ -173,8 +186,25 @@ class FPSDecoratorTransformer:
         y = pcloud.get_classes_vector() if pcloud.has_classes() else None
         return self.transform(X=X, F=F, y=y, out_prefix=out_prefix)
 
-    def propagate(self, x):
+    def propagate(self, rep_x):
+        # TODO Rethink : Doxygen doc (AKA decode)
+        # Nearest neighbor reduction
+        if self.num_decoding_neighbors == 1:
+            return rep_x[self.M]
+        # Mean of the neighborhood reduction for 1 feature
+        if len(rep_x.shape) == 1:
+            return np.mean(rep_x[self.M], axis=1)
+        # Mean of the neighborhood reduction for >1 features
+        return np.mean(rep_x[self.M].T, axis=1).T
         # TODO Rethink : Implement
 
-    def reduce(self):
-        # TODO Rethink : Implement
+    def reduce(self, x):
+        # TODO Rethink : Doxygen doc (AKA encode)
+        # Nearest neighbor reduction
+        if self.num_encoding_neighbors == 1:
+            return x[self.N]
+        # Mean of the neighborhood reduction for 1 feature
+        if len(x.shape) == 1:
+            return np.mean(x[self.N], axis=1)
+        # Mean of the neighborhood reduction for >1 features
+        return np.mean(x[self.N].T, axis=1).T
