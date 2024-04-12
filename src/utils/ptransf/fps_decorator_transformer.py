@@ -169,7 +169,9 @@ class FPSDecoratorTransformer:
         self.N = None  # Neighborhood matrix with indices in the original space
         self.M = None  # Neighborhood matrix with indices in the representation
         # Validate number of points
-        if self.num_points is None or self.num_points < 1:
+        if self.num_points is None or (
+            isinstance(self.num_points, int) and self.num_points < 1
+        ) or not isinstance(self.num_points, (str, int)):
             raise VL3DException(
                 f'FPSDecoratorTransformer cannot work for {self.num_points} '
                 'target number of points.'
@@ -210,15 +212,18 @@ class FPSDecoratorTransformer:
         num_points = self.num_points
         if isinstance(num_points, str):  # If string, evaluate expression
             m = X.shape[0]  # Number of input points (for the expression)
-            num_points = eval(StrUtils.to_numpy_expr(num_points))
+            num_points = max(1, int(eval(StrUtils.to_numpy_expr(num_points))))
         # Build support points
-        num_points = eval(self.num_points) if isinstance(self.num_points, str)\
-            else self.num_points
-        rep_X = ReceptiveFieldFPS.compute_fps_on_3D_pcloud(
-            X,
-            num_points=num_points,
-            fast=self.fast
-        )
+        if self.fast:
+            rep_X = np.array(X)
+            np.random.shuffle(rep_X)
+            rep_X = rep_X[:num_points]
+        else:
+            rep_X = ReceptiveFieldFPS.compute_fps_on_3D_pcloud(
+                X,
+                num_points=num_points,
+                fast=False
+            )
         # Compute encoding neighborhoods
         if self.num_encoding_neighbors > 0:
             kdt = KDT(X)
@@ -255,7 +260,9 @@ class FPSDecoratorTransformer:
         # Return
         return rep_X, rep_F, rep_y
 
-    def transform_pcloud(self, pcloud, fnames=None, out_prefix=None):
+    def transform_pcloud(
+        self, pcloud, fnames=None, ignore_y=False, out_prefix=None
+    ):
         """
         Transform the given point cloud to its FPS representation.
 
@@ -265,6 +272,9 @@ class FPSDecoratorTransformer:
             If an empty list is given, no features will be considered.
             If None is given, all features will be considered.
         :type fnames: None or list of str
+        :param ignore_y: Whether to ignore the classes (True) or to encode
+            them in the representation (False).
+        :type ignore_y: bool
         :param out_prefix: The output prefix (OPTIONAL). It might be used by a
             report to particularize the output path.
         :type out_prefix: None or str
@@ -272,7 +282,9 @@ class FPSDecoratorTransformer:
             one.
         :rtype: :class:`.PointCloud`
         """
+        # Get coordinates
         X = pcloud.get_coordinates_matrix()
+        # Handle features
         if fnames is not None and len(fnames) == 0:
             F = None
         else:
@@ -280,7 +292,11 @@ class FPSDecoratorTransformer:
                 F = pcloud.get_features_matrix(pcloud.get_features_names())
             else:
                 F = pcloud.get_features_matrix(fnames)
-        y = pcloud.get_classes_vector() if pcloud.has_classes() else None
+        # Handle classes
+        y = None
+        if not ignore_y:
+            y = pcloud.get_classes_vector() if pcloud.has_classes() else None
+        # Transform and return
         rep_X, rep_F, rep_y = self.transform(
             X=X, F=F, y=y, out_prefix=out_prefix
         )

@@ -1,11 +1,11 @@
 # ---   IMPORTS   --- #
 # ⨪------------------ #
-from src.model.model import Model
-from src.model.model import ModelException
+from src.model.model import Model, ModelException
 import src.main.main_logger as LOGGING
 from src.utils.dict_utils import DictUtils
+from src.utils.ptransf.fps_decorator_transformer import FPSDecoratorTransformer
 from src.main.main_train import MainTrain
-from src.pcloud.point_cloud_factory_facade import PointCloudFactoryFacade
+import time
 
 
 # ---   CLASS   --- #
@@ -23,6 +23,8 @@ class FPSDecoratedModel(Model):
     propagates the predictions back to the original point cloud (the one from
     which the representation was built).
 
+    See :class:`.FPSDecoratorTransformer`.
+
     :ivar decorated_model_spec: The specification of the decorated model.
     :vartype decorated_model_spec: dict
     :ivar decorated_model: The decorated model object.
@@ -33,8 +35,6 @@ class FPSDecoratedModel(Model):
     :ivar fps_decorator: The FPS decorator to be applied on input point clouds.
     :vartype fps_decorator: :class:`.FPSDecoratorTransformer`
     """
-    # TODO Rethink : Update class from previous impl. try (RFMLModel)
-    # TODO Rethink : Link with FPSDecoratorTransformer
     # ---  SPECIFICATION ARGUMENTS  --- #
     # --------------------------------- #
     @staticmethod
@@ -62,6 +62,8 @@ class FPSDecoratedModel(Model):
         """
         Initialization for any instance of type :class:`.FPSDecoratedModel`.
         """
+        # Force empty list for fnames in kwargs
+        kwargs['fnames'] = []
         # Call parent init
         super().__init__(**kwargs)
         # Basic attributes of the FPSDecoratedModel
@@ -119,22 +121,26 @@ class FPSDecoratedModel(Model):
         """
         # Build representation from input point cloud
         fnames = self.get_fnames_recursively()
-        rf_XF, rf_y = self.rf_pre_processor({
-            'X': [
-                pcloud.get_coordinates_matrix(),  # The coordinates
-                pcloud.get_features_matrix(fnames)  # The features
-            ],
-            'y': pcloud.get_classes_vector()
-        })
-        # Build new point cloud from representation
-        header = pcloud.get_header()
-        rf_pcloud = PointCloudFactoryFacade.make_from_arrays(
-            rf_XF[0], rf_XF[1], y=rf_y, header=header, scale=header.scales[0]
+        start = time.perf_counter()
+        rf_pcloud = self.fps_decorator.transform_pcloud(pcloud, fnames=fnames)
+        end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            'FPSDecoratedModel computed a representation of '
+            f'{pcloud.get_num_points()} points using '
+            f'{rf_pcloud.get_num_points()} points '
+            f'for training in {end-start:.3f} seconds.'
         )
         # Dump original point cloud to disk if space is needed
         pcloud.proxy_dump()
         # Train the model
-        return self.decorated_model.train(rf_pcloud)
+        start = time.perf_counter()
+        training_output = self.decorated_model.train(rf_pcloud)
+        end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            f'{self.decorated_model.__class__.__name__} trained on the '
+            f'representation space in {end-start:3f} seconds.'
+        )
+        return training_output
 
     def predict(self, pcloud, X=None):
         """
@@ -143,26 +149,36 @@ class FPSDecoratedModel(Model):
         """
         # Build representation from input point cloud
         fnames = self.get_fnames_recursively()
-        rf_XF = self.rf_pre_processor({
-            'X': [
-                pcloud.get_coordinates_matrix(),  # The coordinates
-                pcloud.get_features_matrix(fnames)  # The features
-            ]
-        })
-        # Build new point cloud from representation
-        header = pcloud.get_header()
-        rf_pcloud = PointCloudFactoryFacade.make_from_arrays(
-            rf_XF[0], rf_XF[1], header=header, scale=header.scales[0]
+        start = time.perf_counter()
+        rf_pcloud = self.fps_decorator.transform_pcloud(pcloud, fnames=fnames)
+        end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            'FPSDecoratedModel computed a representation of '
+            f'{pcloud.get_num_points()} points using '
+            f'{rf_pcloud.get_num_points()} points '
+            f'for predictions in {end-start:.3f} seconds.'
         )
         # Dump original point cloud to disk if space is needed
         pcloud.proxy_dump()
         # Predict
+        start = time.perf_counter()
         rf_yhat = self.decorated_model.predict(rf_pcloud)
-        # Delete rf_pcloud and rf_XF features
+        end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            f'{self.decorated_model.__class__.__name__} predicted on the '
+            f'representation space in {end-start:.3f} seconds.'
+        )
+        # Delete rf_pcloud
         rf_pcloud = None
-        rf_XF[1] = None
         # Propagate predictions to original point cloud and return
-        return self.rf_post_processor({'X': rf_XF[0], 'z': rf_yhat})
+        start = time.perf_counter()
+        yhat = self.fps_decorator.propagate(rf_yhat)
+        end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            'FPSDecoratedModel propagated predictions in '
+            f'{end-start:.3f} seconds.'
+        )
+        return yhat
 
     def prepare_model(self):
         """
@@ -185,7 +201,6 @@ class FPSDecoratedModel(Model):
         Get input from the decorated pretrained model.
         See :class:`.Model` and :meth:`.Model.get_input_from_pcloud`.
         """
-        # TODO Rethink : Use representation here too?
         return self.decorated_model.get_input_from_pcloud(pcloud)
 
     def is_deep_learning_model(self):
@@ -264,3 +279,24 @@ class FPSDecoratedModel(Model):
             submodel = submodel.decorated_model
         # Return the feature names of the deepest model
         return submodel.fnames
+
+    @property
+    def fnames(self):
+        """
+        Getter for feature names to get them from the decorated model.
+        :return: The feature names from the decorated model.
+        :rtype: None or list of str
+        """
+        if hasattr(self, 'decorated_model'):
+            return self.decorated_model.fnames
+        return []  # Return empty list instead of None if no fnames
+
+    @fnames.setter
+    def fnames(self, fnames):
+        """
+        Setter for feature names to set them in the decorated model.
+        :param fnames: The feature names for the decorated model.
+        :type fnames: None or list of str
+        """
+        if hasattr(self, 'decorated_model'):
+            self.decorated_model.fnames = fnames

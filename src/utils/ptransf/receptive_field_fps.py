@@ -284,6 +284,8 @@ class ReceptiveFieldFPS(ReceptiveField):
         :return: The subsampled point cloud.
         :rtype: :class:`np.ndarray`
         """
+        # TODO Pending : Replace fast mode with numpy shuffle (can be faster)
+        # See FPSDecoratorTransformer.transform for an example
         o3d_cloud = open3d.geometry.PointCloud()
         o3d_cloud.points = open3d.utility.Vector3dVector(X)
         if fast:
