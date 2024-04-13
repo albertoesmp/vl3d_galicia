@@ -1,7 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-for f in $VL3D_DIR/experiments/vegetation/$(whoami)/*.json
+for f in $SCRIPT_DIR/../../experiments/vegetation/$(whoami)/*.json
 do
-  sbatch work.sh $f
+	sbatch work.sh $f
 done
