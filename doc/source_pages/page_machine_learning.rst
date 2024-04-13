@@ -688,6 +688,10 @@ operations.
         (by given any valid path to write a point cloud file) to visualize the
         points that are seen by the model.
 
+-- ``undecorated_predictions``
+    Whether to apply the FPS decorator for predictions (``true``) or only for
+    training (``false``).
+
 -- ``decorated_model``
     A typical machine learning model specification. See
     :ref:`the Random forest classifier <Random forest classifier>`
