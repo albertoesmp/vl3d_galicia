@@ -207,10 +207,7 @@ class FPSDecoratorTransformer:
                 :class:`np.ndarray` or None)
         """
         # Handle num points
-        num_points = self.num_points
-        if isinstance(num_points, str):  # If string, evaluate expression
-            m = X.shape[0]  # Number of input points (for the expression)
-            num_points = max(1, int(eval(StrUtils.to_numpy_expr(num_points))))
+        num_points = self.eval_num_points(X=X)
         # Build support points
         if self.fast:
             rep_X = np.array(X)
@@ -302,7 +299,8 @@ class FPSDecoratorTransformer:
             X=X, F=F, y=y, out_prefix=out_prefix
         )
         return PointCloudFactoryFacade.make_from_arrays(
-            rep_X, rep_F, y=rep_y, header=pcloud.get_header(), fnames=fnames
+            rep_X, rep_F, y=rep_y, header=pcloud.get_header(),
+            fnames=pcloud.get_features_names() if fnames is None else fnames
         )
 
     def propagate(self, rep_x):
@@ -346,3 +344,25 @@ class FPSDecoratorTransformer:
             return np.mean(x[self.N], axis=1)
         # Mean of the neighborhood reduction for >1 features
         return np.mean(x[self.N].T, axis=1).T
+
+    def eval_num_points(self, X=None, m=None):
+        """
+        Evaluate the number of points if it is a string and return the result,
+        otherwise return the number directly.
+
+        :param X: The structure space matrix representing the point cloud (rows
+            are columns),
+        :type X: :class:`np.ndarray` or None
+        :param m: The number of points (when not given, the number of rows in
+            X will be considered to initialize m) in the point cloud.
+        :type m: int or None
+        :return: The number of points that must be obtained after applying
+            the transformation.
+        :rtype: int
+        """
+        num_points = self.num_points
+        if isinstance(num_points, str):  # If string, evaluate expression
+            if m is None:
+                m = X.shape[0]  # Number of input points (for the expression)
+            num_points = max(1, int(eval(StrUtils.to_numpy_expr(num_points))))
+        return num_points

@@ -162,6 +162,7 @@ class FPSDecoratedMiner(Miner):
     def get_decorated_frenames(self):
         """
         Get the feature renames (``frenames``) from the decorated miner.
+
         :return: The feature renames from the decorated miner, i.e., the
             names for the mined features.
         :rtype: list of str
