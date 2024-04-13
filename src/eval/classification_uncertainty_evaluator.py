@@ -5,6 +5,7 @@ from src.eval.classification_evaluator import ClassificationEvaluator
 from src.eval.classification_uncertainty_evaluation import \
     ClassificationUncertaintyEvaluation
 from src.model.classification_model import ClassificationModel
+from src.model.fps_decorated_model import FPSDecoratedModel
 from src.model.deeplearn.point_net_pwise_classif_model import \
     PointNetPwiseClassifModel
 from src.model.deeplearn.rbf_net_pwise_classif_model import \
@@ -275,11 +276,14 @@ class ClassificationUncertaintyEvaluator(Evaluator):
             )
 
         if not isinstance(model, ClassificationModel):
-            raise EvaluatorException(
-                'ClassificationUncertaintyEvaluator received a '
-                f'"{type(model)}" model which is not a ClassificationModel. '
-                'This is not supported.'
-            )
+            if not isinstance(model, FPSDecoratedModel) and not isinstance(
+                model.decorated_model, ClassificationModel
+            ):
+                raise EvaluatorException(
+                    'ClassificationUncertaintyEvaluator received a '
+                    f'"{type(model)}" model which is not a ClassificationModel. '
+                    'This is not supported.'
+                )
         # Determine input type from model
         X = None
         if isinstance(

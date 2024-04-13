@@ -131,5 +131,8 @@ class MainMine:
             return SmoothFeatsMiner
         if miner_low == 'takeclosestminer':
             return TakeClosestMiner
+        if miner_low == 'fpsdecorated':
+            from src.mining.fps_decorated_miner import FPSDecoratedMiner
+            return FPSDecoratedMiner
         # An unknown miner was specified
         raise ValueError(f'There is no known miner "{miner}"')

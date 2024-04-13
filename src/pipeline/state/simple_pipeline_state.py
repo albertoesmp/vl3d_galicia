@@ -142,6 +142,9 @@ class SimplePipelineState(PipelineState):
         self.pcloud = new_pcloud
         # Update fnames
         frenames = getattr(comp, 'frenames', None)
+        if frenames is None:
+            if hasattr(comp, 'get_decorated_frenames'):
+                frenames = comp.get_decorated_frenames()
         if frenames is not None:
                 self.fnames = frenames
         else:

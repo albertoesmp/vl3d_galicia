@@ -13,6 +13,8 @@ from src.eval.evaluator import Evaluator
 from src.inout.writer import Writer
 from src.inout.model_writer import ModelWriter
 from src.pipeline.predictive_pipeline import PredictivePipeline
+from src.pipeline.handle.pipeline_decoration_handler import \
+    PipelineDecorationHandler
 from src.inout.predictive_pipeline_writer import PredictivePipelineWriter
 from src.inout.predictions_writer import PredictionsWriter
 from src.inout.classified_pcloud_writer import ClassifiedPcloudWriter
@@ -68,6 +70,9 @@ class PipelineExecutor:
         self.maker = maker
         self.out_prefix = kwargs.get('out_prefix', None)
         self.pre_fnames = None
+        self.pipeline_decoration_handler = PipelineDecorationHandler(
+            out_prefix=self.out_prefix
+        )
         # Validate
         if self.maker is None:
             raise PipelineExecutorException(
@@ -132,18 +137,24 @@ class PipelineExecutor:
 
         See :meth:`pipeline_executor.PipelineExecutor.__call__`.
         """
+        # Handle pre-process decoration
+        self.pipeline_decoration_handler.handle_preprocess_decoration(
+            state, comp, comp_id, comps
+        )
         # Fill fnames automatically, if requested
         fnames_comp = comp  # First, extract component with fnames
         if isinstance(comp, ModelOp):
             fnames_comp = comp.model
         # Then, extract fnames
         fnames = getattr(fnames_comp, 'fnames', None)
+        if hasattr(fnames_comp, 'get_decorated_fnames'):
+            fnames = fnames_comp.get_decorated_fnames()
         if fnames is not None and len(fnames) > 0:  # If feat. names are given
             if fnames[0] == "AUTO":  # If AUTO is requested
                 fnames_comp.fnames = state.fnames  # Take from state
             else:  # Otherwise
                 self.pre_fnames = state.fnames  # Cache fnames before update
-                state.fnames = fnames_comp.fnames  # Set the state
+                state.fnames = fnames  # Set the state
         # Handle lazy preparation
         if hasattr(comp, 'lazy_prepare'):
             comp.lazy_prepare(state)
