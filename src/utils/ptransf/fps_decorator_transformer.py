@@ -202,11 +202,9 @@ class FPSDecoratorTransformer:
             report to particularize the output path.
         :return: The structure space matrix, the feature space matrix, and the
             classes vector of the FPS representation.
-        :rtype: (
-                :class:`np.ndarray`,
+        :rtype: tuple (:class:`np.ndarray`,
                 :class:`np.ndarray` or None,
-                :class:`np.ndarray` or None,
-            )
+                :class:`np.ndarray` or None)
         """
         # Handle num points
         num_points = self.num_points
@@ -249,13 +247,16 @@ class FPSDecoratorTransformer:
         rep_y = None if y is None else self.reduce(y)
         # Export representation, if requested
         if self.representation_report_path is not None:
+            representation_report_path = self.representation_report_path \
+                if out_prefix is None else \
+                out_prefix[:-1] + self.representation_report_path[1:]
             rep_pcloud = PointCloudFactoryFacade.make_from_arrays(
                 rep_X, rep_F, y=rep_y
             )
-            PointCloudIO.write(rep_pcloud, self.representation_report_path)
+            PointCloudIO.write(rep_pcloud, representation_report_path)
             LOGGING.LOGGER.info(
                 'FPS representation exported to '
-                f'"{self.representation_report_path}".'
+                f'"{representation_report_path}".'
             )
         # Return
         return rep_X, rep_F, rep_y

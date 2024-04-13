@@ -13,6 +13,8 @@ from src.eval.evaluator import Evaluator
 from src.inout.writer import Writer
 from src.inout.model_writer import ModelWriter
 from src.pipeline.predictive_pipeline import PredictivePipeline
+from src.pipeline.handle.pipeline_decoration_handler import \
+    PipelineDecorationHandler
 from src.inout.predictive_pipeline_writer import PredictivePipelineWriter
 from src.inout.predictions_writer import PredictionsWriter
 from src.inout.classified_pcloud_writer import ClassifiedPcloudWriter
@@ -68,6 +70,9 @@ class PipelineExecutor:
         self.maker = maker
         self.out_prefix = kwargs.get('out_prefix', None)
         self.pre_fnames = None
+        self.pipeline_decoration_handler = PipelineDecorationHandler(
+            out_prefix=self.out_prefix
+        )
         # Validate
         if self.maker is None:
             raise PipelineExecutorException(
@@ -132,6 +137,10 @@ class PipelineExecutor:
 
         See :meth:`pipeline_executor.PipelineExecutor.__call__`.
         """
+        # Handle pre-process decoration
+        self.pipeline_decoration_handler.handle_preprocess_decoration(
+            state, comp, comp_id, comps
+        )
         # Fill fnames automatically, if requested
         fnames_comp = comp  # First, extract component with fnames
         if isinstance(comp, ModelOp):

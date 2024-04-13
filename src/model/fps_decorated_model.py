@@ -269,6 +269,7 @@ class FPSDecoratedModel(Model):
         """
         Find through any potential decoration graph until the deepest model
         is found, then consider its feature names.
+
         :return: The feature names of the deepest model in the decoration
             hierarchy.
         :rtype: list of str

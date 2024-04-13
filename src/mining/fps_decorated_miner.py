@@ -66,6 +66,7 @@ class FPSDecoratedMiner(Miner):
         # Basic attributes of the FPSDecoratedMiner
         self.decorated_miner_spec = kwargs.get('decorated_miner', None)
         self.fps_decorator_spec = kwargs.get('fps_decorator', None)
+        self.out_prefix = None
         # Validate decorated miner as an egg
         if self.decorated_miner_spec is None:
             LOGGING.LOGGER.error(
@@ -112,7 +113,8 @@ class FPSDecoratedMiner(Miner):
         rf_pcloud = self.fps_decorator.transform_pcloud(
             pcloud,
             fnames=getattr(self.decorated_miner, 'input_fnames', []),
-            ignore_y=True
+            ignore_y=True,
+            out_prefix=self.out_prefix
         )
         end = time.perf_counter()
         LOGGING.LOGGER.info(
