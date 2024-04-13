@@ -98,7 +98,7 @@ class FPSDecoratedMiner(Miner):
                 'Using a value different than one is not recommended as it '
                 'could easily lead to unexpected behaviors.'
             )
-        # TODO Rethink : This logic is shared by fps_decorated_model
+        # TODO Pending : This logic is shared by fps_decorated_model
         # Maybe it can be abstracted to a common implementation.
 
     # ---   MINER METHODS  --- #
@@ -149,12 +149,23 @@ class FPSDecoratedMiner(Miner):
         # Return point cloud extended with propagated features
         return pcloud.add_features(self.decorated_miner.frenames, F)
 
-# TODO Rethink : Does this solve the issue v2 ? ---
     def get_decorated_fnames(self):
+        """
+        Get the feature names (``fnames``) from the decorated miner.
+        :return: The feature names from the decorated miner.
+        :rtype: list of str
+        """
+        if hasattr(self.decorated_miner, 'get_decorated_fnames'):
+            return self.decorated_miner.get_decorated_fnames()
         return self.decorated_miner.fnames
-# --- TODO Rethink : Does this solve the issue v2 ?
 
-# TODO Rethink : Does this solve the issue v3 ? ---
     def get_decorated_frenames(self):
+        """
+        Get the feature renames (``frenames``) from the decorated miner.
+        :return: The feature renames from the decorated miner, i.e., the
+            names for the mined features.
+        :rtype: list of str
+        """
+        if hasattr(self.decorated_miner, 'get_decorated_frenames'):
+            return self.decorated_miner.get_decorated_frenames()
         return self.decorated_miner.frenames
-# --- TODO Rethink : Does this solve the issue v3 ?

@@ -147,11 +147,8 @@ class PipelineExecutor:
             fnames_comp = comp.model
         # Then, extract fnames
         fnames = getattr(fnames_comp, 'fnames', None)
-        # TODO Rethink : Does this solve the issue v2 ? ---
         if hasattr(fnames_comp, 'get_decorated_fnames'):
             fnames = fnames_comp.get_decorated_fnames()
-        # --- TODO Rethink : Does this solve the issue v2 ?
-        # TODO Rethink : What happens with decorated miner fnames here?
         if fnames is not None and len(fnames) > 0:  # If feat. names are given
             if fnames[0] == "AUTO":  # If AUTO is requested
                 fnames_comp.fnames = state.fnames  # Take from state

@@ -29,6 +29,9 @@ class FPSDecoratedModel(Model):
     :vartype decorated_model_spec: dict
     :ivar decorated_model: The decorated model object.
     :vartype decorated_model: :class:`.Model`
+    :ivar undecorated_predictions: Whether to use the decorated model without
+        decoration when computing the predictions (true) or not (false).
+    :vartype undecorated_predictions: bool
     :ivar fps_decorator_spec: The specification of the FPS transformation
         defining the decorator.
     :vartype fps_decorator_spec: dict
@@ -51,6 +54,9 @@ class FPSDecoratedModel(Model):
         # Extract particular arguments for decorated machine learning models
         kwargs['decorated_model'] = spec.get('decorated_model', None)
         kwargs['fps_decorator'] = spec.get('fps_decorator', None)
+        kwargs['undecorated_predictions'] = spec.get(
+            'undecorated_predictions', None
+        )
         # Delete keys with None value
         kwargs = DictUtils.delete_by_val(kwargs, None)
         # Return
@@ -69,6 +75,9 @@ class FPSDecoratedModel(Model):
         # Basic attributes of the FPSDecoratedModel
         self.decorated_model_spec = kwargs.get('decorated_model', None)
         self.fps_decorator_spec = kwargs.get('fps_decorator', None)
+        self.undecorated_predictions = kwargs.get(
+            'undecorated_predictions', False
+        )
         # Validate decorated model as an egg
         if self.decorated_model_spec is None:
             LOGGING.LOGGER.error(
@@ -147,6 +156,16 @@ class FPSDecoratedModel(Model):
         Decorate the main predictive logic to work on the representation.
         See :class:`.Model` and :meth:`.Model.predict`.
         """
+        # Delegate on decorated model if undecorated predictions are requested
+        if self.undecorated_predictions:
+            start = time.perf_counter()
+            yhat = self.decorated_model.predict(pcloud, X=X)
+            end = time.perf_counter()
+            LOGGING.LOGGER.info(
+                'FPSDecoratedModel computed undecorated predictions on '
+                f'{len(yhat)} points in {end-start:.3f} seconds.'
+            )
+            return yhat
         # Build representation from input point cloud
         fnames = self.get_fnames_recursively()
         start = time.perf_counter()

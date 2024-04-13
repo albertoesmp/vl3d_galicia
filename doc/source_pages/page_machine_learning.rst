@@ -364,6 +364,7 @@ on the hyperparameters of the machine learning model.
     "hyperparameter_tuning": {
         "tuner": "GridSearch",
         "hyperparameters": ["n_estimators", "max_depth", "max_samples"],
+        "scores": "f1_macro",
         "num_folds": 5,
         "grid": {
             "n_estimators": [2, 4, 8, 16],
@@ -377,6 +378,16 @@ on the hyperparameters of the machine learning model.
 
 -- ``hyperparameters``
     A list with the names of the hyperparameters to be considered.
+
+-- ``scores``
+    It can be null (or not given), a string, a list, or a dictionary where the
+    keys are the desired names for the scores and the values are the internal
+    names. The values of the dictionary, those of the list, and the single
+    string must match the
+    `convention of scoring parameters of scikit learn <https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter>`_.
+    Note that when many scores are given, only the first one will be considered
+    to automatically determine the best model arguments.
+
 
 -- ``num_folds``
     How many folds consider to validate the model following a K-folding
@@ -421,6 +432,10 @@ the hyperparameters of the machine learning model.
     "hyperparameter_tuning": {
         "tuner": "RandomSearch",
         "hyperparameters": ["n_estimators", "max_depth", "ccp_alpha", "min_impurity_decrease", "criterion"],
+        "scores": {
+            "F1": "f1_macro",
+            "wF1": "f1_weighted"
+        },
         "iterations": 32,
         "num_folds": 5,
         "distributions": {
@@ -453,6 +468,15 @@ the hyperparameters of the machine learning model.
 
 -- ``hyperparameters``
     A list with the names of the hyperparameters to be considered.
+
+-- ``scores``
+    It can be null (or not given), a string, a list, or a dictionary where the
+    keys are the desired names for the scores and the values are the internal
+    names. The values of the dictionary, those of the list, and the single
+    string must match the
+    `convention of scoring parameters of scikit learn <https://scikit-learn.org/stable/modules/model_evaluation.html#scoring-parameter>`_.
+    Note that when many scores are given, only the first one will be considered
+    to automatically determine the best model arguments.
 
 -- ``iterations``
     How many iterations of random search must be computed. At each iteration
