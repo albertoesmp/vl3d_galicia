@@ -158,6 +158,7 @@ where the geometric features have been transformed through PCA. The
 
 
 
+
 .. _Training strategies:
 
 Training strategies
@@ -522,6 +523,175 @@ the hyperparameters of the machine learning model.
 -- ``report_path``
     When given, a text report about the random search will be exported to the
     file pointed by the path.
+
+
+
+
+
+
+
+Decorators
+================
+
+.. _FPS decorated model:
+
+Furthest point sampling decorator
+--------------------------------------------
+
+The :class:`.FPSDecoratedModel` can be used to decorate a model such that the
+computations can take place in a transformed space of reduced dimensionality.
+Typically, the domain of a model is the entire point cloud, let us say
+:math:`m` points. When using a :class:`.FPSDecoratedModel` this domain will be
+transformed to a subset of the original point cloud with :math:`R` points,
+such that :math:`m \geq R`. Decorating a model with this decorator can be
+useful to reduce the execution time of model training, or to speedup the
+computation of an hyperparameter tuning procedure. A decorated model can
+use the alternative point cloud of :math:`R` points for training but not for
+predicting, or it can work on the alternative representation for both
+operations.
+
+
+.. code-block:: json
+
+    {
+        "train": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/11",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": 16,
+            "representation_report_path": "*/fps_repr/model_representation_points.laz"
+        },
+        "undecorated_predictions": true,
+        "decorated_model": {
+            "train": "RandomForestClassifier",
+            "fnames": ["AUTO"],
+            "training_type": "stratified_kfold",
+            "autoval_metrics": ["OA", "P", "R", "F1", "IoU", "wP", "wR", "wF1", "wIoU", "MCC"],
+            "num_folds": 3,
+            "random_seed": null,
+            "shuffle_points": true,
+            "stratkfold_report_path": "*/stratkfold_report.log",
+            "stratkfold_plot_path": "*/stratkfold_plot.svg",
+            "model_args": {
+                "n_estimators": 64,
+                "criterion": "entropy",
+                "max_depth": 20,
+                "min_samples_split": 10,
+                "min_samples_leaf": 1,
+                "min_weight_fraction_leaf": 0.0,
+                "max_features": null,
+                "max_leaf_nodes": null,
+                "min_impurity_decrease": 0.0,
+                "bootstrap": true,
+                "oob_score": false,
+                "n_jobs": 12,
+                "warm_start": false,
+                "class_weight": null,
+                "ccp_alpha": 0.0,
+                "max_samples": 0.8
+            },
+            "importance_report_path": "*/RF_importance.log",
+            "importance_report_permutation": false,
+            "decision_plot_path": "*/RF_decision.svg",
+            "decision_plot_trees": 5,
+            "decision_plot_max_depth": 7,
+            "hyperparameter_tuning": {
+                "tuner": "RandomSearch",
+                "hyperparameters": ["n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "class_weight", "max_samples"],
+                "scores": {
+                    "F1": "f1_macro",
+                    "OA": "accuracy"
+                },
+                "iterations": 24,
+                "num_folds": 3,
+                "distributions": {
+                    "n_estimators": {
+                        "distribution": "randint",
+                        "start": 12,
+                        "end": 96
+                    },
+                    "max_depth": {
+                        "distribution": "randint",
+                        "start": 5,
+                        "end": 25
+                    },
+                    "min_samples_split": {
+                        "distribution": "randint",
+                        "start": 4,
+                        "end": 16
+                    },
+                    "min_samples_leaf": {
+                        "distribution": "randint",
+                        "start": 1,
+                        "end": 8
+                    },
+                    "class_weight": ["balanced", "balanced_subsample", null],
+                    "max_samples": {
+                        "distribution": "uniform",
+                        "start": 0.4,
+                        "offset": 0.5
+                    }
+                },
+                "report_path": "*/random_search.log",
+                "nthreads": -1,
+                "pre_dispatch": 2
+            }
+        }
+    }
+
+
+**Arguments**
+
+-- ``fps_decorator``
+    The specification of the furthest point sampling (FPS) decoration carried
+    out through the :class:`.FPSDecoratorTransformer`.
+
+    -- ``num_points``
+        The target number of points :math:`R` for the transformed point cloud.
+        It can be an integer or an expression that will be evaluated with
+        :math:`m` representing the number of points of the original point
+        cloud, e.g., ``"m/2"`` will downscale the point cloud to half the
+        number of points.
+
+    -- ``fast``
+        Whether to use exact furthest point sampling (``false``) or a faster
+        stochastic approximation (``true``).
+
+    -- ``num_encoding_neighbors``
+        How many closest neighbors in the original point cloud are considered
+        for each point in the transformed point cloud to reduce from the
+        original space to the transformed one.
+
+    -- ``num_decoding_neighbors``
+        How many closest neighbors in the transformed point cloud are
+        considered for each point in the original point cloud to propagate back
+        from the transformed space to the original one.
+
+    -- ``release_encoding_neighborhoods``
+        Whether the encoding neighborhoods can be released after computing the
+        transformation (``true``) or not (``false``). Releasing these
+        neighborhoods means the :meth:`.FPSDecoratorTransformer.reduce` method
+        must not be called, otherwise errors will arise. Setting this flag to
+        true can help saving memory when needed.
+
+    -- ``threads``
+        The number of parallel threads to consider for the parallel
+        computations. Note that ``-1`` means using as many threads as available
+        cores.
+
+    -- ``representation_report_path``
+        Where to export the transformed point cloud. In general, it should be
+        ``null`` to prevent unnecessary operations. However, it can be enabled
+        (by given any valid path to write a point cloud file) to visualize the
+        points that are seen by the model.
+
+-- ``decorated_model``
+    A typical machine learning model specification. See
+    :ref:`the Random forest classifier <Random forest classifier>`
+    for an example.
 
 
 
