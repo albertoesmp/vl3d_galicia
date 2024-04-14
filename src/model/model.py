@@ -149,6 +149,8 @@ class Model:
             self.training_data_pipeline = TrainingDataComponent.build_pipeline(
                 self.training_data_pipeline_spec
             )
+        else:
+            self.training_data_pipeline = None
 
     # ---   MODEL METHODS   --- #
     # ------------------------- #
