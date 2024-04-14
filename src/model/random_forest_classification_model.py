@@ -139,10 +139,12 @@ class RandomForestClassificationModel(ClassificationModel):
                 f'{end-start:.3f} seconds.'
             )
 
-    def on_training_finished(self, X, y):
+    def on_training_finished(self, X, y, yhat=None):
         """
         See :meth:`model.Model.on_training_finished`.
         """
+        # Call parent's on_training_finished
+        super().on_training_finished(X, y, yhat=yhat)
         # Report feature importances and plot decision trees
         start = time.perf_counter()
         ev = RandForestEvaluator(
