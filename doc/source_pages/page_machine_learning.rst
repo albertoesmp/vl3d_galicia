@@ -318,6 +318,118 @@ stratified K-folding.
 
 
 
+.. _Training data pipelines:
+
+Training data pipelines
+==========================
+
+The VL3D framework supports the definition of simple sequential pipelines for
+training data. These pipelines will NOT be applied when predicting. They can
+be used to transform the input data :math:`X` and the reference values
+:math:`y`. Each consecutive component in the pipeline will be executed on the
+transformed training data as returned by the previous component. Finally, the
+model will be trained on the training data as it is after calling the last
+component (see :class:`.TrainingDataComponent`).
+
+Training data pipelines can be defined inside a component with a
+:code:`"train"` key (see
+:ref:`Random forest classifier <Random forest classifier>`).
+To define a training data pipeline it is necessary to add an entry
+``"training_data_pipeline" : [...]``, where the list contains
+dictionaries sequentially specifying the components in the pipeline. Each
+dictionary must contain a ``"component"`` key whose value is a string with
+the name of the component and a ``"component_args"`` that will typically be
+a dictionary with the parameters governing the component.
+
+
+
+
+Class-wise sampler
+--------------------
+
+The class-wise sampler (:class:`.ClasswiseSampler`) can be used to sample
+points from the input training dataset such that a target number of points per
+class is selected. The class-wise sampler can work with or without replacement.
+In the first case, repeated points might be considered. The JSON below shows
+an example of how to define a training data pipeline with a
+:class:`.ClasswiseSampler` component.
+
+
+.. code-block:: json
+
+    "training_data_pipeline": [
+        {
+            "component": "ClasswiseSampler",
+            "component_args": {
+                "target_class_distribution": [2000000, 2000000, 2000000, 2000000],
+                "replace": false
+            }
+        }
+    ]
+
+
+**Arguments**
+
+    -- ``target_class_distribution``
+        Number of points for each class (in a classification task) or each
+        continuous variable (in a regression task).
+
+    -- ``replace``
+        Boolean flag governing whether replacement is enabled (``true``) or not
+        (``false``).
+
+
+
+
+
+Synthetic minority oversampling technique (SMOTE)
+-----------------------------------------------------
+
+The synthetic minority oversampling technique (:class:`.SMOTE`) can be used to
+synthetically generate points for underrepresented classes. SMOTE works by
+considering nearest neighbors and generating points between the point and each
+of its nearest neighbors. In doing so, underrepresented classes can be
+prioritized over overrepresented classes to address class imbalance. See the
+`Imbalanced learn documentation on SMOTE <https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html>`_
+for further details. The JSON below shows an example of how to define a
+training data pipeline with a :class:`.SMOTE` component.
+
+
+.. code-block:: json
+
+    "training_data_pipeline": [
+        {
+            "component": "SMOTE",
+            "component_args": {
+                "sampling_strategy": "auto",
+                "random_state": null,
+                "k_neighbors": 5,
+                "n_jobs": 16
+
+            }
+        }
+    ]
+
+
+**Arguments**
+
+    --
+        See the
+        `Imbalanced learn documentation on SMOTE <https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html>`_
+        for the arguments.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
