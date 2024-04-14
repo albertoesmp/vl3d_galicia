@@ -7,6 +7,7 @@ from src.mining.miner import Miner
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer, \
     FeatureTransformerException
+from src.utils.ftransf.explicit_selector import ExplicitSelector
 from src.utils.ctransf.class_transformer import ClassTransformer
 from src.model.model_op import ModelOp
 from src.eval.evaluator import Evaluator
@@ -292,12 +293,23 @@ class PipelineExecutor:
         """
         # Update the state's fnames considering posterior renames
         if isinstance(comp, FeatureTransformer):
-            try:  # Try to obtain the transformed names without input fnames
-                state.fnames = comp.get_names_of_transformed_features()
-            except FeatureTransformerException as ftex:  # Try explicit input
-                state.fnames = comp.get_names_of_transformed_features(
-                    fnames=comp.fnames
-                )
+            # Update previous feature names when an explicit selector is used
+            if isinstance(comp, ExplicitSelector):
+                if comp.preserve:  # On preserve selection
+                    self.pre_fnames = comp.fnames
+                else:  # On discard selection
+                    self.pre_fnames = [
+                        fname for fname in self.pre_fnames
+                        if fname not in comp.fnames
+                    ]
+                state.fnames = self.pre_fnames
+            else:
+                try:  # Try to obtain transformed names without input fnames
+                    state.fnames = comp.get_names_of_transformed_features()
+                except FeatureTransformerException as ftex:  # Try explicit input
+                    state.fnames = comp.get_names_of_transformed_features(
+                        fnames=comp.fnames
+                    )
         # Merge feature names from different miners
         if isinstance(comp, Miner):
             if self.pre_fnames is not None:  # If previous fnames, merge them
