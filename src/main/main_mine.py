@@ -69,6 +69,7 @@ class MainMine:
             logged when the given input path is not valid. It supports a
             "{path}" format field that will be replaced by the invalid path
             in the message.
+        :type invalid_path_msg: str
         :return: Input path as string.
         :rtype: str
         """
