@@ -107,7 +107,7 @@ class Clusterer:
         """
         # Ignore empty post-processing pipelines
         if self.post_clustering is None or len(self.post_clustering) < 1:
-            return
+            return pcloud
         # Measure start time
         start = time.perf_counter()
         # Apply post-processing pipeline
@@ -130,7 +130,7 @@ class Clusterer:
         # Return
         return pcloud
 
-    def fit_cluster_and_post_process(self, pcloud):
+    def fit_cluster_and_post_process(self, pcloud, out_prefix=None):
         """
         Compute the fitting, clustering, and post-processing as a whole.
 
@@ -139,12 +139,32 @@ class Clusterer:
 
         :param pcloud: The input point cloud to be used to fit the clustering
             model.
+        :type pcloud: :class:`.PointCloud`
+        :param out_prefix: If given, it will be used to replace the default
+            output prefix of the clusterer inside the call's context.
+        :type out_prefix: str or None
         :return: The point cloud extended with the clusters.
         :rtype: :class:`.PointCloud`
         """
-        self.fit(pcloud)
-        pcloud = self.cluster(pcloud)
-        return self.post_process(pcloud)
+        # Update output prefix
+        if out_prefix is not None:
+            _out_prefix = self.out_prefix
+            self.out_prefix = out_prefix
+        exception = None
+        # Fit, cluster and post-process
+        try:
+            self.fit(pcloud)
+            pcloud = self.cluster(pcloud)
+            pcloud = self.post_process(pcloud)
+        except Exception as ex:
+            exception = ex
+        # Restore output prefix
+        if out_prefix is not None:
+            self.out_prefix = _out_prefix
+        # Return
+        if exception is not None:
+            raise exception
+        return pcloud
 
     def add_cluster_labels_to_point_cloud(self, pcloud, c):
         """

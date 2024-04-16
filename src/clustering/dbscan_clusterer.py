@@ -135,10 +135,10 @@ class DBScanClusterer(Clusterer):
             # Compute a DBScan for each precluster
             for yk in y_dom:
                 I = y == yk
-                cluster_idx = self.do_dbscan(X[I], c[I], cluster_idx)
+                cluster_idx, c[I] = self.do_dbscan(X[I], c[I], cluster_idx)
         # Otherwise, compute all at once
         else:
-            cluster_idx = self.do_dbscan(X, c, cluster_idx)
+            cluster_idx, c = self.do_dbscan(X, c, cluster_idx)
         # Report time
         end = time.perf_counter()
         LOGGING.LOGGER.info(
@@ -166,9 +166,9 @@ class DBScanClusterer(Clusterer):
         """
         o3d_cloud = open3d.geometry.PointCloud()
         o3d_cloud.points = open3d.utility.Vector3dVector(X)
-        c[:] = cluster_idx + np.array(o3d_cloud.cluster_dbscan(
+        c = cluster_idx + np.array(o3d_cloud.cluster_dbscan(
             self.radius,
             self.min_points,
             print_progress=False
         ), dtype=int)
-        return int(np.max(c))+1
+        return int(np.max(c))+1, c

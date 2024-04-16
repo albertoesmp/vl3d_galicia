@@ -36,7 +36,7 @@ class FPSDecoratedClusterer(Clusterer):
     # ---  SPECIFICAITON ARGUMENTS  --- #
     # --------------------------------- #
     @staticmethod
-    def extract_clusterer_args(spec):
+    def extract_clustering_args(spec):
         """
         Extract the arguments to initialize/instantiate a FPSDecoratedClusterer
         from a key-word specification.
@@ -92,7 +92,9 @@ class FPSDecoratedClusterer(Clusterer):
             self.decorated_clusterer_spec
         )
         self.decorated_clusterer = clusterer_class(
-            **clusterer_class.extract_miner_args(self.decorated_clusterer_spec)
+            **clusterer_class.extract_clustering_args(
+                self.decorated_clusterer_spec
+            )
         )
         # Hatch validated fps_decorator egg
         self.fps_decorator = FPSDecoratorTransformer(**self.fps_decorator_spec)
@@ -118,7 +120,7 @@ class FPSDecoratedClusterer(Clusterer):
 
         See :class:`.Clusterer` and :meth:`.Clusterer.fit`.
         """
-        self.fit(self.transform_pcloud(pcloud))
+        self.decorated_clusterer.fit(self.transform_pcloud(pcloud))
         return self
 
     def cluster(self, pcloud):
@@ -131,7 +133,7 @@ class FPSDecoratedClusterer(Clusterer):
         See :class:`.Clusterer` and :meth:`.Clusterer.cluster`.
         """
         fps_pcloud = self.transform_pcloud(pcloud)
-        fps_pcloud = self.cluster(fps_pcloud)
+        fps_pcloud = self.decorated_clusterer.cluster(fps_pcloud)
         return self.propagate(fps_pcloud, pcloud)
 
     def post_process(self, pcloud):
@@ -144,10 +146,10 @@ class FPSDecoratedClusterer(Clusterer):
         See :class:`.Clusterer` and :meth:`.Clusterer.post_process`.
         """
         fps_pcloud = self.transform_pcloud(pcloud)
-        pcloud = self.post_process(pcloud)
+        pcloud = self.decorated_clusterer.post_process(pcloud)
         return self.propagate(fps_pcloud, pcloud)
 
-    def fit_cluster_and_post_process(self, pcloud):
+    def fit_cluster_and_post_process(self, pcloud, out_prefix=None):
         """
         Compute the fitting, clustering, and post-processing as a whole.
 
@@ -159,7 +161,9 @@ class FPSDecoratedClusterer(Clusterer):
         :meth:`.Clusterer.fit_cluster_and_post_process`.
         """
         fps_pcloud = self.transform_pcloud(pcloud)
-        fps_pcloud = self.fit_cluster_and_post_process(pcloud)
+        fps_pcloud = self.decorated_clusterer.fit_cluster_and_post_process(
+            fps_pcloud, out_prefix=out_prefix
+        )
         return self.propagate(fps_pcloud, pcloud)
 
     # ---  FPS DECORATION METHODS  --- #
@@ -173,11 +177,17 @@ class FPSDecoratedClusterer(Clusterer):
         :return: The FPS representation of the input point cloud.
         :rtype: :class:`.PointCloud`
         """
+        # Determine default feature names
+        default_fnames = []
+        if hasattr(self.decorated_clusterer, "precluster_name"):
+            default_fnames.append(self.decorated_clusterer.precluster_name)
         # Build representation from input point cloud
         start = time.perf_counter()
         rf_pcloud = self.fps_decorator.transform_pcloud(
             pcloud,
-            fnames=getattr(self.decorated_clusterer, 'input_fnames', []),
+            fnames=getattr(
+                self.decorated_clusterer, 'input_fnames', default_fnames
+            ),
             ignore_y=True,
             out_prefix=self.out_prefix
         )
@@ -210,7 +220,9 @@ class FPSDecoratedClusterer(Clusterer):
         """
         # Propagate cluster labels back to original space
         start = time.perf_counter()
-        c = fps_pcloud.get_features(self.cluster_name)
+        c = fps_pcloud.get_features_matrix([
+            self.decorated_clusterer.cluster_name
+        ]).flatten()
         R = len(c)
         c = self.fps_decorator.propagate(c)
         end = time.perf_counter()
@@ -219,4 +231,5 @@ class FPSDecoratedClusterer(Clusterer):
             f'{len(c)} points in {end-start:.3f} seconds.'
         )
         # Return point cloud extended with propagated cluster labels
+        self.cluster_name = self.decorated_clusterer.cluster_name
         return self.add_cluster_labels_to_point_cloud(pcloud, c)

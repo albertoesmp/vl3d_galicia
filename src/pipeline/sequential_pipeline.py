@@ -75,7 +75,6 @@ class SequentialPipeline(Pipeline):
                 miner = miner_class(**miner_class.extract_miner_args(comp))
                 self.sequence.append(miner)
             if comp.get('clustering', None) is not None:  # Handle clustering
-                # TODO Rethink : Implement pending methods below
                 clusterer_class = MainClustering.extract_clusterer_class(comp)
                 clusterer = clusterer_class(
                     **clusterer_class.extract_clustering_args(comp)
