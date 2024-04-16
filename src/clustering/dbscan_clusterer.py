@@ -62,7 +62,7 @@ class DBScanClusterer(Clusterer):
         # Extract arguments from parent
         kwargs = Clusterer.extract_clustering_args(spec)
         # Update arguments with those from DBScanClusterer
-        kwargs['precluster_name'] =  spec.get('precluster_name', None)
+        kwargs['precluster_name'] = spec.get('precluster_name', None)
         kwargs['precluster_domain'] = spec.get('precluster_domain', None)
         kwargs['min_points'] = spec.get('min_points', None)
         kwargs['radius'] = spec.get('radius', None)
@@ -146,9 +146,7 @@ class DBScanClusterer(Clusterer):
             f'in {end-start:.3f} seconds.'
         )
         # Return
-        return pcloud.add_features(
-            [self.cluster_name], c.reshape(-1, 1), ftypes=['d']
-        )
+        return self.add_cluster_labels_to_point_cloud(pcloud, c)
 
     # ---  DBSCAN METHODS  --- #
     # ------------------------ #

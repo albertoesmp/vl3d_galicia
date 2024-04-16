@@ -49,7 +49,8 @@ class Clusterer:
         # Initialize
         kwargs = {
             'cluster_name': spec.get('cluster_name', None),
-            'post_clustering': spec.get('post_clustering', None)
+            'post_clustering': spec.get('post_clustering', None),
+            'out_prefix': spec.get('out_prefix', None)
         }
         #  Delete keys with None value
         kwargs = DictUtils.delete_by_val(kwargs, None)
@@ -67,6 +68,7 @@ class Clusterer:
         """
         self.cluster_name = kwargs.get('cluster_name', 'CLUSTER')
         self.post_clustering = kwargs.get('post_clustering', None)
+        self.out_prefix = kwargs.get('out_prefix', None)
 
     # ---  CLUSTERING METHODS  --- #
     # ---------------------------- #
@@ -95,7 +97,6 @@ class Clusterer:
     def post_process(self, pcloud):
         """
         Run the post-processing pipeline on the given input point cloud.
-        Clusters with
 
         :param pcloud: The input point cloud for the components in the
             post-processing pipeline.
@@ -128,3 +129,36 @@ class Clusterer:
         )
         # Return
         return pcloud
+
+    def fit_cluster_and_post_process(self, pcloud):
+        """
+        Compute the fitting, clustering, and post-processing as a whole.
+
+        See :meth:`.Clusterer.fit`, :meth:`.Clusterer.cluster`, and
+        :meth:`Clusterer.post_process`.
+
+        :param pcloud: The input point cloud to be used to fit the clustering
+            model.
+        :return: The point cloud extended with the clusters.
+        :rtype: :class:`.PointCloud`
+        """
+        self.fit(pcloud)
+        pcloud = self.cluster(pcloud)
+        return self.post_process(pcloud)
+
+    def add_cluster_labels_to_point_cloud(self, pcloud, c):
+        """
+        Add given cluster labels to the given point cloud.
+
+        :param pcloud: The point cloud to which the cluster labels must be
+            added.
+        :type pcloud: :class:`.PointCloud`
+        :param c: The cluster labels.
+        :type c: :class:`np.ndarray`
+        :return: The input point cloud (updated inplace to add the cluster
+            labels).
+        :rtype: :class:`.PointCloud`
+        """
+        return pcloud.add_features(
+            [self.cluster_name], c.reshape(-1, 1), ftypes=['d']
+        )

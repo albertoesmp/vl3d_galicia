@@ -122,17 +122,17 @@ class MainMine:
         miner_low = miner.lower()
         if miner_low == 'geometricfeatures':
             return GeomFeatsMiner
-        if miner_low == "covariancefeatures":
+        elif miner_low == "covariancefeatures":
             return CovarFeatsMiner
-        if miner_low == 'heightfeatures':
+        elif miner_low == 'heightfeatures':
             return HeightFeatsMiner
-        if miner_low == 'hsvfromrgb':
+        elif miner_low == 'hsvfromrgb':
             return HSVFromRGBMiner
-        if miner_low == 'smoothfeatures':
+        elif miner_low == 'smoothfeatures':
             return SmoothFeatsMiner
-        if miner_low == 'takeclosestminer':
+        elif miner_low == 'takeclosestminer':
             return TakeClosestMiner
-        if miner_low == 'fpsdecorated':
+        elif miner_low == 'fpsdecorated':
             from src.mining.fps_decorated_miner import FPSDecoratedMiner
             return FPSDecoratedMiner
         # An unknown miner was specified

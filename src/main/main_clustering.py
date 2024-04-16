@@ -88,7 +88,7 @@ class MainClustering:
         return path
 
     @staticmethod
-    def extract_miner_class(spec):
+    def extract_clusterer_class(spec):
         """
         Extract the clusterer's class from the key-word specification.
 
@@ -106,10 +106,9 @@ class MainClustering:
         clusterer_low = clusterer.lower()
         if clusterer_low == 'dbscan':
             return DBScanClusterer
-        # TODO Rethink : Implement FPSDecoratedClusterer
-        """if clusterer_low == 'fpsdecorated':
+        elif clusterer_low == 'fpsdecorated':
             from src.clustering.fps_decorated_clusterer \
                 import FPSDecoratedClusterer
-            return FPSDecoratedClusterer"""
-        # An unknown miner was specified
+            return FPSDecoratedClusterer
+        # An unknown clusterer was specified
         raise ValueError(f'There is no known clusterer "{clusterer}"')

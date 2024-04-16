@@ -349,7 +349,7 @@ class SequentialPipeline(Pipeline):
                     kwargs.get('include_miner', True):
                 sp.sequence.append(comp)
             if isinstance(comp, Clusterer) and \
-                    kwargs.get('include_clusterer', True):
+                    kwargs.get('include_clustering', True):
                 sp.sequence.append(comp)
         LOGGING.LOGGER.debug(
             'Sequence of original sequential pipeline has {m} components.\n'

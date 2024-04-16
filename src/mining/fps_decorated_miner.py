@@ -101,8 +101,8 @@ class FPSDecoratedMiner(Miner):
         # TODO Pending : This logic is shared by fps_decorated_model
         # Maybe it can be abstracted to a common implementation.
 
-    # ---   MINER METHODS  --- #
-    # ------------------------ #
+    # ---   MINER METHODS   --- #
+    # ------------------------- #
     def mine(self, pcloud):
         """
         Decorate the main data mining logic to work on the representation.
