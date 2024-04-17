@@ -617,7 +617,7 @@ The arguments that can be specified through a JSON to build a
 -- ``include_class_transformer``
     Whether to include class transformers in the predictive pipeline.
 
--- ``include_clustering`
+-- ``include_clustering``
     Whether to include clustering components in the predictive pipeline.
 
 -- ``ignore_predictions``
