@@ -11,7 +11,9 @@ import src.main.main_logger as LOGGING
 from src.main.main_mine import MainMine
 from src.main.main_train import MainTrain
 from src.main.main_eval import MainEval
+from src.main.main_clustering import MainClustering
 from src.mining.miner import Miner
+from src.clustering.clusterer import Clusterer
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer
 from src.utils.ctransf.class_transformer import ClassTransformer
@@ -72,6 +74,12 @@ class SequentialPipeline(Pipeline):
                 miner_class = MainMine.extract_miner_class(comp)
                 miner = miner_class(**miner_class.extract_miner_args(comp))
                 self.sequence.append(miner)
+            if comp.get('clustering', None) is not None:  # Handle clustering
+                clusterer_class = MainClustering.extract_clusterer_class(comp)
+                clusterer = clusterer_class(
+                    **clusterer_class.extract_clustering_args(comp)
+                )
+                self.sequence.append(clusterer)
             if comp.get("imputer", None) is not None:  # Handle imputer
                 imputer_class = ImputerUtils.extract_imputer_class(comp)
                 imputer = imputer_class(
@@ -338,6 +346,9 @@ class SequentialPipeline(Pipeline):
                 sp.sequence.append(comp)
             if isinstance(comp, Miner) and \
                     kwargs.get('include_miner', True):
+                sp.sequence.append(comp)
+            if isinstance(comp, Clusterer) and \
+                    kwargs.get('include_clustering', True):
                 sp.sequence.append(comp)
         LOGGING.LOGGER.debug(
             'Sequence of original sequential pipeline has {m} components.\n'

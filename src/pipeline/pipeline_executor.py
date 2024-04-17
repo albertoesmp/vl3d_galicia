@@ -4,6 +4,7 @@ from src.main.vl3d_exception import VL3DException
 from src.pcloud.point_cloud_factory_facade import PointCloudFactoryFacade
 from src.pcloud.point_cloud import PointCloud
 from src.mining.miner import Miner
+from src.clustering.clusterer import Clusterer
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer, \
     FeatureTransformerException
@@ -170,13 +171,26 @@ class PipelineExecutor:
         # Execute component
         if isinstance(comp, Miner):  # Handle miner
             LOGGING.LOGGER.info(
-                f'Running {comp.__class__.__name__} data miner...'
+                f'Running {comp.__class__.__name__} data miner ...'
             )
             start = time.perf_counter()
             state.update(comp, new_pcloud=comp.mine(state.pcloud))
             end = time.perf_counter()
             LOGGING.LOGGER.info(
                 f'{comp.__class__.__name__} data miner executed in '
+                f'{end-start:.3f} seconds.'
+            )
+        elif isinstance(comp, Clusterer):  # Handle clustering
+            LOGGING.LOGGER.info(
+                f'Running {comp.__class__.__name__} clustering ...'
+            )
+            start = time.perf_counter()
+            state.update(comp, new_pcloud=comp.fit_cluster_and_post_process(
+                state.pcloud, out_prefix=self.out_prefix
+            ))
+            end = time.perf_counter()
+            LOGGING.LOGGER.info(
+                f'{comp.__class__.__name__} clustering executed in '
                 f'{end-start:.3f} seconds.'
             )
         elif isinstance(comp, Imputer):  # Handle imputer

@@ -267,6 +267,7 @@ a Random Forest classifier, as shown in the JSON below:
           "include_feature_transformer": false,
           "include_miner": true,
           "include_class_transformer": false,
+          "include_clustering": false,
           "ignore_predictions": false
         }
       ]
@@ -615,6 +616,9 @@ The arguments that can be specified through a JSON to build a
 
 -- ``include_class_transformer``
     Whether to include class transformers in the predictive pipeline.
+
+-- ``include_clustering``
+    Whether to include clustering components in the predictive pipeline.
 
 -- ``ignore_predictions``
     When set to ``true``, it means that the predictive pipeline must yield

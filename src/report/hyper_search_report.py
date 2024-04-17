@@ -60,7 +60,7 @@ class HyperSearchReport(Report):
             x for x in self.results if x.lower().find('std_test') >= 0
         ]
         std_train_scores = [self.results[key] for key in std_train_scores_keys]
-        # TODO Pending : Handling for training scores is implemented here but
+        # TODO Pending : Handling of training scores is implemented here but
         # not supported. There is no urgent need to support them for now.
         # Build header
         has_train_scores = len(mean_train_scores_keys) > 0

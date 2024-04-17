@@ -4,6 +4,7 @@ from src.pipeline.state.pipeline_state import PipelineState, \
     PipelineStateException
 from src.pipeline.predictive_pipeline import PredictivePipeline
 from src.mining.miner import Miner
+from src.clustering.clusterer import Clusterer
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer
 from src.utils.ctransf.class_transformer import ClassTransformer
@@ -77,6 +78,8 @@ class SimplePipelineState(PipelineState):
         # Handle the many component types
         if isinstance(comp, Miner):
             self.update_pcloud(comp, new_pcloud)  # Mine generated features
+        if isinstance(comp, Clusterer):
+            self.update_pcloud(comp, new_pcloud)  # Cluster points
         elif isinstance(comp, Imputer):
             self.update_pcloud(comp, new_pcloud)  # Impute generated features
         elif isinstance(comp, FeatureTransformer):
