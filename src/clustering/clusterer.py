@@ -66,9 +66,18 @@ class Clusterer:
         :param kwargs: The key-word arguments for the initialization of any
             Clusterer. It must contain the name of the cluster to be computed.
         """
+        # Assign member attributes
         self.cluster_name = kwargs.get('cluster_name', 'CLUSTER')
         self.post_clustering = kwargs.get('post_clustering', None)
         self.out_prefix = kwargs.get('out_prefix', None)
+        # Build post-processors
+        if self.post_clustering is not None:
+            from src.clustering.postproc.clustering_post_processor import \
+                ClusteringPostProcessor
+            self.post_clustering = [
+                ClusteringPostProcessor.build_post_processor(spec)
+                for spec in self.post_clustering
+            ]
 
     # ---  CLUSTERING METHODS  --- #
     # ---------------------------- #
@@ -100,6 +109,7 @@ class Clusterer:
 
         :param pcloud: The input point cloud for the components in the
             post-processing pipeline.
+        :type pcloud: :class:`.PointCloud`
         :return: The post-processed point cloud. Sometimes it will be exactly
             the same input point cloud because some post-processing components
             generate their output directly to a file.
@@ -113,7 +123,7 @@ class Clusterer:
         # Apply post-processing pipeline
         for callable in self.post_clustering:  # For each callable in the pipe.
             callable_start = time.perf_counter()
-            pcloud = callable(self, pcloud)  # Run it
+            pcloud = callable(self, pcloud, out_prefix=self.out_prefix)  # Run
             callable_end = time.perf_counter()
             LOGGING.LOGGER.info(
                 f'{self.__class__.__name__} computed '
