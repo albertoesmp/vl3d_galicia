@@ -21,4 +21,7 @@
 
 # Notas
 
+## Experimento "Vegetation"
 - Ruta modelo usado para vegetacion: /mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T3/pipe
+- MODEL_ID='4'
+- EXPERIMENT_NAME=VEGETATION
