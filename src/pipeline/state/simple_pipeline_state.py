@@ -78,7 +78,7 @@ class SimplePipelineState(PipelineState):
         # Handle the many component types
         if isinstance(comp, Miner):
             self.update_pcloud(comp, new_pcloud)  # Mine generated features
-        if isinstance(comp, Clusterer):
+        elif isinstance(comp, Clusterer):
             self.update_pcloud(comp, new_pcloud)  # Cluster points
         elif isinstance(comp, Imputer):
             self.update_pcloud(comp, new_pcloud)  # Impute generated features
