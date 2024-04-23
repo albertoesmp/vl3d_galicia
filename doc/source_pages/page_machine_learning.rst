@@ -107,6 +107,11 @@ The graphical representation of the decision trees is exported to the
     an effect when using the ``"autoval"`` or ``"stratified_kfold"`` training
     strategies.
 
+-- ``class_names``
+    Optional argument that can be used to name the classes. When given, it must
+    be a list with as many string as classes such that the class :math:`c` will
+    be named by the :math:`c`-th string the list.
+
 -- ``model_args``
     The arguments governing the Random Forest model. See the
     `sklearn documentation on Random Forest <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html>`_
