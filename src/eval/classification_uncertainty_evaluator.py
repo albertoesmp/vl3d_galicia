@@ -345,7 +345,8 @@ class ClassificationUncertaintyEvaluator(Evaluator):
             y = ClassificationEvaluator.remove_indices(y, ignore_mask)
             yhat = ClassificationEvaluator.remove_indices(yhat, ignore_mask)
             Zhat = ClassificationEvaluator.remove_indices(Zhat, ignore_mask)
-            F = ClassificationEvaluator.remove_indices(F, ignore_mask)
+            if F is not None:
+                F = ClassificationEvaluator.remove_indices(F, ignore_mask)
             X = ClassificationEvaluator.remove_indices(X, ignore_mask)
         # Obtain evaluation
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
