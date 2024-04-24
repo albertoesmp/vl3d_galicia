@@ -346,6 +346,11 @@ class ClassificationUncertaintyEvaluator(Evaluator):
                 if i not in ignore_classes_indices
 
             ]
+            Zhat = np.delete(
+                Zhat,
+                [i for i in ignore_classes_indices if i < Zhat.shape[1]],
+                axis=1
+            )
             ignore_mask = ClassificationEvaluator.find_ignore_mask(
                 y, ignore_classes_indices
             )
