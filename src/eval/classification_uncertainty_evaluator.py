@@ -334,11 +334,18 @@ class ClassificationUncertaintyEvaluator(Evaluator):
                     'available.'
                 )
         # Ignore points for certain classes (if requested)
+        nonignored_class_names = list(self.class_names)
         if self.ignore_classes is not None and y is not None:
             ignore_classes_indices = \
                 ClassificationEvaluator.get_indices_from_names(
                     self.class_names, self.ignore_classes
                 )
+            nonignored_class_names = [
+                class_name
+                for i, class_name in enumerate(self.class_names)
+                if i not in ignore_classes_indices
+
+            ]
             ignore_mask = ClassificationEvaluator.find_ignore_mask(
                 y, ignore_classes_indices
             )
@@ -350,7 +357,10 @@ class ClassificationUncertaintyEvaluator(Evaluator):
             X = ClassificationEvaluator.remove_indices(X, ignore_mask)
         # Obtain evaluation
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
+        _class_names = self.class_names
+        self.class_names = nonignored_class_names
         ev = self.eval(Zhat, X=X, y=y, yhat=yhat, F=F)
+        self.class_names = _class_names
         out_prefix = kwargs.get('out_prefix', None)
         if ev.can_report() and self.report_path is not None:
             report = ev.report()
