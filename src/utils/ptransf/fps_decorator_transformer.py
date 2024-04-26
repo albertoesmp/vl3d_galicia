@@ -235,13 +235,13 @@ class FPSDecoratorTransformer:
                 k=self.num_decoding_neighbors,
                 workers=self.threads
             )[1]
-        # Release encoding neighborhoods if requested
-        if self.release_encoding_neighborhoods:
-            self.N = None
         # Encode features for representation
         rep_F = None if F is None else self.reduce(F)
         # Encode classes for representation
         rep_y = None if y is None else self.reduce(y)
+        # Release encoding neighborhoods if requested
+        if self.release_encoding_neighborhoods:
+            self.N = None
         # Export representation, if requested
         if self.representation_report_path is not None:
             representation_report_path = self.representation_report_path \
