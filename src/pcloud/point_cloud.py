@@ -274,7 +274,9 @@ class PointCloud:
         if len(fnames) != nfeats:
             raise PointCloudException(
                 "There is no one-to-one relationship between features and "
-                "names."
+                "names.\n"
+                f'Feature names ({len(fnames)}): {fnames}\n'
+                f'Number of features: {nfeats}'
             )
         # Handle single type specification
         if not isinstance(ftypes, (list, tuple)):
