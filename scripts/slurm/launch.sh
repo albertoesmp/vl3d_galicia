@@ -2,6 +2,9 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# Unload all modules (just in case)
+module --force purge
+
 for f in $SCRIPT_DIR/../../experiments/vegetation/$(whoami)/*.json
 do
 	if [ -f $f ]; then
