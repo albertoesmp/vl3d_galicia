@@ -12,10 +12,10 @@
 #   esac
 # done
 
-MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T3/pipe
-EXPERIMENT_NAME=vegetation
-OUTPUT_PATH=/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/vegetation
-JSON_DIR=/mnt/netapp2/Store_uni/home/usc/ci/myg/Codigos/vl3d_galicia/experiments/vegetation/usccimyg
+MODEL=sed_model
+EXPERIMENT_NAME=sed_experiment_name
+OUTPUT_PATH=sed_output_path
+JSON_DIR=sed_json_dir
 
 
 pipe_filename=$(basename $(find $MODEL -name "*.pipe"))
