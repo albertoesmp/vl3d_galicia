@@ -10,10 +10,9 @@
 #SBATCH --mail-type=fail
 #SBATCH --mail-user=miguel.yermo@usc.es
 
-
 # ---  PREPARE ENVIRONMENT  --- #
 # ----------------------------- #
-source $HOME/Codigos/vl3d_galicia/cesga/vl3d_cesga_env.sh
+source $(realpath $(dirname $0)/../../cesga/vl3d_cesga_env.sh)
 
 
 # ---  VARIABLES  --- #
