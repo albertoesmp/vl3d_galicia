@@ -11,7 +11,7 @@ EMAIL=miguel.yermo@usc.es
 VL3D_DIR=$(realpath $(dirname $0)/../)
 VL3D_SCRIPTS_DIR=$VL3D_DIR/vl3d.py
 MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T3/pipe
-EXPERIMENT_NAME=buildings
+EXPERIMENT_NAME=building
 JSON_DIR=$VL3D_DIR/experiments/$EXPERIMENT_NAME/$(whoami)
 
 # Replace e-mail in work.sh
