@@ -580,7 +580,8 @@ class SimpleDLModelHandler(DLModelHandler):
         if self.class_weight is None:
             return None
         # Handle class weight specification
-        class_weight_low = self.class_weight.lower()
+        class_weight_low = self.class_weight.lower() \
+            if isinstance(self.class_weight, str) else self.class_weight
         if class_weight_low == "auto":  # Automatic
             num_classes = getattr(self.arch, "num_classes", None)
             if num_classes is None:
