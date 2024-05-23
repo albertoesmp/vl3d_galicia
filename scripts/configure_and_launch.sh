@@ -18,15 +18,15 @@ case $(whoami) in
     usccisss)
     echo "Samuel"
     EMAIL=s.soutullo@usc.es
-    OUTPUT_PATH=
+    OUTPUT_PATH=/mnt/netapp1/Store_usccisss/results/vl3d_galicia/$EXPERIMENT_NAME
     VL3D_ENV=
     ;;
 
     usccisra)
     echo "Silvia"
     EMAIL=silvia.alcaraz@usc.es
-    OUTPUT_PATH=
-    VL3D_ENV=
+    OUTPUT_PATH=/mnt/netapp2/Store_usccisra/results/vl3d_galicia/$EXPERIMENT_NAME
+    VL3D_ENV=/mnt/netapp2/Store_uni/home/usc/ci/sra/.conda/envs/vl3d
     ;;
 
     *)
