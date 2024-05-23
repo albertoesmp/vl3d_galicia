@@ -5,12 +5,13 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # Unload all modules (just in case)
 module --force purge
 
-for f in $SCRIPT_DIR/../../experiments/vegetation/$(whoami)/*.json
+for f in $1/*.json
 do
+	echo $f
 	if [ -f $f ]; then
 		filename=$(basename -- "$f")
 		filename="${filename%.*}"
-		sbatch --job-name=$filename work.sh $f
+		sbatch --job-name=$filename $SCRIPT_DIR/work.sh $f
 else
     echo "File $f does not exist! Check your paths. Exiting."
 		exit 1
