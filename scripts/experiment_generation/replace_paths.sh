@@ -1,28 +1,12 @@
 #!/bin/bash
 
-# # getopts input dir
-# while getopts ":i:" opt; do
-#   case ${opt} in
-#     i )
-#       JSON_DIR=$OPTARG
-#       ;;
-#     \? )
-#       echo "Usage: cmd -i <jsons_directory>"
-#       ;;
-#   esac
-# done
-
 MODEL=sed_model
 EXPERIMENT_NAME=sed_experiment_name
 OUTPUT_PATH=sed_output_path
 JSON_DIR=sed_json_dir
 
-
 pipe_filename=$(basename $(find $MODEL -name "*.pipe"))
 nn_filename=$(basename $(find $MODEL -name "*.keras"))
-
-# pipe_path="/home/usc/ci/myg/Codigos/vl3d_galicia/models/vegetation/KPC_T3.pipe"
-# nn_path="/home/usc/ci/myg/Codigos/vl3d_galicia/models/vegetation/KPC_T3.keras"
 
 for file in $JSON_DIR/*.json
 do
