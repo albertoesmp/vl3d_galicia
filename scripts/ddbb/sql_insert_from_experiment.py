@@ -572,6 +572,9 @@ def print_sql_inserts(analysis, dataset_name):
             last=False
         )
     ca = uncertainty['class_ambiguity_by_pred']
+    last_i = max([
+        i for i, classi in enumerate(uncertainty['classes']) if classi in ca
+    ])
     for i, classi in enumerate(uncertainty['classes']):
         if classi not in ca:
             continue
@@ -579,7 +582,7 @@ def print_sql_inserts(analysis, dataset_name):
             'Class ambiguity',
             classes.CLASS_NAMES[classi],
             ca[classi],
-            last=i==len(uncertainty['class_ambiguity_by_pred'])-1
+            last=i==last_i
         )
     print(
         'INSERT INTO classwise_likelihood_resultsets '
