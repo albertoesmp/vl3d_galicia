@@ -78,6 +78,11 @@ def launch_script(con, sql_script):
             try:
                 with con.cursor() as cursor:
                     cursor.execute(sub_sql)
+                    try:
+                        for row in cursor.fetchall():
+                            print(row)
+                    except Exception as ex:
+                        print(f'No result was fetched.')
                     cursor.close()
             except Exception as ex:
                 s = sub_sql.replace(' ', "").replace("\n", "")
