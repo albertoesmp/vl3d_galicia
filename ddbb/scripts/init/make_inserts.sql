@@ -5168,7 +5168,7 @@ INSERT INTO model_types(specification, family_id, subfamily_id, notes) VALUES
         (SELECT id FROM model_families WHERE LOWER(name) like 'sequential'),
         (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
         'A null model type that should not be used unless for development, debugging, and bug fixing purposes.'
-    ), (
+    /*), (
         '{}',
         (SELECT id from model_families WHERE LOWER(name) like 'sequential'),
         (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'pointnet'),
@@ -5407,7 +5407,7 @@ INSERT INTO model_types(specification, family_id, subfamily_id, notes) VALUES
         '{}',
         (SELECT id from model_families WHERE LOWER(name) like 'hierarchical autoencoder'),
         (SELECT id FROM model_subfamilies WHERE LOWER(name) like 'kpconv'),
-        'KPConv on XIrRGB for building and vegetation classification.'
+        'KPConv on XIrRGB for building and vegetation classification.'*/
     ) ON CONFLICT DO NOTHING;
 
 -- TABLE: models
