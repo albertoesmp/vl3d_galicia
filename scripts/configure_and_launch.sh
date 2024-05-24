@@ -19,7 +19,7 @@ case $(whoami) in
     echo "Samuel"
     EMAIL=s.soutullo@usc.es
     OUTPUT_PATH=/mnt/netapp1/Store_usccisss/results/vl3d_galicia/$EXPERIMENT_NAME
-    VL3D_ENV=
+    VL3D_ENV=/mnt/netapp1/Store_usccisss/vl3d_env
     ;;
 
     usccisra)
