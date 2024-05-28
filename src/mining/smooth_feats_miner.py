@@ -20,7 +20,7 @@ class SmoothFeatsMiner(Miner):
     See :class:`.Miner`.
 
     The smooth features miner considers each point in the point cloud
-    :math:`\pmb{x_{i*}}` and finds either each knn or its spherical
+    :math:`\pmb{x_{i*}}` and finds either the knn or its spherical
     neighborhood :math:`\mathcal{N}`. Now, let :math:`j` index the points
     in the neighborhood. For then, a given feature :math:`f` can be
     smoothed by considering all the points in the neighborhood. In the most
