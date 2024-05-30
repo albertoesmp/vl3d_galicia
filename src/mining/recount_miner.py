@@ -1,6 +1,7 @@
 # ---   IMPORTS   --- #
 # ------------------- #
 from src.mining.miner import Miner, MinerException
+from src.mining.smooth_feats_miner import SmoothFeatsMiner
 from src.utils.dict_utils import DictUtils
 import src.main.main_logger as LOGGING
 from scipy.spatial import KDTree as KDT
@@ -108,51 +109,16 @@ class RecountMiner(Miner):
         # Obtain coordinates and features
         X = pcloud.get_coordinates_matrix()
         F = pcloud.get_features_matrix(self.input_fnames)
-        # Determine neighborhood function
-        # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
-        neighborhood_type_low = self.neighborhood['type']
-        neighborhood_radius = None
-        use_2D_query = False
-        if neighborhood_type_low == 'knn':
-            neighborhood_function = self.knn_neighborhood_f
-        elif neighborhood_type_low == 'sphere':
-            neighborhood_function = self.sphere_neighborhood_f
-            neighborhood_radius = self.neighborhood['radius']
-        elif neighborhood_type_low == 'cylinder':
-            neighborhood_function = self.cylinder_neighborhood_f
-            neighborhood_radius = self.neighborhood['radius']
-            use_2D_query = True
-        else:
-            raise MinerException(
-                'RecountMiner does not support given neighborhood type '
-                f'"{self.neighborhood["type"]}".'
-            )
-        # Build KDTree
-        # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
-        start = time.perf_counter()
-        if use_2D_query:
-            kdt = dill.dumps(  # Serialized KDT
-                KDT(X[:, :2], leafsize=16, compact_nodes=True, copy_data=False)
-            )
-        else:
-            kdt = dill.dumps(  # Serialized KDT
-                KDT(X, leafsize=16, compact_nodes=True, copy_data=False)
-            )
-        end = time.perf_counter()
-        LOGGING.LOGGER.debug(
-            f'RecountMiner built KDTree in {end-start:.3f} seconds.'
-        )
+        # Prepare neighborhood handling and KDTree
+        neighborhood_radius, neighborhood_function, kdt = \
+            SmoothFeatsMiner.prepare_mining(self, X)
         # Chunkify the recounts
-        # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
-        m = len(X)
-        chunk_size = self.chunk_size
-        if chunk_size == 0:
-            chunk_size = m
-        num_chunks = int(np.ceil(m/chunk_size))
+        num_chunks, chunk_size = SmoothFeatsMiner.prepare_chunks(self, X)
         LOGGING.LOGGER.debug(
-            f'RecountMiner computing {int(np.ceil(m/chunk_size))} chunks '
-            f'of {chunk_size} points each for a total of {m} points ...'
+            f'RecountMiner computing {num_chunks} chunks '
+            f'of {chunk_size} points each for a total of {len(X)} points ...'
         )
+        # Compute recounts in parallel for each chunk
         Fhat = joblib.Parallel(n_jobs=self.nthreads)(joblib.delayed(
             self.compute_recount
         )(
@@ -169,52 +135,6 @@ class RecountMiner(Miner):
         )
         # Return point cloud extended with recounts
         return pcloud.add_features(self.frenames, np.vstack(Fhat))
-
-    # ---  NEIGHBORHOOD FUNCTIONS  --- #
-    # -------------------------------- #
-    def knn_neighborhood_f(self, kdt, X_sub):
-        """
-        The k nearest neighbors (KNN) neighborhood function.
-
-        :param kdt: The KDT representing the entire point cloud (X).
-        :param X_sub: The points whose neighborhoods must be found.
-        :return: The k indices of the nearest neighbors in X for each point in
-            X_sub.
-        """
-        return kdt.query(
-            x=X_sub,
-            k=self.neighborhood['k'],
-            workers=1
-        )[1]
-
-    def sphere_neighborhood_f(self, kdt, X_sub):
-        """
-        The spherical neighborhood function.
-
-        :param kdt: The KDT representing the entire point cloud (X).
-        :param X_sub: The points whose neighborhoods must be found.
-        :return: The indices of the points in X that belong to the spherical
-            neighborhood for each point in X_sub.
-        """
-        return KDT(X_sub).query_ball_tree(
-            other=kdt,
-            r=self.neighborhood['radius']
-        )
-
-    def cylinder_neighborhood_f(self, kdt, X_sub):
-        """
-        The cylinder neighborhood function.
-
-        :param kdt: The KDT representing the entire point cloud (X).
-        :param X_sub: The points whose neighborhood must be found.
-        :return: The indices of the points in X that belong to the cylindrical
-            neighborhood for each point in X_sub.
-        """
-        # TODO Rethink : Implemnet also for Smooth feats miner
-        return KDT(X_sub[:, :2]).query_ball_tree(
-            other=kdt,
-            r=self.neighborhood['radius']
-        )
 
     # ---   UTIL METHODS   --- #
     # ------------------------ #
@@ -287,33 +207,30 @@ class RecountMiner(Miner):
         :return: The recount features computed for the chunk.
         :rtype: :class:`np.ndarray`
         """
-        # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
         # Report time for first chunk : start
         if chunk_idx == 0:
             start = time.perf_counter()
-        # Compute neighborhoods in chunks (subchunks wrt original problem)
+        # Prepare chunk
+        num_subchunks, subchunk_size, kdt = SmoothFeatsMiner.prepare_chunk(
+            self, X_chunk, kdt
+        )
         Fhat_chunk = None
-        m = len(X_chunk)
-        subchunk_size = self.subchunk_size
-        if subchunk_size == 0:
-            subchunk_size = m
-        num_chunks = int(np.ceil(m/subchunk_size))
-        kdt = dill.loads(kdt)  # Deserialized KDTree
-        for subchunk_idx in range(num_chunks):
-            a_idx = subchunk_idx*subchunk_size  # Subchunk start index
-            b_idx = (subchunk_idx+1)*subchunk_size  # Subchunk end index
-            X_sub = X_chunk[a_idx:b_idx]  # Subchunk coordinates
-            I = neighborhood_f(kdt, X_sub)  # Neighborhood indices
-            Fhat_sub = np.hstack([  # Compute recount features for subchunk
+        # Compute chunk by subchunks
+        for subchunk_idx in range(num_subchunks):
+            # Obtain subchunk coordinates and neighborhood indices
+            X_sub, I = SmoothFeatsMiner.prepare_subchunk(
+                self, subchunk_idx, subchunk_size, X_chunk, kdt, neighborhood_f
+            )
+            # Compute recount features for the subchunk
+            Fhat_sub = np.hstack([
                 self.compute_filter(
                     f, X, F, X_sub, list(I), neighborhood_radius
                 ) for f in self.filters
             ])
             # Merge subchunk recount features with chunk recount features
-            if Fhat_chunk is None:
-                Fhat_chunk = Fhat_sub
-            else:
-                Fhat_chunk = np.vstack([Fhat_chunk, Fhat_sub])
+            Fhat_chunk = SmoothFeatsMiner.prepare_mined_features_chunk(
+                Fhat_chunk, Fhat_sub
+            )
         # Report time for first chunk : end
         if chunk_idx == 0:
             end = time.perf_counter()
