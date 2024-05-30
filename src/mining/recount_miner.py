@@ -9,8 +9,6 @@ import joblib
 import dill
 import time
 
-# TODO Rethink : Add cylindrical neighborhoods (also to Smooth feats miner)
-
 
 # ---   CLASS   --- #
 # ----------------- #
@@ -114,11 +112,16 @@ class RecountMiner(Miner):
         # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
         neighborhood_type_low = self.neighborhood['type']
         neighborhood_radius = None
+        use_2D_query = False
         if neighborhood_type_low == 'knn':
             neighborhood_function = self.knn_neighborhood_f
         elif neighborhood_type_low == 'sphere':
             neighborhood_function = self.sphere_neighborhood_f
             neighborhood_radius = self.neighborhood['radius']
+        elif neighborhood_type_low == 'cylinder':
+            neighborhood_function = self.cylinder_neighborhood_f
+            neighborhood_radius = self.neighborhood['radius']
+            use_2D_query = True
         else:
             raise MinerException(
                 'RecountMiner does not support given neighborhood type '
@@ -127,9 +130,14 @@ class RecountMiner(Miner):
         # Build KDTree
         # TODO Rethink : Abstract to common logic with SmoothFeatsMiner
         start = time.perf_counter()
-        kdt = dill.dumps(  # Serialized KDT
-            KDT(X, leafsize=16, compact_nodes=True, copy_data=False)
-        )
+        if use_2D_query:
+            kdt = dill.dumps(  # Serialized KDT
+                KDT(X[:, :2], leafsize=16, compact_nodes=True, copy_data=False)
+            )
+        else:
+            kdt = dill.dumps(  # Serialized KDT
+                KDT(X, leafsize=16, compact_nodes=True, copy_data=False)
+            )
         end = time.perf_counter()
         LOGGING.LOGGER.debug(
             f'RecountMiner built KDTree in {end-start:.3f} seconds.'
@@ -183,12 +191,27 @@ class RecountMiner(Miner):
         """
         The spherical neighborhood function.
 
-        :param kdt: The KDT representing the entire point cloud (X)
+        :param kdt: The KDT representing the entire point cloud (X).
         :param X_sub: The points whose neighborhoods must be found.
         :return: The indices of the points in X that belong to the spherical
             neighborhood for each point in X_sub.
         """
         return KDT(X_sub).query_ball_tree(
+            other=kdt,
+            r=self.neighborhood['radius']
+        )
+
+    def cylinder_neighborhood_f(self, kdt, X_sub):
+        """
+        The cylinder neighborhood function.
+
+        :param kdt: The KDT representing the entire point cloud (X).
+        :param X_sub: The points whose neighborhood must be found.
+        :return: The indices of the points in X that belong to the cylindrical
+            neighborhood for each point in X_sub.
+        """
+        # TODO Rethink : Implemnet also for Smooth feats miner
+        return KDT(X_sub[:, :2]).query_ball_tree(
             other=kdt,
             r=self.neighborhood['radius']
         )
