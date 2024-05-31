@@ -312,30 +312,28 @@ class RecountMiner(Miner):
         # Return all recounts
         return np.vstack(all_recounts)
 
-    @staticmethod
-    def recount_absolute_frequency(F):
+    def recount_absolute_frequency(self, F):
         """
         Count the number of points.
         """
         return len(F)
 
-    @staticmethod
-    def recount_relative_frequency(F, total_pts):
+    def recount_relative_frequency(self, F, total_pts):
         """
         The number of points after filtering divided by the total number
         of points before filtering.
         """
         return len(F) / total_pts if total_pts > 0 else 0
 
-    @staticmethod
-    def recount_surface_density(F, X2D, x, r):
+    def recount_surface_density(self, F, X2D, x, r):
         r"""
         The number of points after filtering divided by the area of the
         neighborhood.
 
         If the neighborhood is a spherical one with radius :math:`r` then the
         area will be given by :math:`\pi r^2`. If the neighborhood is a knn
-        one then the area will be given by :math:`\pi (\dfrac{d^*}{2})^2`,
+        one then the area will be given by
+        :math:`\pi \left(\dfrac{d^*}{2}\right)^2`,
         where :math:`d^*` is the distance between the :math:`(x, y)`
         coordinates of the center point and the furthest one.
         """
@@ -345,8 +343,7 @@ class RecountMiner(Miner):
         # Compute the surface density
         return len(F)/(np.pi*r*r)
 
-    @staticmethod
-    def recount_volume_density(F, X, x, r):
+    def recount_volume_density(self, F, X, x, r):
         r"""
         The number of points after filtering divided by the volume of the
         neighborhood.
@@ -354,21 +351,38 @@ class RecountMiner(Miner):
         If the neighborhood is a spherical one with radius :math:`r` then the
         volume will be given by :math:`\dfrac{4}{3}\pi r^2`. If the
         neighborhood is a knn one then the area will be given by
-        :math:`\dfrac{4}{3}\pi (\dfrac{d^*}{2})^2`, where :math:`d^*` is the
-        distance between the :math:`(x, y, z)` coordinates of the center point
-        and the furthest one.
+        :math:`\dfrac{4}{3}\pi \left(\dfrac{d^*}{2}\right)^2`, where
+        :math:`d^*` is the distance between the :math:`(x, y, z)` coordinates
+        of the center point and the furthest one.
+        When using a cylinder, the radius will be
+        considered to compute the area and the volume will be computed
+        considering the vertical boundaries of the cylinder such that
+        :math:`\pi r^2 (z^*-z_*)` where :math:`z_*` is the min vertical
+        coordinate and :math:`z^*` is the max vertical coordinate.
+
+        Note that, for cylindrical neighborhoods, if there is no difference
+        between the max and the min vertical coordinate, then the maximum
+        integer will be returned, effectively avoiding a division by zero.
         """
+        # Handle no points case
+        if len(F) == 0:
+            return 0
         # Handle cylindrical neighborhoods
-        # TODO Rethink : Use circle area along vertical axis
-        # TODO Rethink : Update docs accordingly
+        if self.neighborhood['type'].lower() == 'cylinder':
+            z = X[:, 2]
+            zmin, zmax = np.min(z), np.max(z)
+            zdelta = zmax-zmin
+            bounded_cylinder_volume = (np.pi*r*r)
+            if zdelta == 0:
+                return np.iinfo(int).max
+            return len(F)/bounded_cylinder_volume
         # Compute radius from neighborhood, if necessary
         if r is None:
             r = np.sqrt(np.max(np.sum(np.power(X-x, 2), axis=1)))
         # Compute the volume density
         return len(F)/(4.0*np.pi*r*r*r/3.0)
 
-    @staticmethod
-    def recount_vertical_segments(F, z, num_segments):
+    def recount_vertical_segments(self, F, z, num_segments):
         """
         The number of vertical segments along a vertical cylinder that contain
         at least one point.
