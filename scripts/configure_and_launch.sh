@@ -37,6 +37,7 @@ esac
 echo Conda env: $VL3D_ENV
 echo e-mail: $EMAIL
 echo output path: $OUTPUT_PATH
+echo VL3D directory: $VL3D_DIR
 
 # ask user to continue
 read -p "Todo ok? (y/n)" -n 1 -r
@@ -61,6 +62,8 @@ sed -i 's|sed_experiment_name|'$EXPERIMENT_NAME'|g' $VL3D_DIR/scripts/experiment
 sed -i 's|sed_output_path|'$OUTPUT_PATH'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
 sed -i 's|sed_json_dir|'$JSON_DIR'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
 
+# Replace source paths in work.sh
+sed -i "s|source .*|source $VL3D_DIR/cesga/vl3d_cesga_env.sh|" $VL3D_DIR/scripts/slurm/work.sh
 
 # Replace paths in json files
 $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
