@@ -493,7 +493,7 @@ class SmoothFeatsMiner(Miner):
         :type X: :class:`np.ndarray`
         :return: The neighborhood radius, the function for spatial queries,
             and the serialized KDTree.
-        :rtype float, callable, bytes
+        :rtype: float, callable, bytes
         """
         # Determine neighborhood function
         neighborhood_type_low = miner.neighborhood['type']

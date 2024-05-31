@@ -4,10 +4,8 @@ from src.mining.miner import Miner, MinerException
 from src.mining.smooth_feats_miner import SmoothFeatsMiner
 from src.utils.dict_utils import DictUtils
 import src.main.main_logger as LOGGING
-from scipy.spatial import KDTree as KDT
 import numpy as np
 import joblib
-import dill
 import time
 
 
@@ -360,6 +358,9 @@ class RecountMiner(Miner):
         distance between the :math:`(x, y, z)` coordinates of the center point
         and the furthest one.
         """
+        # Handle cylindrical neighborhoods
+        # TODO Rethink : Use circle area along vertical axis
+        # TODO Rethink : Update docs accordingly
         # Compute radius from neighborhood, if necessary
         if r is None:
             r = np.sqrt(np.max(np.sum(np.power(X-x, 2), axis=1)))
