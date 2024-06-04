@@ -6,10 +6,10 @@
         "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_26_minmaxnorm.laz"
     ],
     "out_pcloud": [
-        "path_to_output_clouds/MERGE_15/*",
-        "path_to_output_clouds/MERGE_18/*",
-        "path_to_output_clouds/MERGE_23/*",
-        "path_to_output_clouds/MERGE_26/*"
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/building/MERGE_15/*",
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/building/MERGE_18/*",
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/building/MERGE_23/*",
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/building/MERGE_26/*"
     ],
     "sequential_pipeline": [
         {
@@ -37,21 +37,21 @@
                 "miss18"
             ],
             "output_class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],
             "class_groups": [
                 [
-                    "lowveg",
-                    "midveg",
-                    "highveg"
+                    "building"
                 ],
                 [
                     "ground",
-                    "building",
                     "water",
-                    "bridge"
+                    "bridge",
+                    "lowveg",
+                    "midveg",
+                    "highveg"
                 ],
                 [
                     "noclass",
@@ -73,8 +73,8 @@
         },
         {
             "predict": "PredictivePipeline",
-            "model_path": "path_to_model_pipe",
-            "nn_path": "path_to_model_nn"
+            "model_path": "/mnt/netapp1/Store_usccimyg/tmp/models/building/usccimyg_execution_1/KPC_T3.pipe",
+            "nn_path": "/mnt/netapp1/Store_usccimyg/tmp/models/building/usccimyg_execution_1/KPC_T3.keras"
         },
         {
             "writer": "ClassifiedPcloudWriter",
@@ -87,7 +87,7 @@
         {
             "eval": "ClassificationEvaluator",
             "class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],
@@ -123,7 +123,7 @@
         {
             "eval": "ClassificationUncertaintyEvaluator",
             "class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],

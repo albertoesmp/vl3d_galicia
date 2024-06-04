@@ -33,21 +33,21 @@
                 "miss18"
             ],
             "output_class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],
             "class_groups": [
                 [
-                    "lowveg",
-                    "midveg",
-                    "highveg"
+                    "building"
                 ],
                 [
                     "ground",
-                    "building",
                     "water",
-                    "bridge"
+                    "bridge",
+                    "lowveg",
+                    "midveg",
+                    "highveg"
                 ],
                 [
                     "noclass",
@@ -83,7 +83,7 @@
         {
             "eval": "ClassificationEvaluator",
             "class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],
@@ -119,7 +119,7 @@
         {
             "eval": "ClassificationUncertaintyEvaluator",
             "class_names": [
-                "vegetation",
+                "building",
                 "other",
                 "ignore"
             ],
