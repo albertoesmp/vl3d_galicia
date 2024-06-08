@@ -73,7 +73,10 @@ class DLSequencer(tf.keras.utils.Sequence):
         :return: Number of input batches.
         :rtype: int
         """
-        return int(np.ceil(len(self.X) / self.batch_size))
+        if isinstance(self.X, list):
+            return int(np.ceil(len(self.X[0]) / self.batch_size))
+        else:
+            return int(np.ceil(len(self.X) / self.batch_size))
 
     def __getitem__(self, idx):
         """
@@ -85,8 +88,9 @@ class DLSequencer(tf.keras.utils.Sequence):
         :rtype: tuple
         """
         # Obtain start and end points for the indexing interval
+        max_idx = len(self.X[0]) if isinstance(self.X, list) else len(self.X)
         start_idx = idx * self.batch_size
-        end_idx = min(start_idx + self.batch_size, len(self.X))
+        end_idx = min(start_idx + self.batch_size, max_idx)
         # Extract batch
         batch_X = self.extract_input_batch(start_idx, end_idx)
         batch_y = self.extract_reference_batch(start_idx, end_idx)
