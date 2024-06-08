@@ -5,6 +5,7 @@ from src.model.deeplearn.loss.class_weighted_binary_crossentropy import \
     vl3d_class_weighted_binary_crossentropy
 from src.model.deeplearn.loss.class_weighted_categorical_crossentropy import \
     vl3d_class_weighted_categorical_crossentropy
+from src.model.deeplearn.sequencer.dl_sequencer import DLSequencer
 from src.report.deep_learning_model_summary_report import \
     DeepLearningModelSummaryReport
 from src.report.receptive_fields_report import ReceptiveFieldsReport
@@ -71,6 +72,10 @@ class SimpleDLModelHandler(DLModelHandler):
         :meth:`simple_dl_model_handler.SimpleDLModelHandler.build_compilation_args`
         .
     :vartype compilation_args: dict
+    :ivar training_sequencer": The specification on how to build the sequencer
+        for the input data during model training. See
+        :meth:`SimpleDLModelHandler.build_sequencer`.
+    :vartype training_sequencer: dict
     :ivar fit_verbose: Whether to use silent mode (0), show a progress bar (1),
         or print one line per epoch (2). Alternatively, "auto" can be used
         which typically means (1).
@@ -123,6 +128,7 @@ class SimpleDLModelHandler(DLModelHandler):
         )
         self.early_stopping = kwargs.get('early_stopping', None)
         self.compilation_args = kwargs.get('compilation_args', None)
+        self.training_sequencer = kwargs.get('training_sequencer', None)
         self.fit_verbose = kwargs.get('fit_verbose', "auto")
         self.predict_verbose = kwargs.get('predict_verbose', "auto")
 
@@ -251,8 +257,11 @@ class SimpleDLModelHandler(DLModelHandler):
         if hasattr(self.arch, 'prefit_logic_callback'):
             self.arch.prefit_logic_callback(fit_cache_map)
         # Fit logic
+        input_X, input_y = X, y_rf
+        if self.training_sequencer is not None:
+            input_X, input_y = self.build_sequencer(X, y_rf), None
         self.history = self.compiled.fit(
-            X, y_rf,
+            input_X, input_y,
             epochs=self.training_epochs,
             callbacks=callbacks,
             batch_size=self.batch_size,
@@ -754,6 +763,35 @@ class SimpleDLModelHandler(DLModelHandler):
                 class_names=self.class_names,
                 path=rf_dist_plot_path
             ).plot(out_prefix=self.out_prefix, logging=True)
+
+    def build_sequencer(self, X, y_rf):
+        """
+        Build/instantiate a sequencer from the given input data and
+        specification.
+
+        :param X: The input data.
+        :param y_rf: The input reference values.
+        :return: The built sequencer.
+        :rtype: :class:`.DLSequencer`
+        """
+        seq_type = self.training_sequencer['type']
+        seq_type_low = seq_type.lower()
+        if seq_type_low == 'dlsequencer':
+            return DLSequencer(
+                X,
+                y_rf,
+                self.batch_size,
+                arch=self.arch,
+                augmentor=self.training_sequencer.get('augmentor', None),
+                random_shuffle_indices=self.training_sequencer.get(
+                    'random_shuffle_indices', False
+                )
+            )
+        else:
+            raise DeepLearningException(
+                'SimpleDLModelHandler did not expect the sequencer '
+                f'"{seq_type}" so it could not be built.'
+            )
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
