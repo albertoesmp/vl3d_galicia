@@ -1808,6 +1808,102 @@ On top of that, the VL3D framework provides some custom loss functions.
 
 
 
+
+
+Sequencers and data augmentation
+===================================
+
+Deep learning models can handle the input data using a sequencer like the
+:class:`.DLSequencer`. Sequencers govern how the batches are fed into the
+neural network, especially during training time. Data augmentation components
+like the :class:`.SimpleDataAugmentor` can be used through sequencers.
+Sequencers can be defined for any deep learning model by adding a
+``"training_sequencer"`` dictionary inside the ``"model_handling"``
+specification.
+
+
+
+Deep learning sequencer
+--------------------------
+
+One of the most simple sequencers is the deep learning sequencer
+(:class:`.DLSequencer`). It can be used simply to load the data in the GPU
+batch by batch instead of considering all the data at the same time. Morever,
+it can be used to randomly swap the order of all the elements (along the
+different batches) at the end of each training epoch. A
+:class:`.SimpleDataAugmentor` can be configured through the ``"augmentor"``
+element. The JSON below shows an example of how to configure a KPConv-like
+model with a :class:`.DLSequencer`:
+
+
+.. code-block:: json
+
+    "training_sequencer": {
+        "type": "DLSequencer",
+        "random_shuffle_indices": true,
+        "augmentor": {
+            "transformations": [
+                {
+                    "type": "Rotation",
+                    "axis": [0, 0, 1],
+                    "angle_distribution": {
+                        "type": "uniform",
+                        "start": -3.141592,
+                        "end": 3.141592
+                    }
+                },
+                {
+                    "type": "Scale",
+                    "scale_distribution": {
+                        "type": "uniform",
+                        "start": 0.99,
+                        "end": 1.01
+                    }
+                },
+                {
+                    "type": "Jitter",
+                    "noise_distribution": {
+                        "type": "normal",
+                        "mean": 0,
+                        "stdev": 0.01
+                    }
+                }
+            ]
+        }
+    }
+
+In the JSON above a :class:`.DLSequencer` is configured to randomly reorder the
+input data at the end of each epoch and to provide data augmentation.
+More concretely, the data augmentation will start by rotating all the points
+with an angle taken from a uniform distribution inside the interval
+:math:`[-\pi, \pi]`, then it will apply a random scale factor taken from
+another uniform distribution inside the interval :math:`[0.99, 1.01]`, and
+finally some jitter where the displacement for each coordinate will follow a
+normal distribution with mean :math:`\mu=0` and standard deviation
+:math:`\sigma=0.01`.
+
+
+**Arguments**
+
+-- ``type``
+    The type of sequencer to be used. It must be ``"DLSequencer"`` to use a
+    :class:`.DLSequencer`.
+
+-- ``random_shuffle_indices``
+    Whether to randomly shuffle the indices of the elements along the many
+    batches (``True``) or not (``False``).
+
+-- ``augmentor``
+    The data augmentation specification. For :class:`.DLSequencer` only
+    the :class:`.SimpleDataAugmentor` is supported, so it can be directly
+    specified as a dictionary with one element ``"transformations"`` that
+    consists of a list of ``"Rotation"``, ``"Scale"``, and ``"Jitter"``
+    transformations, each following either a uniform or a normal distribution.
+
+
+
+
+
 Further training
 ==================
 
