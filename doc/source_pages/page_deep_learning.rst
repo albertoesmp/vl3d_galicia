@@ -1470,7 +1470,11 @@ cloud.
     will use a significantly faster random sampling-based approximation of the
     furthest point subsampling strategy. Note that this approximation is only
     reliable for high enough values of ``"support_strategy_num_points"``
-    (at least thousands).
+    (at least thousands). Alternatively, it can be set to ``2`` to use an even
+    faster approximation. However, this faster approach will be slower than the
+    fast one when the selected number of points is proportionally too small
+    compared to the total number of points, e.g., when selecting 10,000 points
+    from 80 millions.
 
 -- ``training_class_distribution``
     When given, the support points to be considered as the centers of the
@@ -1497,7 +1501,11 @@ cloud.
 -- ``fast``
     When ``true`` the FPS computation will be accelerated using a uniform point
     sampling strategy. It is recommended only when the number of points is
-    too high to be computed deterministically.
+    too high to be computed deterministically. Alternatively, it is possible
+    to use ``2`` for an even faster approach. However, this faster approach
+    will be slower than the fast one when the selected number of points is
+    proportionally too small compared to the total number of points, e.g.,
+    when selecting 10,000 points from 80 millions.
 
 .. _FPS neighborhood:
 
@@ -1659,7 +1667,11 @@ on points from the input point cloud.
     will use a significantly faster random sampling-based approximation of the
     furthest point subsampling strategy. Note that this approximation is only
     reliable for high enough values of ``"support_strategy_num_points"``
-    (at least thousands).
+    (at least thousands). Alternatively, it can be set to ``2`` to
+    use an even faster approximation. However, this faster approach will be
+    slower than the fast one when the selected number of points is
+    proportionally too small compared to the total number of points, e.g., when
+    selecting 10,000 points from 80 millions.
 
 -- ``center_on_pcloud``
     When ``true`` the neighborhoods will be centered on a point from the
@@ -1676,7 +1688,11 @@ on points from the input point cloud.
 
 -- ``fast_flag_per_depth``
     Whether to use a faster random sampling-based approximation for the FPS
-    at each depth level.
+    at each depth level. Alternatively, it is possible
+    to use ``2`` for an even faster approach. However, this faster approach
+    will be slower than the fast one when the selected number of points is
+    proportionally too small compared to the total number of points, e.g.,
+    when selecting 10,000 points from 80 millions.
 
 -- ``num_downsampling_neighbors``
     How many closest neighbors consider for the downsampling neighborhoods at
