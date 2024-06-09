@@ -279,21 +279,29 @@ class ReceptiveFieldFPS(ReceptiveField):
         :type num_points: int
         :param fast: Whether to use a fast approximation of FPS (True) or
             the exact computation (False). The fast approximation is computed
-            through uniform down sample.
-        :type fast: bool
+            through uniform down sample. Alternatively, it can be (2) to use
+            the turbo-fast mode (faster but purely stochastic). Note that
+            turbo-fast can be slower than fast when only a few points (relative
+            to the total) are selected, e.g., when selecting 5,000 or 10,000
+            points from a point cloud of 80 millions.
+        :type fast: bool or int
         :param o3d_vector_class: The class (typically from Open3D utility)
             to wrap the input matrix X.
         :type o3d_vector_class: class
         :return: The subsampled point cloud.
         :rtype: :class:`np.ndarray`
         """
-        # TODO Pending : Replace fast mode with numpy shuffle (can be faster)
-        # See FPSDecoratorTransformer.transform for an example
+        # Turbo-fast (see FPSDecoratorTransformer.transform)
+        if fast == 2:
+            np.random.shuffle(X)
+            return X[:num_points]
+        # Prepare Open3D context
         o3d_cloud = open3d.geometry.PointCloud()
         o3d_cloud.points = open3d.utility.Vector3dVector(X)
-        if fast:
+        if fast:  # Just fast (uniform down sampling before exact FPS)
             step = X.shape[0] // num_points
             o3d_cloud = o3d_cloud.uniform_down_sample(step)
+        # Do the exact furthest point sampling
         o3d_cloud = o3d_cloud.farthest_point_down_sample(num_points)
         if len(o3d_cloud.points) != num_points:
             raise ValueError(
