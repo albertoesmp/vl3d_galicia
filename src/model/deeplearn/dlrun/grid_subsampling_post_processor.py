@@ -126,7 +126,7 @@ class GridSubsamplingPostProcessor:
         :param rf: The receptive fields to compute the propagations. See
             :class:`.ReceptiveField` and :class:`.ReceptiveFieldGS`.
         :type rf: list
-        :param I: The list of neighborhods, where each neighborhood is given
+        :param I: The list of neighborhoods, where each neighborhood is given
             as a list of indices.
         :type I: list
         :param nthreads: The number of threads for parallel computing.
