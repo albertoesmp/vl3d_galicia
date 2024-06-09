@@ -176,6 +176,10 @@ class SimpleDLModelHandler(DLModelHandler):
                     msg='Cannot find DL model checkpoint at:'
                 )
                 self.compiled.load_weights(self.checkpoint_path)
+                LOGGING.LOGGER.debug(
+                    'SimpleDLModelHandler restored weights from '
+                    f'"{self.checkpoint_path}".'
+                )
             except FileNotFoundError as fnferr:
                 LOGGING.LOGGER.warning(
                     'SimpleDLModelHandler failed to restore DL model weights '
