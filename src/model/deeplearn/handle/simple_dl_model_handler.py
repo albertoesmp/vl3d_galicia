@@ -15,6 +15,8 @@ from src.plot.receptive_fields_distribution_plot import \
     ReceptiveFieldsDistributionPlot
 from src.report.training_history_report import TrainingHistoryReport
 from src.plot.training_history_plot import TrainingHistoryPlot
+from src.utils.preds.prediction_reducer import PredictionReducer
+from src.utils.preds.prediction_reducer_factory import PredictionReducerFactory
 from src.utils.dict_utils import DictUtils
 from src.inout.io_utils import IOUtils
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
@@ -131,6 +133,15 @@ class SimpleDLModelHandler(DLModelHandler):
         self.training_sequencer = kwargs.get('training_sequencer', None)
         self.fit_verbose = kwargs.get('fit_verbose', "auto")
         self.predict_verbose = kwargs.get('predict_verbose', "auto")
+        self.prediction_reducer = kwargs.get(
+            'prediction_reducer',
+            PredictionReducer()
+        )
+        if isinstance(self.prediction_reducer, dict):
+            self.prediction_reducer = \
+                PredictionReducerFactory.make_from_dict(
+                    self.prediction_reducer
+                )
 
     # ---   MODEL HANDLER   --- #
     # ------------------------- #
@@ -313,8 +324,7 @@ class SimpleDLModelHandler(DLModelHandler):
             zout.append(zhat)  # Append propagated zhat to z list
 
         # Final predictions
-        yhat = np.argmax(zhat, axis=1) if len(zhat.shape) > 1 \
-            else np.round(zhat)
+        yhat = self.prediction_reducer.select(zhat)
         # Do plots and reports
         if plots_and_reports:
             _X_rf = X_rf[0] if isinstance(X_rf, list) else X_rf
@@ -733,6 +743,7 @@ class SimpleDLModelHandler(DLModelHandler):
         ):
             return
         # Compute the predicted and expected classes for each receptive field
+        # TODO Rethink : Replace argmax by PredictionReducer.select
         yhat_rf = np.array([  # Predictions (for each receptive field)
             np.argmax(zhat_rf_i, axis=1)
             if len(zhat_rf_i.shape) > 1 and zhat_rf_i.shape[-1] != 1
@@ -828,8 +839,10 @@ class SimpleDLModelHandler(DLModelHandler):
         state['learning_rate_on_plateau'] = self.learning_rate_on_plateau
         state['early_stopping'] = self.early_stopping
         state['compilation_args'] = self.compilation_args
+        state['training_sequencer'] = self.training_sequencer
         state['fit_verbose'] = self.fit_verbose
         state['predict_verbose'] = self.predict_verbose
+        state['prediction_reducer'] = self.prediction_reducer
         # Return Simple DL Model Handler state (for serialization)
         return state
 
@@ -869,5 +882,7 @@ class SimpleDLModelHandler(DLModelHandler):
         self.learning_rate_on_plateau = state['learning_rate_on_plateau']
         self.early_stopping = state['early_stopping']
         self.compilation_args = state['compilation_args']
+        self.training_sequencer = state.get('training_sequencer', None)
         self.fit_verbose = state['fit_verbose']
         self.predict_verbose = state['predict_verbose']
+        self.prediction_reducer = state.get('prediction_reducer', None)
