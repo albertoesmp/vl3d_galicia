@@ -3,6 +3,7 @@
 from abc import abstractmethod
 from src.main.vl3d_exception import VL3DException
 from src.utils.preds.mean_pred_reduce_strategy import MeanPredReduceStrategy
+from src.utils.preds.max_pred_reduce_strategy import MaxPredReduceStrategy  # TODO Remove
 from src.utils.preds.argmax_pred_select_strategy \
     import ArgMaxPredSelectStrategy
 
@@ -49,7 +50,8 @@ class PredictionReducer:
         # Fundamental initialization of any prediction reducer
         self.reduce_strategy = kwargs.get(
             'reduce_strategy',
-            MeanPredReduceStrategy()
+            #MeanPredReduceStrategy()  # TODO Restore
+            MaxPredReduceStrategy()  # TODO Remove
         )
         self.select_strategy = kwargs.get(
             'select_strategy',
@@ -73,18 +75,18 @@ class PredictionReducer:
         if not hasattr(self.select_strategy, 'select'):
             raise PredictionReducerException(
                 'PredictionReducer needs a select strategy with a select '
-                f'method but {self.select_strategy.__clas__.__name__} does '
+                f'method but {self.select_strategy.__class__.__name__} does '
                 'not have one.'
             )
 
     # ---  REDUCE METHODS  --- #
     # ------------------------ #
-    def reduce(self, Z, I):
+    def reduce(self, npoints, nvals, Z, I):
         """
         See :class:`.PredReduceStrategy` and
         :meth:`.PredReduceStrategy.reduce`.
         """
-        return self.reduce_strategy.reduce(self, Z, I)
+        return self.reduce_strategy.reduce(self, npoints, nvals, Z, I)
 
     # ---  SELECT METHODS  --- #
     # ------------------------ #

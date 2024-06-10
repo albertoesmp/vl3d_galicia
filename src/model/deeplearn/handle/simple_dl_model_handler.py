@@ -319,7 +319,10 @@ class SimpleDLModelHandler(DLModelHandler):
                 zhat_rf = self.compiled.predict(
                     X_rf, batch_size=self.batch_size
                 )
-        zhat = self.arch.run_post({'X': X, 'z': zhat_rf})
+        zhat = self.arch.run_post(
+            {'X': X, 'z': zhat_rf},
+            reducer=self.prediction_reducer
+        )
         if zout is not None:  # When z is not None it must be a list
             zout.append(zhat)  # Append propagated zhat to z list
 

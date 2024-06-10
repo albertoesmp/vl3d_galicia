@@ -41,7 +41,7 @@ class GridSubsamplingPostProcessor:
 
     # ---   RUN/CALL   --- #
     # -------------------- #
-    def __call__(self, inputs):
+    def __call__(self, inputs, reducer=None):
         """
         Executes the post-processing logic.
 
@@ -51,6 +51,8 @@ class GridSubsamplingPostProcessor:
             that must be propagated back to the :math:`m` points of the
             original point cloud.
         :type inputs: dict
+        :param reducer: The prediction reducer for the post-processor, if any.
+        :type reducer: :class:`.PredictionReducer`
         :return: The :math:`m` point-wise predictions derived from the
             :math:`R` input predictions on the receptive field.
         """
@@ -65,7 +67,8 @@ class GridSubsamplingPostProcessor:
             _inputs,
             self.gs_preproc.last_call_receptive_fields,
             self.gs_preproc.last_call_neighborhoods,
-            nthreads=self.gs_preproc.nthreads
+            nthreads=self.gs_preproc.nthreads,
+            reducer=reducer
         )
         end = time.perf_counter()
         LOGGING.LOGGER.info(
@@ -84,7 +87,9 @@ class GridSubsamplingPostProcessor:
         Compute a point-wise reduction of propagated values with overlapping.
         In other words, this method can be used to reduce values computed
         on overlapping neighborhoods so there is potentially more than one
-        value for the same variable of the same point.
+        value for the same variable of the same point. The reduction consists
+        of computing the mean value.
+
 
         :param npoints: The number of points.
         :param nvars: The number of considered point-wise variables.
@@ -111,7 +116,7 @@ class GridSubsamplingPostProcessor:
         return u
 
     @staticmethod
-    def post_process(inputs, rf, I, nthreads=1):
+    def post_process(inputs, rf, I, nthreads=1, reducer=None):
         """
         Computes the post-processing logic. The method is used to aid the
         :meth:`grid_subsampling_post_processor.GridSubsamplingPostProcessor.__call__`
@@ -131,6 +136,8 @@ class GridSubsamplingPostProcessor:
         :type I: list
         :param nthreads: The number of threads for parallel computing.
         :type nthreads: int
+        :param reducer: The prediction reducer for the post-processor, if any.
+        :type reducer: :class:`.PredictionReducer`
         :return: The :math:`m` point-wise predictions derived from the
             :math:`R` input predictions on the receptive field.
         """
@@ -147,7 +154,10 @@ class GridSubsamplingPostProcessor:
             )
             for i, rfi in enumerate(rf)
         )
-        # Reduce point-wise many predictions by computing the mean
+        # Reduce many point-wise predictions through given prediction reducer
+        if reducer is not None:
+            return reducer.reduce(X.shape[0], num_classes, z_propagated, I)
+        # Reduce many point-wise prediction through default function
         return GridSubsamplingPostProcessor.pwise_reduce(
             X.shape[0], num_classes, I, z_propagated
         )
