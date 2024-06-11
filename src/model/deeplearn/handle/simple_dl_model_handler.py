@@ -746,13 +746,18 @@ class SimpleDLModelHandler(DLModelHandler):
         ):
             return
         # Compute the predicted and expected classes for each receptive field
-        # TODO Rethink : Replace argmax by PredictionReducer.select
-        yhat_rf = np.array([  # Predictions (for each receptive field)
-            np.argmax(zhat_rf_i, axis=1)
-            if len(zhat_rf_i.shape) > 1 and zhat_rf_i.shape[-1] != 1
-            else np.round(np.squeeze(zhat_rf_i))
-            for zhat_rf_i in zhat_rf
-        ])
+        if self.prediction_reducer is not None:  # Use prediction reducer
+            yhat_rf = np.array([  # Predictions (for each receptive field)
+                self.prediction_reducer.select(zhat_rf_i)
+                for zhat_rf_i in zhat_rf
+            ])
+        else:  # Use default approach
+            yhat_rf = np.array([  # Predictions (for each receptive field)
+                np.argmax(zhat_rf_i, axis=1)
+                if len(zhat_rf_i.shape) > 1 and zhat_rf_i.shape[-1] != 1
+                else np.round(np.squeeze(zhat_rf_i))
+                for zhat_rf_i in zhat_rf
+            ])
         y_rf = self.arch.pre_runnable.pre_processor.reduce_labels(
             # Reduced expected classes (for each receptive field)
             X_rf, y
