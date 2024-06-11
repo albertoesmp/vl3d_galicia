@@ -4,6 +4,7 @@ from abc import abstractmethod
 from src.main.vl3d_exception import VL3DException
 from src.utils.preds.mean_pred_reduce_strategy import MeanPredReduceStrategy
 from src.utils.preds.max_pred_reduce_strategy import MaxPredReduceStrategy  # TODO Remove
+from src.utils.preds.sum_pred_reduce_strategy import SumPredReduceStrategy  # TODO Remove
 from src.utils.preds.argmax_pred_select_strategy \
     import ArgMaxPredSelectStrategy
 
@@ -52,6 +53,7 @@ class PredictionReducer:
             'reduce_strategy',
             #MeanPredReduceStrategy()  # TODO Restore
             MaxPredReduceStrategy()  # TODO Remove
+            #SumPredReduceStrategy()  # TODO Remove
         )
         self.select_strategy = kwargs.get(
             'select_strategy',

@@ -426,6 +426,7 @@ class PointNetPwiseClassifModel(ClassificationModel):
         I = model.arch.pre_runnable.pre_processor \
             .last_call_neighborhoods
         npoints = X[0].shape[0] if isinstance(X, list) else X.shape[0]
+        # TODO Rethink : Use PredictionReducer here
         activations = GridSubsamplingPostProcessor.pwise_reduce(
             npoints, activations.shape[-1], I, propagated_activations
         )
