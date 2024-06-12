@@ -28,7 +28,7 @@ class PredictionReducerFactory:
 
         :param spec: The specification on how to build the prediction reducer.
         :return: The built prediction reducer.
-        :rtype: :class:`.PredictionReducer.
+        :rtype: :class:`.PredictionReducer`.
         """
         # Build reduce strategy
         reduce_strategy_spec = spec.get('reduce_strategy', None)

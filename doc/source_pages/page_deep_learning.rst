@@ -166,7 +166,15 @@ as shown in the JSON below:
                     "mode": "min",
                     "min_delta": 0.01,
                     "patience": 5000
-                }
+                },
+                "prediction_reducer": {
+					"reduce_strategy" : {
+						"type": "MeanPredReduceStrategy"
+					},
+					"select_strategy": {
+						"type": "ArgMaxPredSelectStrategy"
+					}
+				},
             },
             "compilation_args": {
                 "optimizer": {
@@ -403,6 +411,19 @@ for class weights. The class weights can be used to handle data imbalance.
             `Keras documentation on EarlyStopping <https://keras.io/api/callbacks/early_stopping/>`_
             for more information.
 
+        -- ``prediction_reducer``
+            Can be used to modify the default prediction reduction strategies.
+            It is a dictionary that supports a ``"reduce_strategy"``
+            specification and also a ``"select_strategy"`` specification.
+
+            -- ``reduce_strategy``
+                Supported types are :class:`.SumPredReduceStrategy`,
+                :class:`.MeanPredReduceStrategy` (default), and
+                :class:`.MaxPredReduceStrategy`.
+
+            -- ``select_strategy``
+                Supported types are :class:`.ArgMaxPredSelectStrategy`
+                (default).
 
     -- ``compilation_args``
         The arguments governing the model's compilation. They include the
@@ -1030,7 +1051,13 @@ readers are referred to
                     "deformable": [false, false, false, false, false, false],
                     "W_initializer": ["glorot_uniform", "glorot_uniform", "glorot_uniform", "glorot_uniform", "glorot_uniform", "glorot_uniform"],
                     "W_regularizer": [null, null, null, null, null, null],
-                    "W_constraint": [null, null, null, null, null, null]
+                    "W_constraint": [null, null, null, null, null, null],
+                    "unary_convolution_wrapper": {
+                        "activation": "relu",
+                        "initializer": "glorot_uniform",
+                        "bn": true,
+                        "bn_momentum": 0.98
+                    }
                 },
                 "structure_alignment": null,
                 "features_alignment": null,
@@ -1230,6 +1257,35 @@ and another of reflectances.
             See
             `the keras documentation on constraints <https://keras.io/api/layers/constraints/>`_
             for more details.
+
+        -- ``unary_convolution_wrapper``
+            The specification of the unary convolutions (aka SharedMLPs) to
+            be applied before the KPConv layer to half the feature
+            dimensionality and also after to restore it.
+
+            -- ``activation``
+                The activation function for each unary convolution / SharedMLP.
+                See
+                `the keras documentation on activations <https://keras.io/api/layers/activations/>`_
+                for more details.
+
+            -- ``initializer``
+                The initialization method for the point-wise unary convolutions
+                (SharedMLPs. See
+                `the keras documentation on initializers <https://keras.io/2.15/api/layers/initializers/>`_
+                for more details.
+
+            -- ``bn``
+                Whether to enable batch normalization (``True``) or not
+                (``False``).
+
+            -- ``bn_momentum``
+                Momentum for the moving average of the batch normalization,
+                such that
+                ``new_mean = old_mean * momentum + batch_mean * (1 - momentum)``.
+                See the
+                `Keras documentation on batch normalization <https://keras.io/api/layers/normalization_layers/batch_normalization/>`_
+                for more details.
 
     -- ``structure_alignment``
         When given, this specification will govern the alignment of the
