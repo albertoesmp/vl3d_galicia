@@ -117,6 +117,7 @@ class DLSequencer(tf.keras.utils.Sequence):
         :return: Nothing at all, but the internal state of the sequencer is
             updated.
         """
+        # TODO Rethink : Undo Random index so order is the same before and after training
         # Random index shuffling
         if self.random_shuffle_indices:
             if isinstance(self.X, list):
@@ -171,7 +172,7 @@ class DLSequencer(tf.keras.utils.Sequence):
         :rtype: list of int
         """
         if isinstance(self.arch, ConvAutoencPwiseClassif):
-            return [0] + [2+i for i in range(len(self.arch.Xs[1:]))]
+            return [0] + [2+i for i in range(self.arch.max_depth-1)]
         elif isinstance(self.arch, PointNet):
             return [0]
         elif isinstance(self.arch, RBFNet):

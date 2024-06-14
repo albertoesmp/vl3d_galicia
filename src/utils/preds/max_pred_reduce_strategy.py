@@ -12,7 +12,7 @@ class MaxPredReduceStrategy(PredReduceStrategy):
 
     Reduce many predictions per point to a single one by taking the max value.
 
-    The reduced prediction for the :math:`j-th` class of the :math:`i`-th point
+    The reduced prediction for the :math:`j`-th class of the :math:`i`-th point
     will be as shown below, assuming :math:`K` values for the reduction.
 
     .. math::
@@ -26,7 +26,7 @@ class MaxPredReduceStrategy(PredReduceStrategy):
         """
         Initialize/instantiate a mean prediction reduction strategy.
 
-        :param kwargs: The attributes for the MeanPredReduceStrategy.
+        :param kwargs: The attributes for the MaxPredReduceStrategy.
         """
         # Call parent's init
         super().__init__(**kwargs)

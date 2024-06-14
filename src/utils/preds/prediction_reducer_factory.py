@@ -4,6 +4,8 @@ from src.utils.preds.prediction_reducer import PredictionReducer
 from src.utils.preds.sum_pred_reduce_strategy import SumPredReduceStrategy
 from src.utils.preds.mean_pred_reduce_strategy import MeanPredReduceStrategy
 from src.utils.preds.max_pred_reduce_strategy import MaxPredReduceStrategy
+from src.utils.preds.entropic_pred_reduce_strategy import \
+    EntropicPredReduceStrategy
 from src.utils.preds.argmax_pred_select_strategy \
     import ArgMaxPredSelectStrategy
 from src.utils.preds.prediction_reducer import PredictionReducerException
@@ -74,6 +76,8 @@ class PredictionReducerFactory:
             return MeanPredReduceStrategy()
         elif strategy_low == 'maxpredreducestrategy':
             return MaxPredReduceStrategy()
+        elif strategy_low == 'entropicpredreducestrategy':
+            return EntropicPredReduceStrategy()
         else:
             raise PredictionReducerException(
                 'PredictionReducerFactory.make_reduce_strategy does not '
