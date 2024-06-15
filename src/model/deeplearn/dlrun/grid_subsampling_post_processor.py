@@ -103,8 +103,9 @@ class GridSubsamplingPostProcessor:
         :rtype: :class:`np.ndarray`
         """
         count = np.zeros(npoints, dtype=int)
-        u = np.zeros((npoints, nvars), dtype=float) if nvars > 1 \
-            else np.zeros(npoints, dtype=float)
+        utype = v_propagated[0].dtype
+        u = np.zeros((npoints, nvars), dtype=utype) if nvars > 1 \
+            else np.zeros(npoints, dtype=utype)
         for i, v_prop_i in enumerate(v_propagated):
             u[I[i]] += v_prop_i
             count[I[i]] += 1

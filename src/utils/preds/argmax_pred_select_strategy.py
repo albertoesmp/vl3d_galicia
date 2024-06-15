@@ -46,9 +46,11 @@ class ArgMaxPredSelectStrategy(PredSelectStrategy):
         """
         # When there is only a single value, round it to the closest integer
         if ArgMaxPredSelectStrategy.is_single_value(Z):
-            return ArgMaxPredSelectStrategy.round_to_closest_int(Z)
+            return ArgMaxPredSelectStrategy.round_to_closest_int(Z).astype(
+                self.prediction_data_type
+            )
         # Otherwise, take the argmax
-        return np.argmax(Z, axis=1)
+        return np.argmax(Z, axis=1).astype(self.prediction_data_type)
 
     # ---  UTIL METHODS  --- #
     # ---------------------- #

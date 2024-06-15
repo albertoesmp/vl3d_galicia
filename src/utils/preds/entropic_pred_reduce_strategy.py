@@ -40,11 +40,12 @@ class EntropicPredReduceStrategy(PredReduceStrategy):
         :meth:`.PredReduceStrategy.reduce`.
         """
         # Initialize final likelihoods
-        Zhat = np.zeros((npoints, nvals), dtype=float) if nvals > 1 \
-            else np.zeros(npoints, dtype=float)
+        Zhat_type = Z[0].dtype
+        Zhat = np.zeros((npoints, nvals), dtype=Zhat_type) if nvals > 1 \
+            else np.zeros(npoints, dtype=Zhat_type)
         # Initialize final denominators
-        denoms = np.zeros((npoints, nvals), dtype=float) if nvals > 1 \
-            else np.zeros(npoints, dtype=float)
+        denoms = np.zeros((npoints, nvals), dtype=Zhat_type) if nvals > 1 \
+            else np.zeros(npoints, dtype=Zhat_type)
         # Compute entropic norm
         Enorm = -nvals * np.exp(-1)*np.log2(np.exp(-1))
         # For each neighborhood

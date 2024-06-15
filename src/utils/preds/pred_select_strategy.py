@@ -1,6 +1,8 @@
 # ---   IMPORTS   --- #
 # ------------------- #
 from abc import abstractmethod
+from src.main.main_config import VL3DCFG
+import numpy as np
 
 
 # ---   CLASS   --- #
@@ -21,7 +23,14 @@ class PredSelectStrategy:
 
         :param kwargs: The attributes for the PredSelectStrategy.
         """
-        pass
+        self.prediction_data_type = np.uint64
+        classification_bits = VL3DCFG['MODEL']['classification_space_bits']
+        if classification_bits == 8:
+            self.prediction_data_type = np.uint8
+        elif classification_bits == 16:
+            self.prediction_data_type = np.uint16
+        elif classification_bits == 32:
+            self.prediction_data_type = np.uint32
 
     # ---  SELECT METHODS  --- #
     # ------------------------ #

@@ -38,8 +38,9 @@ class SumPredReduceStrategy(PredReduceStrategy):
         See :class:`.PredReduceStrategy` and
         :meth:`.PredReduceStrategy.reduce`.
         """
-        u = np.zeros((npoints, nvals), dtype=float) if nvals > 1 \
-            else np.zeros(npoints, dtype=float)
+        utype = Z[0].dtype
+        u = np.zeros((npoints, nvals), dtype=utype) if nvals > 1 \
+            else np.zeros(npoints, dtype=utype)
         for i, Zi in enumerate(Z):
             u[I[i]] += Zi
         # Return
