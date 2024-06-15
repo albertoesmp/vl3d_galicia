@@ -1,6 +1,7 @@
 # ---   IMPORTS   --- #
 # ------------------- #
 from src.utils.ptransf.receptive_field import ReceptiveField
+from src.main.main_config import VL3DCFG
 from scipy.spatial import KDTree as KDT
 import numpy as np
 import open3d
@@ -52,7 +53,7 @@ class ReceptiveFieldFPS(ReceptiveField):
     :vartype M: :class:`np.ndarray`
     :ivar x: The center point of the receptive field. It is assigned when
         calling :meth:`receptive_field_fps.ReceptiveFieldFPS.fit`.
-    :vartype x: :class:`np.ndarray`
+    :vartype x: :class:`npn.ndarray`
     :ivar Y: The subsample representing the original input point cloud, i.e.,
         a matrix of coordinates in a :math:`n`-dimensional space such that
         :math:`\pmb{Y} \in \mathbb{R}^{R \times n}`.
@@ -103,7 +104,7 @@ class ReceptiveFieldFPS(ReceptiveField):
 
     # ---   RECEPTIVE FIELD METHODS   --- #
     # ----------------------------------- #
-    def fit(self, X, x):
+    def fit(self, X, x, structure_float_type=np.float64):
         """
         Fit the receptive field to represent the given points by taking the
         subset of the furthest points, i.e., the subset of points that maximize
@@ -116,6 +117,8 @@ class ReceptiveFieldFPS(ReceptiveField):
         :param x: The center point used to define the origin of the receptive
             field.
         :type x: :class:`np.ndarray`
+        :param structure_float_type: The decimal type for the structure space.
+        :type structure_float_type: :class:`np.dtype`
         :return: The fitted receptive field itself (for fluent programming)
         :rtype: :class:`.ReceptiveFieldFPS`
         """
@@ -135,7 +138,8 @@ class ReceptiveFieldFPS(ReceptiveField):
         self.Y = ReceptiveFieldFPS.compute_fps_on_3D_pcloud(
             X,
             fast=self.fast,
-            num_points=self.num_points
+            num_points=self.num_points,
+            structure_float_type=structure_float_type
         )
         # Find the indexing matrix N
         kdt = KDT(X)
@@ -242,7 +246,7 @@ class ReceptiveFieldFPS(ReceptiveField):
         See :meth:`ReceptiveFieldFPS.reduce_values`.
         """
         # Reduce
-        v_reduced = np.zeros(len(N))
+        v_reduced = np.zeros(len(N), dtype=v.dtype)
         for i, Ni in enumerate(N):
             v_reduced[i] = reduce_f(v[Ni])
         # Return
@@ -265,7 +269,9 @@ class ReceptiveFieldFPS(ReceptiveField):
         return X + self.x
 
     @staticmethod
-    def compute_fps_on_3D_pcloud(X, num_points=None, fast=False):
+    def compute_fps_on_3D_pcloud(
+        X, num_points=None, fast=False, structure_float_type=np.float64
+    ):
         r"""
         Compute the furthest point sampling (FPS) algorithm on the point cloud
         represented by the input 3D matrix
@@ -285,16 +291,15 @@ class ReceptiveFieldFPS(ReceptiveField):
             to the total) are selected, e.g., when selecting 5,000 or 10,000
             points from a point cloud of 80 millions.
         :type fast: bool or int
-        :param o3d_vector_class: The class (typically from Open3D utility)
-            to wrap the input matrix X.
-        :type o3d_vector_class: class
+        :param structure_float_type: The decimal type for the structure space.
+        :type structure_float_type: :class:`np.dtype`
         :return: The subsampled point cloud.
         :rtype: :class:`np.ndarray`
         """
         # Turbo-fast (see FPSDecoratorTransformer.transform)
         if fast == 2:
             np.random.shuffle(X)
-            return X[:num_points]
+            return X[:num_points].astype(structure_float_type)
         # Prepare Open3D context
         o3d_cloud = open3d.geometry.PointCloud()
         o3d_cloud.points = open3d.utility.Vector3dVector(X)
@@ -313,4 +318,4 @@ class ReceptiveFieldFPS(ReceptiveField):
                     'some circumstances, e.g., repeated points.'
                 )
             )
-        return np.asarray(o3d_cloud.points)
+        return np.asarray(o3d_cloud.points, dtype=structure_float_type)

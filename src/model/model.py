@@ -7,6 +7,7 @@ from src.utils.dict_utils import DictUtils
 from src.utils.imputer_utils import ImputerUtils
 from src.utils.tuner_utils import TunerUtils
 from src.eval.kfold_evaluator import KFoldEvaluator
+from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
@@ -305,6 +306,7 @@ class Model:
         :return: The trained model.
         :rtype: :class:`.Model`
         """
+        # Obtain input
         X = self.get_input_from_pcloud(pcloud)
         y = pcloud.get_classes_vector()
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
@@ -313,6 +315,22 @@ class Model:
         if getattr(self, 'training_data_pipeline', None) is not None:
             for comp in self.training_data_pipeline:
                 X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        if VL3DCFG['MODEL']['structure_space_bits'] == 32:
+            if isinstance(X, list) and len(X) > 1:
+                X[0] = X[0].astype(np.float32)
+        if VL3DCFG['MODEL']['feature_space_bits'] == 32:
+            if isinstance(X, np.ndarray):
+                X = X.astype(np.float32)
+            elif isinstance(X, list) and len(X) > 1:
+                X[1] = X[1].astype(np.float32)
+        if VL3DCFG['MODEL']['classification_space_bits'] == 8:
+            y = y.astype(np.uint8)
+        elif VL3DCFG['MODEL']['classification_space_bits'] == 16:
+            y = y.astype(np.uint16)
+        elif VL3DCFG['MODEL']['classification_space_bits'] == 32:
+            y = y.astype(np.uint32)
+        # Do the training
         self.training(X, y)
         self.on_training_finished(X, y)
         return self

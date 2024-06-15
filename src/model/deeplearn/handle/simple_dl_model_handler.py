@@ -664,7 +664,7 @@ class SimpleDLModelHandler(DLModelHandler):
             new_y = []
             for i in range(len(y)):
                 new_y.append(label_binarizer.transform(y[i].flatten()))
-            y = np.array(new_y)
+            y = np.array(new_y, dtype=y.dtype)
         if (
             loss_low == 'sparse_categorical_crossentropy' and
             self.class_weight is not None
