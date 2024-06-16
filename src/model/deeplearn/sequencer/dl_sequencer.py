@@ -63,6 +63,9 @@ class DLSequencer(tf.keras.utils.Sequence):
         self.random_shuffle_indices = kwargs.get(
             'random_shuffle_indices', False
         )
+        # Cache attributes
+        self.Irandom = None
+        self.shuffled = False
 
     # ---   SEQUENCE METHODS   --- #
     # ---------------------------- #
@@ -87,6 +90,20 @@ class DLSequencer(tf.keras.utils.Sequence):
         :return: The batch corresponding to the given index as a tuple (X, y).
         :rtype: tuple
         """
+        # Apply random shuffle, if necessary
+        if (
+            self.random_shuffle_indices and
+            self.Irandom is not None and
+            not self.shuffled
+        ):
+            if isinstance(self.X, list):
+                tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
+                for i in range(tensors_per_pcloud):
+                    self.X[i] = self.X[i][self.Irandom]
+                self.y = self.y[self.Irandom]
+            else:
+                self.X, self.y = self.X[self.Irandom], self.y[self.Irandom]
+            self.shuffled = True
         # Obtain start and end points for the indexing interval
         max_idx = len(self.X[0]) if isinstance(self.X, list) else len(self.X)
         start_idx = idx * self.batch_size
@@ -117,22 +134,32 @@ class DLSequencer(tf.keras.utils.Sequence):
         :return: Nothing at all, but the internal state of the sequencer is
             updated.
         """
-        # TODO Rethink : Undo Random index so order is the same before and after training
         # Random index shuffling
         if self.random_shuffle_indices:
             if isinstance(self.X, list):
                 tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
                 m = self.X[0].shape[0]  # Number of input point clouds
-                I = np.arange(m, dtype=int)  # Index for each input point cloud
-                np.random.shuffle(I)  # Shuffle indices
-                for i in range(tensors_per_pcloud):
-                    self.X[i] = self.X[i][I]
-                self.y = self.y[I]
+                if self.Irandom is None:  # First random shuffle of indices
+                    self.Irandom = np.arange(  # Index for each input pcloud
+                        m, dtype=int
+                    )
+                else:  # After the first random shuffle of indices
+                    # Undo previous shuffle
+                    for i in range(tensors_per_pcloud):
+                        self.X[i][self.Irandom] = np.array(self.X[i])
+                    self.y[self.Irandom] = np.array(self.y)
             else:
                 m = self.X.shape[0]  # Number of input point clouds
-                I = np.arange(m, dtype=int)  # Index for each input point cloud
-                np.random_shuffle(I)  # Shuffle indices
-                self.X, self.y = self.X[I], self.y[I]
+                if self.Irandom is None:  # First random shuffle of indices
+                    self.Irandom = np.arange(  # Index for each input cloud
+                        m, dtype=int
+                    )
+                else:  # After the first random shuffle of indices
+                    # Undo previous shuffle
+                    self.X[self.Irandom] = np.array(self.X)
+                    self.y[self.Irandom] = np.array(self.y)
+            np.random_shuffle(self.Irandom)  # Shuffle indices
+            self.shuffled = False  # Flag to shuffle on first __getitem__ call
 
     # ---  BATCH EXTRACTION METHODS  --- #
     # ---------------------------------- #
@@ -146,9 +173,9 @@ class DLSequencer(tf.keras.utils.Sequence):
         :rtype: list or :class:`np.ndarray`
         """
         if isinstance(self.X, list):
-            return [Xi[start_idx:end_idx] for Xi in self.X]
+            return [np.array(Xi[start_idx:end_idx]) for Xi in self.X]
         else:
-            return self.X[start_idx:end_idx]
+            return np.array(self.X[start_idx:end_idx])
 
     def extract_reference_batch(self, start_idx, end_idx):
         """
@@ -159,7 +186,7 @@ class DLSequencer(tf.keras.utils.Sequence):
         :return: The extracted reference batch inside the indexing interval.
         :rtype: :class:`np.ndarray`
         """
-        return self.y[start_idx:end_idx]
+        return np.array(self.y[start_idx:end_idx])
 
     def find_augmentation_elements(self):
         """
