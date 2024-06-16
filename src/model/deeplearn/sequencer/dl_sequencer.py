@@ -138,27 +138,21 @@ class DLSequencer(tf.keras.utils.Sequence):
         if self.random_shuffle_indices:
             if isinstance(self.X, list):
                 tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
-                m = self.X[0].shape[0]  # Number of input point clouds
                 if self.Irandom is None:  # First random shuffle of indices
-                    self.Irandom = np.arange(  # Index for each input pcloud
-                        m, dtype=int
-                    )
+                    self.init_random_indices()
                 else:  # After the first random shuffle of indices
                     # Undo previous shuffle
                     for i in range(tensors_per_pcloud):
                         self.X[i][self.Irandom] = np.array(self.X[i])
                     self.y[self.Irandom] = np.array(self.y)
             else:
-                m = self.X.shape[0]  # Number of input point clouds
                 if self.Irandom is None:  # First random shuffle of indices
-                    self.Irandom = np.arange(  # Index for each input cloud
-                        m, dtype=int
-                    )
+                    self.init_random_indices()
                 else:  # After the first random shuffle of indices
                     # Undo previous shuffle
                     self.X[self.Irandom] = np.array(self.X)
                     self.y[self.Irandom] = np.array(self.y)
-            np.random_shuffle(self.Irandom)  # Shuffle indices
+            np.random.shuffle(self.Irandom)  # Shuffle indices
             self.shuffled = False  # Flag to shuffle on first __getitem__ call
 
     # ---  BATCH EXTRACTION METHODS  --- #
@@ -209,3 +203,20 @@ class DLSequencer(tf.keras.utils.Sequence):
                 'DLSequencer does not support data augmentation for the '
                 f'neural network architecture {self.arch.__class__.__name__}.'
             )
+
+    # ---  RANDOM INDEXING METHODS  --- #
+    # --------------------------------- #
+    def init_random_indices(self):
+        # Determine int type
+        m = self.X[0].shape[0]  # Number of input point clouds
+        int_type = np.uint64
+        if m <= 256:
+            int_type = np.uint8
+        elif m <= 65536:
+            int_type = np.uint16
+        elif m<= 4294967296:
+            int_type = np.uint32
+        # Initialize random indices
+        self.Irandom = np.arange(  # Index for each input pcloud
+            m, dtype=int_type
+        )
