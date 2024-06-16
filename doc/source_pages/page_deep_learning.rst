@@ -1937,7 +1937,7 @@ model with a :class:`.DLSequencer`:
                     "noise_distribution": {
                         "type": "normal",
                         "mean": 0,
-                        "stdev": 0.01
+                        "stdev": 0.001
                     }
                 }
             ]
@@ -1952,7 +1952,7 @@ with an angle taken from a uniform distribution inside the interval
 another uniform distribution inside the interval :math:`[0.99, 1.01]`, and
 finally some jitter where the displacement for each coordinate will follow a
 normal distribution with mean :math:`\mu=0` and standard deviation
-:math:`\sigma=0.01`.
+:math:`\sigma=0.001`.
 
 
 **Arguments**

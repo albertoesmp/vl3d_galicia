@@ -129,7 +129,6 @@ class SimpleDLModelHandler(DLModelHandler):
             None
         )
         self.early_stopping = kwargs.get('early_stopping', None)
-        self.compilation_args = kwargs.get('compilation_args', None)
         self.training_sequencer = kwargs.get('training_sequencer', None)
         self.fit_verbose = kwargs.get('fit_verbose', "auto")
         self.predict_verbose = kwargs.get('predict_verbose', "auto")
@@ -401,6 +400,12 @@ class SimpleDLModelHandler(DLModelHandler):
                     spec_handling['learning_rate_on_plateau']
             if 'early_stopping' in spec_handling_keys:
                 self.early_stopping = spec_handling['early_stopping']
+            if 'training_sequencer' in spec_handling_keys:
+                self.training_sequencer = spec_handling['training_sequencer']
+            if 'prediction_reducer' in spec_handling_keys:
+                self.prediction_reducer = PredictionReducerFactory.make_from_dict(
+                    spec_handling['prediction_reducer']
+                )
 
     def update_paths(self, model_args):
         """
