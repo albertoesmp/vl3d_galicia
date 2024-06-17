@@ -13,14 +13,51 @@ class EntropicPredReduceStrategy(PredReduceStrategy):
     Reduce many predictions per point to a single one by considering the
     point-wise entropies.
 
-    The reduced prediction for the :math:`j`-th class of the :math:`i`-th point
-    will be as shown below, assuming :math:`K` values for the reduction.
+    The reduced likelihoods for the :math:`n_c` classes of the :math:`i`-th
+    point will be as shown below, assuming :math:`K_i` values for the
+    reduction.
 
-    TODO Rethink : Add doc from LaTeX here
+    .. math::
+
+        \pmb{\hat{z}}_{i} = \dfrac{
+			\displaystyle \sum_{k=1}^{K_i}{(1-\hat{e}_{i_k}) \pmb{z}_{i_k}}
+		}{
+			\displaystyle \sum_{k=1}^{K_i}{(1-\hat{e}_{i_k})}
+		} \in (0, 1)^{n_c}
+
+    In the above equation, :math:`\pmb{z}_{i_k} \in (0, 1)^{n_c}` represents
+    the :math:`k` vector of likelihoods for the :math:`i`-th point where
+    :math:`k=1,\ldots,K_i` (:math:`K_i` is the number of neighborhoods where
+    the :math:`i`-th point appears).
+
+    To understand :math:`\hat{e}_{i_k}` it is necessary to define the entropy
+    for a classification task of :math:`n_c` classes first such that:
+
+    .. math::
+
+        \mathcal{E}(\pmb{z}_{i_k}) =
+            - \sum_{c=1}^{n_c}{z_{i_kc} \log_2(z_{i_kc})} =
+            \sum_{c=1}^{n_c}{f(z_{i_kc})}
+
+    Now, consider the derivatives of :math:`f(z) = -z \log_2(z)`:
+
+    .. math::
+
+        \dfrac{df}{dz} = - \dfrac{1+\ln(z)}{\ln(2)} \;,\quad
+        \dfrac{d^2f}{dz^2} = - \dfrac{1}{z\ln(2)}
+
+    Note that :math:`\dfrac{df}{dz} = 0 \iff z = e^{-1}` and
+    :math:`\dfrac{d^2f}{dz^2} < 0`. For then, :math:`f(e^{-1})` will be a
+    maximum, leading to an upper bound :math:`e^* = -n_ce^{-1}\log_2(e^{-1})`
+    such that :math:`\mathcal{E}(\pmb{z}_{i_k}) \leq e^*`. Consequently, it
+    is possible to obtain normalized entropies such that:
+
+    .. math::
+
+        \hat{e}_{i_k} = \dfrac{\mathcal{E}(\pmb{z}_{i_k})}{e^*} \in (0, 1)
 
     See :class:`.PredReduceStrategy`.
     """
-    # TODO Rethink : Add doc from LaTeX
     # ---   INIT   --- #
     # ---------------- #
     def __init__(self, **kwargs):

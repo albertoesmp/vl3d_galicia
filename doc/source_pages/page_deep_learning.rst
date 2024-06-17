@@ -168,13 +168,13 @@ as shown in the JSON below:
                     "patience": 5000
                 },
                 "prediction_reducer": {
-					"reduce_strategy" : {
-						"type": "MeanPredReduceStrategy"
-					},
-					"select_strategy": {
-						"type": "ArgMaxPredSelectStrategy"
-					}
-				},
+                    "reduce_strategy" : {
+                        "type": "MeanPredReduceStrategy"
+                    },
+                    "select_strategy": {
+                        "type": "ArgMaxPredSelectStrategy"
+                    }
+                },
             },
             "compilation_args": {
                 "optimizer": {
@@ -418,8 +418,9 @@ for class weights. The class weights can be used to handle data imbalance.
 
             -- ``reduce_strategy``
                 Supported types are :class:`.SumPredReduceStrategy`,
-                :class:`.MeanPredReduceStrategy` (default), and
-                :class:`.MaxPredReduceStrategy`.
+                :class:`.MeanPredReduceStrategy` (default),
+                :class:`.MaxPredReduceStrategy`, and
+                :class:`.EntropicPredReduceStrategy`.
 
             -- ``select_strategy``
                 Supported types are :class:`.ArgMaxPredSelectStrategy`
