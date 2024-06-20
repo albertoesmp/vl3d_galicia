@@ -2,7 +2,6 @@
 # ------------------- #
 import src.main.main_logger as LOGGING
 import yaml
-import sys
 import os
 
 
@@ -12,6 +11,7 @@ import os
 VL3DCFG = {
     'IO': None,
     'EVAL': None,
+    'REPORT': None,
     'MINING': None,
     'MODEL': None,
     'TEST': None

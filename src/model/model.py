@@ -201,6 +201,9 @@ class Model:
             pcloud.proxy_dump()  # Save memory from pcloud data if necessary
         if self.imputer is not None:
             X = self.imputer.impute(X)
+        # Handle data types to optimize memory consumption
+        X = self.optimize_data_types(X=X)
+        # Compute and return predictions
         return self._predict(X)
 
     @abstractmethod
@@ -316,20 +319,7 @@ class Model:
             for comp in self.training_data_pipeline:
                 X, y = comp(X, y)
         # Handle data types to optimize memory consumption
-        if VL3DCFG['MODEL']['structure_space_bits'] == 32:
-            if isinstance(X, list) and len(X) > 1:
-                X[0] = X[0].astype(np.float32)
-        if VL3DCFG['MODEL']['feature_space_bits'] == 32:
-            if isinstance(X, np.ndarray):
-                X = X.astype(np.float32)
-            elif isinstance(X, list) and len(X) > 1:
-                X[1] = X[1].astype(np.float32)
-        if VL3DCFG['MODEL']['classification_space_bits'] == 8:
-            y = y.astype(np.uint8)
-        elif VL3DCFG['MODEL']['classification_space_bits'] == 16:
-            y = y.astype(np.uint16)
-        elif VL3DCFG['MODEL']['classification_space_bits'] == 32:
-            y = y.astype(np.uint32)
+        X, y = self.optimize_data_types(X=X, y=y)
         # Do the training
         self.training(X, y)
         self.on_training_finished(X, y)
@@ -359,6 +349,9 @@ class Model:
         if self.training_data_pipeline is not None:
             for comp in self.training_data_pipeline:
                 X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        X, y = self.optimize_data_types(X=X, y=y)
+        # Split data
         Xtrain, Xtest, ytrain, ytest = train_test_split(
             X, y,
             test_size=self.autoval_size,
@@ -406,6 +399,9 @@ class Model:
         if self.training_data_pipeline is not None:
             for comp in self.training_data_pipeline:
                 X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        X, y = self.optimize_data_types(X=X, y=y)
+        # Prepare stratified k-folding
         skf = StratifiedKFold(
             n_splits=self.num_folds,
             shuffle=self.shuffle_points,
@@ -476,3 +472,39 @@ class Model:
         :rtype: :class:`np.ndarray`
         """
         pass
+
+    # ---   UTIL METHODS   --- #
+    # ------------------------ #
+    def optimize_data_types(self, X=None, y=None):
+        """
+        Optimize the data types, depending on the current configuration of the
+        framework.
+
+        :param X: The input data.
+        :param y: The reference data.
+        :return: The updated data types.
+        :rtype: tuple of :class:`np.ndarray`
+        """
+        # Handle data types of input data to optimize memory consumption
+        if VL3DCFG['MODEL']['structure_space_bits'] == 32:
+            if isinstance(X, list) and len(X) > 1:
+                # Compute center of bounding box
+                # TODO Restore : Below
+                a, b = np.min(X[0], axis=0), np.max(X[0], axis=0)
+                c = (a+b)/2.0
+                # Apply shift before reducing bits to avoid position corruption
+                X[0] = (X[0]-c).astype(np.float32)
+        if VL3DCFG['MODEL']['feature_space_bits'] == 32:
+            if isinstance(X, np.ndarray):
+                X = X.astype(np.float32)
+            elif isinstance(X, list) and len(X) > 1:
+                X[1] = X[1].astype(np.float32)
+        # Handle data types of reference data to optimize memory consumption
+        if VL3DCFG['MODEL']['classification_space_bits'] == 8:
+            y = y.astype(np.uint8)
+        elif VL3DCFG['MODEL']['classification_space_bits'] == 16:
+            y = y.astype(np.uint16)
+        elif VL3DCFG['MODEL']['classification_space_bits'] == 32:
+            y = y.astype(np.uint32)
+        # Return optimized data
+        return X, y
