@@ -124,7 +124,6 @@ class EntropicPredReduceStrategy(PredReduceStrategy):
         Handle the reduce operation when nvals>1.
         See :meth:`.EntropicPredReduceStrategy.reduce`.
         """
-        self.min_clip_value = 1e-6  # TODO Remove
         # Initialize final likelihoods
         Zhat_type = Z[0].dtype
         Zhat = np.zeros((npoints, nvals), dtype=Zhat_type)
