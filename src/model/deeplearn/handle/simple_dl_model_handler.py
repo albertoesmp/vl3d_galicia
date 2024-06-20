@@ -234,8 +234,10 @@ class SimpleDLModelHandler(DLModelHandler):
             ):
                 zhat = self.compiled.predict(X, batch_size=self.batch_size)
                 X_rf = X[0] if isinstance(X, list) else X
+                F_rf = X[1] if isinstance(X, list) else None
                 self.handle_receptive_fields_plots_and_reports(
                     X_rf=X_rf,
+                    F_rf=F_rf,
                     zhat_rf=zhat,
                     y=y,
                     training=True
@@ -330,10 +332,13 @@ class SimpleDLModelHandler(DLModelHandler):
         # Do plots and reports
         if plots_and_reports:
             _X_rf = X_rf[0] if isinstance(X_rf, list) else X_rf
+            _F_rf = X_rf[1] if isinstance(X_rf, list) else None
             self.handle_receptive_fields_plots_and_reports(
                 X_rf=_X_rf,
+                F_rf=_F_rf,
                 zhat_rf=zhat_rf,
-                y=y
+                y=y,
+                training=False
             )
         # Return
         return yhat
@@ -693,7 +698,7 @@ class SimpleDLModelHandler(DLModelHandler):
         return y
 
     def handle_receptive_fields_plots_and_reports(
-        self, X_rf, zhat_rf, y=None, training=False
+        self, X_rf, zhat_rf, y=None, F_rf=None, training=False
     ):
         """
         Handle any plot and reports related to the receptive fields.
@@ -707,6 +712,9 @@ class SimpleDLModelHandler(DLModelHandler):
         :param y: The expected class for each point (considering original
             points, i.e., not the receptive fields).
         :type y: :class:`np.ndarray`
+        :param F_rf: The features for each receptive field such that F_rf[i] is
+            the matrix of features of the i-th receptive field. It can be None.
+        :type F_rf: :class:`np.ndarray` or None
         :param training: Whether the considered receptive fields are those
             used for training (True) or not (False).
         :type training: bool
@@ -771,10 +779,12 @@ class SimpleDLModelHandler(DLModelHandler):
         if rf_dir is not None:
             ReceptiveFieldsReport(
                 X_rf=X_rf,  # X (for each receptive field)
+                F_rf=F_rf,  # F (for each receptive field
                 zhat_rf=zhat_rf,  # Softmax scores (for each receptive field)
                 yhat_rf=yhat_rf,  # Predictions (for each receptive field)
                 y_rf=y_rf,  # Expected (for each receptive field, can be None)
-                class_names=self.class_names
+                class_names=self.class_names,
+                fnames=self.arch.fnames
             ).to_file(rf_dir, self.out_prefix)
         # Report receptive fields distribution, if requested
         if rf_dist_report_path:

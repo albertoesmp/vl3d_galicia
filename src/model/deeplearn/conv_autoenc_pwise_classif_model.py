@@ -95,6 +95,9 @@ class ConvAutoencPwiseClassifModel(ClassificationModel):
         # Instantiate the model
         if self.model is None:
             if self.model_args is not None:
+                # Update fnames because order might change when using 'ones'
+                self.model_args['fnames'] = self.fnames
+                # Instantiate model without handler first (wrapped later)
                 self.model = ConvAutoencPwiseClassif(**self.model_args)
             else:
                 LOGGING.LOGGER.info(
@@ -178,7 +181,7 @@ class ConvAutoencPwiseClassifModel(ClassificationModel):
                 np.ones((X.shape[0], 1)),
                 pcloud.get_features_matrix(self.fnames)
             ]) if len(self.fnames) > 0 else np.ones((X.shape[0], 1))
-            self.fnames.append('ones')
+            self.fnames.insert(0, 'ones')
         else:  # Handle features without ones
             F = pcloud.get_features_matrix(self.fnames)
         # Return with features
