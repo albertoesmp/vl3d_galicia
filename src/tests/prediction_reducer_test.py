@@ -4,8 +4,10 @@ from src.tests.vl3d_test import VL3DTest
 from src.utils.preds.prediction_reducer import PredictionReducer
 from src.utils.preds.mean_pred_reduce_strategy import MeanPredReduceStrategy
 from src.utils.preds.sum_pred_reduce_strategy import SumPredReduceStrategy
-from src.utils.preds.argmax_pred_select_strategy import ArgMaxPredSelectStrategy
 from src.utils.preds.max_pred_reduce_strategy import MaxPredReduceStrategy
+from src.utils.preds.entropic_pred_reduce_strategy \
+    import EntropicPredReduceStrategy
+from src.utils.preds.argmax_pred_select_strategy import ArgMaxPredSelectStrategy
 import numpy as np
 
 
@@ -59,9 +61,14 @@ class PredictionReducerTest(VL3DTest):
         Z_single_max_argmax_ref = np.array([
             0.91, 0.84, 0.96, 0.94, 0.78, 0.63, 0.91
         ])
+        Z_single_entro_argmax_ref = np.array([
+            0.81108951, 0.58721503, 0.78694629, 0.89615775, 0.66675506,
+            0.52072115, 0.81960945
+        ])
         Y_single_sum_argmax_ref = np.array([2, 2, 3, 2, 2, 2, 3])
         Y_single_mean_argmax_ref = np.array([1, 0, 1, 1, 1, 0, 1])
         Y_single_max_argmax_ref = np.array([1, 1, 1, 1, 1, 1, 1])
+        Y_single_entro_argmax_ref = np.array([1, 1, 1, 1, 1, 1, 1])
 
         # Build test case : Many values
         num_points_many, num_vals_many = 7, 5
@@ -135,9 +142,19 @@ class PredictionReducerTest(VL3DTest):
             [0.67, 0.11, 0.7,  0.18, 0.15],
             [0.61, 0.23, 1.0,   0.0, 0.05]
         ])
+        Z_many_entro_argmax_ref = np.array([
+            [9.09360670e-02, 1.58179030e-01, 5.02641948e-01, 7.52821067e-02, 1.72960848e-01],
+            [4.04761321e-01, 3.55903256e-02, 1.06094998e-01, 3.96143740e-02, 4.13940926e-01],
+            [1.71148276e-01, 2.38066991e-01, 4.38576160e-01, 6.05751321e-02, 9.16334406e-02],
+            [5.00000000e-02, 1.00000000e-01, 5.00000000e-02, 7.50000000e-01, 5.00000000e-02],
+            [4.40952388e-01, 1.79586204e-02, 7.94898848e-02, 6.85822824e-02, 3.93017278e-01],
+            [3.50993712e-01, 4.00137550e-02, 4.33381963e-01, 9.51703705e-02, 8.04406395e-02],
+            [1.86059838e-01, 7.01541425e-02, 7.28536660e-01, 1.00000000e-06, 1.52514444e-02]
+        ])
         Y_many_sum_argmax_ref = np.array([2, 4, 2, 3, 4, 2, 2])
         Y_many_mean_argmax_ref = np.array([2, 4, 2, 3, 4, 2, 2])
         Y_many_max_argmax_ref = np.array([[2, 0, 2, 3, 0, 2, 2]])
+        Y_many_entro_argmax_ref = np.array([2, 4, 2, 3, 0, 2, 2])
 
         # Prepare prediction reducers
         pr_sum_argmax = PredictionReducer(
@@ -150,6 +167,10 @@ class PredictionReducerTest(VL3DTest):
         )
         pr_max_argmax = PredictionReducer(
             reduce_strategy=MaxPredReduceStrategy(),
+            select_strategy=ArgMaxPredSelectStrategy()
+        )
+        pr_entro_argmax = PredictionReducer(
+            reduce_strategy=EntropicPredReduceStrategy(),
             select_strategy=ArgMaxPredSelectStrategy()
         )
 
@@ -169,6 +190,11 @@ class PredictionReducerTest(VL3DTest):
             Z_single_max_argmax_ref, Y_single_max_argmax_ref
         ):
             return False
+        if not self.check_pr(
+            pr_entro_argmax, num_points_single, 1, Z_single, I_single,
+            Z_single_entro_argmax_ref, Y_single_entro_argmax_ref
+        ):
+            return False
 
         # Test prediction reducers on many
         if not self.check_pr(
@@ -184,6 +210,11 @@ class PredictionReducerTest(VL3DTest):
         if not self.check_pr(
             pr_max_argmax, num_points_many, num_vals_many, Z_many, I_many,
             Z_many_max_argmax_ref, Y_many_max_argmax_ref
+        ):
+            return False
+        if not self.check_pr(
+            pr_entro_argmax, num_points_many, num_vals_many, Z_many, I_many,
+            Z_many_entro_argmax_ref, Y_many_entro_argmax_ref
         ):
             return False
         # All tests passed
