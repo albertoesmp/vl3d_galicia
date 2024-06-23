@@ -5,22 +5,22 @@
 OUTPUT_SCRIPT='/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/ddbb/cesga_vl3dgal_predict_inserts.sql'
 
 # Model ID (from database) as environment variable
-export MODEL_ID='3'
+export MODEL_ID='61'
 
 # Dataset names
 TRAINING_JSON=(
-    'RGBIr_MERGE_147_minmaxnorm_VEGETATION'
-    'RGBIr_MERGE_16_minmaxnorm_VEGETATION'
-    'RGBIr_MERGE_235_minmaxnorm_VEGETATION'
-    'RGBIr_MERGE_276_minmaxnorm_VEGETATION'
+    'RGBIr_MERGE_260_minmaxnorm_BUILDING'
+    'RGBIr_MERGE_68_minmaxnorm_BUILDING'
+    'RGBIr_MERGE_216_minmaxnorm_BUILDING'
+    'RGBIr_MERGE_21_minmaxnorm_BUILDING'
 )
 
 # Paths to directories with the predictions
 TRAINING_DIR=(
-    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T1/preds/MERGE_147'
-    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T1/preds/MERGE_16'
-    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T1/preds/MERGE_235'
-    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X/T1/preds/MERGE_276'
+    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_building/T5/preds/MERGE_260'
+    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_building/T5/preds/MERGE_68'
+    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_building/T5/preds/MERGE_216'
+    '/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_building/T5/preds/MERGE_21'
 )
 
 

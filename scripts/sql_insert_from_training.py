@@ -38,7 +38,8 @@ PATHS = {  # Paths relative to the root directory
     'kpconv_plots': 'training_eval/kpconv_layers/',
     'skpconv_plots': 'training_eval/skpconv_layers/'
 }
-model_folder_suffix='_building'
+#model_folder_suffix='_building'
+model_folder_suffix=''
 
 
 # ---  METHODS  --- #
@@ -272,7 +273,7 @@ def print_sql_inserts(analysis):
     subfamily_name = 'PointNet'
     if training_json_low.find('convolutionalautoencoderpwiseclassifier'):
         family_name = 'Hierarchical autoencoder'
-        if training_json_low.find('kpconv'):
+        if training_json_low.find('kpconv') >= 0:
             subfamily_name = 'KPConv'
     print(
         'INSERT INTO model_types '

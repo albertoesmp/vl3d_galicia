@@ -188,6 +188,12 @@ def analyze_uncertainties(experiment_dir):
     las = lasu.read_las(inpath, print_time=False)
     # Find classes
     task, classes = find_classes_from_las(las)
+    if 'ignore' in classes:
+        try:
+            ignore = las['ignore']
+        except Exception as ex:
+            classes.remove('ignore')
+            printerr('Ignore class will be ignored because it is not present.')
     # Extract entropies
     pwe = las['PointWiseEntropy']
     we = las['WeightedEntropy']
