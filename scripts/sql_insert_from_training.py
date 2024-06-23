@@ -38,9 +38,7 @@ PATHS = {  # Paths relative to the root directory
     'kpconv_plots': 'training_eval/kpconv_layers/',
     'skpconv_plots': 'training_eval/skpconv_layers/'
 }
-CLASSES = [  # The classes representing the classification task
-    'vegetation'
-]  # See keys from vl3dgal.classes.CLASS_NAMES
+model_folder_suffix='_building'
 
 
 # ---  METHODS  --- #
@@ -89,10 +87,12 @@ def analyze_experiment(training_json_path, experiment_dir):
             return model_name
         result = regexp.findall(input_str)
         if len(result) > 0:
-            return result[0][1:-1]
+            return ''.join(result[0])
     # Read training json
     training_json = ''
-    regexp = re.compile('/kpc_final_[A-Za-z]*/')
+    regexp = re.compile(
+        f'/(kpc|pnetpp)(_final_[A-Za-z]*{model_folder_suffix})/'
+    )
     model_name = None
     with open(training_json_path, 'r') as infile:
         line = infile.readline()
@@ -209,18 +209,32 @@ def load_class_reduce_plot(training_dir):
 
 
 def load_kpconv_plots(training_dir):
-    init_plots, end_plots = find_kpconv_plots(
-        os.path.join(training_dir, PATHS['kpconv_plots'])
-    )
-    return init_plots, end_plots
+    try:
+        init_plots, end_plots = find_kpconv_plots(
+            os.path.join(training_dir, PATHS['kpconv_plots'])
+        )
+        return init_plots, end_plots
+    except Exception as ex:
+        printerr(
+            'KPConv plots could not be loaded (it is okay if they were not '
+            'generated or a non-KPConv model was used).'
+        )
+        return None, None
 
 
 def load_skpconv_plots(training_dir):
-    init_plots, end_plots = find_kpconv_plots(
-        os.path.join(training_dir, PATHS['skpconv_plots']),
-        init_offset=9, end_offset=12
-    )
-    return init_plots, end_plots
+    try:
+        init_plots, end_plots = find_kpconv_plots(
+            os.path.join(training_dir, PATHS['skpconv_plots']),
+            init_offset=9, end_offset=12
+        )
+        return init_plots, end_plots
+    except Exception as ex:
+        printerr(
+            'SKPConv plots could not be loaded (it is okay if they were not '
+            'generated or a non-KPConv model was used).'
+        )
+        return None, None
 
 
 def find_kpconv_plots(dirpath, init_offset=4, end_offset=7):
@@ -372,76 +386,80 @@ def print_sql_inserts(analysis):
     )
     # KPConv plots
     kpconv_init, kpconv_end = analysis['kpconv_plots']
-    for kpconv_init in kpconv_init:
-        print_sql_insert_figure(
-            kpconv_init['plot_W'],
-            f"{kpconv_init['plot_prefix']} init"
-        )
-        print_sql_insert_figure(
-            kpconv_init['plot_Whist'],
-            f"{kpconv_init['plot_prefix']} init hist"
-        )
-        print_sql_insert_figure(
-            kpconv_init['plot_Q'],
-            f"{kpconv_init['plot_prefix']} init Q"
-        )
-    for kpconv_end in kpconv_end:
-        print_sql_insert_figure(
-            kpconv_end['plot_W'],
-            f"{kpconv_end['plot_prefix']} trained"
-        )
-        print_sql_insert_figure(
-            kpconv_end['plot_Whist'],
-            f"{kpconv_end['plot_prefix']} trained hist"
-        )
-        print_sql_insert_figure(
-            kpconv_end['plot_Q'],
-            f"{kpconv_end['plot_prefix']} trained Q"
-        )
-        print_sql_insert_figure(
-            kpconv_end['plot_W_diff'],
-            f"{kpconv_end['plot_prefix']} diff"
-        )
-        print_sql_insert_figure(
-            kpconv_end['plot_Whist_diff'],
-            f"{kpconv_end['plot_prefix']} diff hist"
-        )
+    if kpconv_init is not None:
+        for kpconv_init in kpconv_init:
+            print_sql_insert_figure(
+                kpconv_init['plot_W'],
+                f"{kpconv_init['plot_prefix']} init"
+            )
+            print_sql_insert_figure(
+                kpconv_init['plot_Whist'],
+                f"{kpconv_init['plot_prefix']} init hist"
+            )
+            print_sql_insert_figure(
+                kpconv_init['plot_Q'],
+                f"{kpconv_init['plot_prefix']} init Q"
+            )
+    if kpconv_end is not None:
+        for kpconv_end in kpconv_end:
+            print_sql_insert_figure(
+                kpconv_end['plot_W'],
+                f"{kpconv_end['plot_prefix']} trained"
+            )
+            print_sql_insert_figure(
+                kpconv_end['plot_Whist'],
+                f"{kpconv_end['plot_prefix']} trained hist"
+            )
+            print_sql_insert_figure(
+                kpconv_end['plot_Q'],
+                f"{kpconv_end['plot_prefix']} trained Q"
+            )
+            print_sql_insert_figure(
+                kpconv_end['plot_W_diff'],
+                f"{kpconv_end['plot_prefix']} diff"
+            )
+            print_sql_insert_figure(
+                kpconv_end['plot_Whist_diff'],
+                f"{kpconv_end['plot_prefix']} diff hist"
+            )
     # SKPConv plots
     skpconv_init, skpconv_end = analysis['skpconv_plots']
-    for skpconv_init in skpconv_init:
-        print_sql_insert_figure(
-            skpconv_init['plot_W'],
-            f"{skpconv_init['plot_prefix']} init"
-        )
-        print_sql_insert_figure(
-            skpconv_init['plot_Whist'],
-            f"{skpconv_init['plot_prefix']} init hist"
-        )
-        print_sql_insert_figure(
-            skpconv_init['plot_Q'],
-            f"{skpconv_init['plot_prefix']} init Q"
-        )
-    for skpconv_end in skpconv_end:
-        print_sql_insert_figure(
-            skpconv_end['plot_W'],
-            f"{skpconv_end['plot_prefix']} trained"
-        )
-        print_sql_insert_figure(
-            skpconv_end['plot_Whist'],
-            f"{skpconv_end['plot_prefix']} trained hist"
-        )
-        print_sql_insert_figure(
-            skpconv_end['plot_Q'],
-            f"{skpconv_end['plot_prefix']} trained Q"
-        )
-        print_sql_insert_figure(
-            skpconv_end['plot_W_diff'],
-            f"{skpconv_end['plot_prefix']} diff"
-        )
-        print_sql_insert_figure(
-            skpconv_end['plot_Whist_diff'],
-            f"{skpconv_end['plot_prefix']} diff hist"
-        )
+    if skpconv_init is not None:
+        for skpconv_init in skpconv_init:
+            print_sql_insert_figure(
+                skpconv_init['plot_W'],
+                f"{skpconv_init['plot_prefix']} init"
+            )
+            print_sql_insert_figure(
+                skpconv_init['plot_Whist'],
+                f"{skpconv_init['plot_prefix']} init hist"
+            )
+            print_sql_insert_figure(
+                skpconv_init['plot_Q'],
+                f"{skpconv_init['plot_prefix']} init Q"
+            )
+    if skpconv_end is not None:
+        for skpconv_end in skpconv_end:
+            print_sql_insert_figure(
+                skpconv_end['plot_W'],
+                f"{skpconv_end['plot_prefix']} trained"
+            )
+            print_sql_insert_figure(
+                skpconv_end['plot_Whist'],
+                f"{skpconv_end['plot_prefix']} trained hist"
+            )
+            print_sql_insert_figure(
+                skpconv_end['plot_Q'],
+                f"{skpconv_end['plot_prefix']} trained Q"
+            )
+            print_sql_insert_figure(
+                skpconv_end['plot_W_diff'],
+                f"{skpconv_end['plot_prefix']} diff"
+            )
+            print_sql_insert_figure(
+                skpconv_end['plot_Whist_diff'],
+                f"{skpconv_end['plot_prefix']} diff hist"
+            )
 
 
 def print_sql_insert_figure(figdict, plot_name):
