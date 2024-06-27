@@ -2,18 +2,18 @@
 
 # ---  CONSTANTS  --- #
 # ------------------- #
-OUTPUT_SCRIPT='/home/usc/ci/myg/store2/Results/galicia_vl3d/ddbb/vegetation/cesga_vl3dgal_predict_inserts.sql'
+OUTPUT_SCRIPT='/home/usc/ci/myg/store2/Results/galicia_vl3d/ddbb/building/cesga_vl3dgal_predict_inserts.sql'
 
-EXPERIMENT_NAME=VEGETATION
+EXPERIMENT_NAME=BUILDING
 
 # Create output dir if it does not exist
 mkdir -p $(dirname ${OUTPUT_SCRIPT})
 
 # Model ID (from database) as environment variable
-export MODEL_ID='4'
+export MODEL_ID='24'
 
 # Paths to directories with the predictions (folder containing MERGE_* directories)
-PREDICTIONS_DIR=/home/usc/ci/myg/store2/Results/galicia_vl3d/vegetation
+PREDICTIONS_DIR=/home/usc/ci/myg/store2/Results/galicia_vl3d/building
 
 PREDICTIONS_DIR=($(find ${PREDICTIONS_DIR} -maxdepth 1 -mindepth 1 -type d))
 

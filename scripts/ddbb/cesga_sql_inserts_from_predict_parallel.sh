@@ -2,18 +2,24 @@
 
 # ---  CONSTANTS  --- #
 # ------------------- #
-OUTPUT_SCRIPT='/mnt/netapp1/Store_usccisss/ddbb/cesga_vl3dgal_predict_inserts.sql'
+OUTPUT_SCRIPT='/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/ddbb/building/cesga_vl3dgal_predict_inserts.sql'
 
-EXPERIMENT_NAME=VEGETATION
+# OUTPUT_SCRIPT='/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/ddbb/usccisss/building/cesga_vl3dgal_predict_inserts.sql'
+
+# OUTPUT_SCRIPT='/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/ddbb/usccisra/building/cesga_vl3dgal_predict_inserts.sql'
+
+EXPERIMENT_NAME=BUILDING
 
 # Create output dir if it does not exist
 mkdir -p $(dirname ${OUTPUT_SCRIPT})
 
 # Model ID (from database) as environment variable
-export MODEL_ID='4'
+export MODEL_ID='24'
 
 # Paths to directories with the predictions (folder containing MERGE_* directories)
-PREDICTIONS_DIR=/mnt/netapp1/Store_usccisss/results/vl3d_galicia/vegetation
+PREDICTIONS_DIR=/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/building
+# PREDICTIONS_DIR=/mnt/netapp1/Store_usccisss/results/vl3d_galicia/building
+# PREDICTIONS_DIR=/mnt/netapp2/Store_usccisra/results/vl3d_galicia/building/
 
 PREDICTIONS_DIR=($(find ${PREDICTIONS_DIR} -maxdepth 1 -mindepth 1 -type d))
 
@@ -34,7 +40,7 @@ run_sql_insert() {
 }
 
 # Automatically get the number of CPU cores
-max_jobs=$(nproc)
+max_jobs=32
 echo "Number of CPU cores available: $max_jobs"
 
 # Run processes in parallel
