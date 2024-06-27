@@ -39,7 +39,7 @@ PATHS = {  # Paths relative to the root directory
     'skpconv_plots': 'training_eval/skpconv_layers/'
 }
 #model_folder_suffix='_building'
-model_folder_suffix=''
+model_folder_suffix='_buildveg'
 
 
 # ---  METHODS  --- #
