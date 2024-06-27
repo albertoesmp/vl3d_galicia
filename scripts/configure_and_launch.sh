@@ -3,8 +3,8 @@
 # Do not touch
 VL3D_DIR=$(realpath $(dirname $0)/../)
 VL3D_SCRIPT_DIR=$VL3D_DIR/vl3d.py
-EXPERIMENT_NAME=building
-MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_X_building/T3/pipe
+EXPERIMENT_NAME=lmhveg
+MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_XIrRGB_lmhveg/T4/pipe
 JSON_DIR=$VL3D_DIR/experiments/$EXPERIMENT_NAME/$(whoami)
 
 case $(whoami) in
@@ -57,10 +57,10 @@ sed -i "s|export VL3D_ENV=.*|export VL3D_ENV='$VL3D_ENV'|" $VL3D_DIR/cesga/vl3d_
 sed -i "s/--mail-user=.*/--mail-user=$EMAIL/" $(realpath $(dirname $0)/slurm/work.sh)
 
 # Replace paths in replace_paths.sh
-sed -i 's|sed_model|'$MODEL'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
-sed -i 's|sed_experiment_name|'$EXPERIMENT_NAME'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
-sed -i 's|sed_output_path|'$OUTPUT_PATH'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
-sed -i 's|sed_json_dir|'$JSON_DIR'|g' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
+sed -i 's|MODEL=.*|MODEL='$MODEL'|' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
+sed -i 's|EXPERIMENT_NAME=.*|EXPERIMENT_NAME='$EXPERIMENT_NAME'|' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
+sed -i 's|OUTPUT_PATH=.*|OUTPUT_PATH='$OUTPUT_PATH'|' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
+sed -i 's|JSON_DIR=.*|JSON_DIR='$JSON_DIR'|' $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
 
 # Replace source paths in work.sh
 sed -i "s|source .*|source $VL3D_DIR/cesga/vl3d_cesga_env.sh|" $VL3D_DIR/scripts/slurm/work.sh
@@ -70,5 +70,5 @@ $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
 
 
 # Launch work
-$VL3D_DIR/scripts/slurm/launch.sh $JSON_DIR
+# $VL3D_DIR/scripts/slurm/launch.sh $JSON_DIR
 
