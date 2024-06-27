@@ -70,5 +70,5 @@ $VL3D_DIR/scripts/experiment_generation/replace_paths.sh
 
 
 # Launch work
-# $VL3D_DIR/scripts/slurm/launch.sh $JSON_DIR
+$VL3D_DIR/scripts/slurm/launch.sh $JSON_DIR
 
