@@ -25,7 +25,7 @@ PATHS = {  # Paths relative to the root directory
     'global_eval': 'report/global_eval.log',
     'confusion_matrix': 'report/confusion_matrix.log',
     'rf_distribution': 'training_eval/receptive_fields_distribution.log',
-    'uncertainty': 'uncertainty/uncertainty.las',
+    'uncertainty': 'uncertainty/uncertainty.laz',
     'class_distribution_plot': 'plot/class_distribution.svg',
     'confusion_matrix_plot': 'plot/confusion_matrix.svg',
     'pwise_entropy_plot': 'uncertainty/point_wise_entropy_figure.svg',
@@ -37,9 +37,6 @@ PATHS = {  # Paths relative to the root directory
 }
 # The id of the model in the models table of the database
 MODEL_ID = os.environ.get('MODEL_ID', 1)
-CLASSES = [  # The classes representing the classification task
-    'vegetation'
-]  # See keys from vl3dgal.classes.CLASS_NAMES
 
 
 # ---  METHODS  --- #
@@ -169,8 +166,10 @@ def analyze_rf_distribution(experiment_dir, key='rf_distribution', paths=None):
             if line[:4] == 'SUM':  # Skip last row with SUM of all values
                 continue
             fields = line.split(',')
+            class_name = fields[0].strip(" ")
+            class_name = classes.CLASS_NAMES[class_name]
             rf_distribution = {
-                'class_name': fields[0].strip(" "),
+                'class_name': class_name.lower(),
                 'pred_count': fields[1],
                 'pred_rf_count': fields[3],
             }
@@ -188,6 +187,12 @@ def analyze_uncertainties(experiment_dir):
     las = lasu.read_las(inpath, print_time=False)
     # Find classes
     task, classes = find_classes_from_las(las)
+    if 'ignore' in classes:
+        try:
+            ignore = las['ignore']
+        except Exception as ex:
+            classes.remove('ignore')
+            printerr('Ignore class will be ignored because it is not present.')
     # Extract entropies
     pwe = las['PointWiseEntropy']
     we = las['WeightedEntropy']
@@ -392,10 +397,11 @@ def print_sql_inserts(analysis, dataset_name):
         '(resultset_id, class_id, p, r, f1, iou) VALUES\n'
     )
     for i, ceval in enumerate(cevals):
+        class_name = classes.CLASS_NAMES[ceval['class_name']]
         print(
             f"\t(\n"
             f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
-            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{ceval['class_name']}'),\n"
+            f"\t\t(SELECT id FROM classes WHERE classes.name like '{class_name}'),\n"
             f"\t\t{ceval['p']}, {ceval['r']}, {ceval['f1']}, {ceval['iou']}"
         )
         if i < len(cevals)-1:
@@ -410,10 +416,11 @@ def print_sql_inserts(analysis, dataset_name):
         '(resultset_id, class_id, recount) VALUES'
     )
     for i, distr in enumerate(cdistr):
+        class_name = classes.CLASS_NAMES[distr['class_name']]
         print(
             '\t(\n'
             f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
-            f"\t\t(SELECT id FROM classes WHERE LOWER(classes.name) like '{distr['class_name']}'),\n"
+            f"\t\t(SELECT id FROM classes WHERE classes.name like '{class_name}'),\n"
             f'\t\t{distr["recount"]}\n',
             end=''
         )
@@ -449,15 +456,17 @@ def print_sql_inserts(analysis, dataset_name):
         '(resultset_id, ref_class_id, pred_class_id, recount) VALUES'
     )
     for i in range(cmat.shape[0]):  # Rows
+        class_name_i = classes.CLASS_NAMES[cdistr[i]['class_name']]
         for j in range(cmat.shape[1]):  # Columns
+            class_name_j = classes.CLASS_NAMES[cdistr[j]['class_name']]
             if i != 0 or j != 0:
                 print('\n\t),(')
             else:
                 print('\n\t(')
             print(
                 f"\t\t(SELECT currval(pg_get_serial_sequence('resultsets', 'id'))),\n"
-                f"\t\t(SELECT id FROM classes where LOWER(classes.name) like '{cdistr[i]['class_name']}'),\n"
-                f"\t\t(SELECT id FROM classes where LOWER(classes.name) like '{cdistr[j]['class_name']}'),\n"
+                f"\t\t(SELECT id FROM classes where classes.name like '{class_name_i}'),\n"
+                f"\t\t(SELECT id FROM classes where classes.name like '{class_name_j}'),\n"
                 f'\t\t{cmat[i, j]}'
             )
     print('\t) ON CONFLICT DO NOTHING;\n')
