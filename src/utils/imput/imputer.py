@@ -34,6 +34,12 @@ class Imputer:
     :vartype target_val: str or int or float
     :ivar fnames: The names of the features to be imputed (by default).
     :vartype fnames: list or tuple
+    :ivar impute_coordinates: Whether to consider the point-wise coordinates for
+        the imputation (True) or not (False, default).
+    :vartype impute_coordinates: bool
+    :ivar impute_references: Whether to consider the point-wise references for
+        the imputation (True) or not (False, default).
+    :vartype impute_references: bool
     """
 
     # ---  SPECIFICATION ARGUMENTS  --- #
@@ -68,6 +74,8 @@ class Imputer:
         # Fundamental initialization of any imputer
         self.target_val = kwargs.get("target_val", np.NaN)
         self.fnames = kwargs.get('fnames', None)
+        self.impute_coordinates = kwargs.get('impute_coordinates', False)
+        self.impute_references = kwargs.get('impute_references', False)
 
     # ---   IMPUTER METHODS   --- #
     # --------------------------- #
@@ -117,23 +125,28 @@ class Imputer:
             else:
                 fnames = self.fnames
         # Obtain points and classes
-        P = np.hstack([
-            pcloud.get_coordinates_matrix(),
-            pcloud.get_features_matrix(fnames)
-        ])
-        y = pcloud.get_classes_vector()
-        pcloud_header = pcloud.las.header
+        if self.impute_coordinates:
+            P = np.hstack([
+                pcloud.get_coordinates_matrix(),
+                pcloud.get_features_matrix(fnames)
+            ])
+        else:
+            P = pcloud.get_features_matrix(fnames)
+        y = pcloud.get_classes_vector() if self.impute_references else None
+        pcloud_header = pcloud.las.header  # TODO Rethink : Only for legacy
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
         # Impute
         if y is None:
             P = self.impute(P)
         else:
             P, y = self.impute(P, y=y)
-        # Return new point cloud
-        return PointCloudFactoryFacade.make_from_arrays(
-            P[:, :P.shape[1]-len(fnames)],
-            P[:, P.shape[1]-len(fnames):],
-            y=y,
-            header=pcloud_header,
-            fnames=fnames
-        )
+        # Return updated point cloud
+        pcloud.remove_features(fnames)
+        if self.impute_coordinates:
+            pcloud.set_coordinates(P[:, :3])
+            pcloud.add_features(fnames, P[:, 3:])
+        else:
+            pcloud.add_features(fnames, P)
+        if y is not None:
+            pcloud.set_classes_vector(y)
+        return pcloud

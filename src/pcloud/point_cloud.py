@@ -368,6 +368,23 @@ class PointCloud:
         if proxy_release:
             self.proxy.release()
 
+    def set_coordinates(self, X):
+        """
+        Set the point-wise coordinates of the point cloud from the given
+        structure space matrix X.
+
+        :param X: The structure space matrix, i.e., a matrix where rows are
+            points and columns represent coordinates.
+        :return: The updated point cloud.
+        :rtype: :class:`.PointCloud`
+        """
+        self.proxy_load()
+        scales, offsets = self.las.header.scales, self.las.header.offsets
+        self.las.X = (X[:, 0] - offsets[0])/scales[0]
+        self.las.Y = (X[:, 1] - offsets[1])/scales[1]
+        self.las.Z = (X[:, 2] - offsets[2])/scales[2]
+        return self
+
     # ---   PROXY METHODS   --- #
     # ------------------------- #
     def proxy_dump(self):
