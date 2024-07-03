@@ -1,10 +1,11 @@
 #!/bin/bash
 
+
 # Do not touch
 VL3D_DIR=$(realpath $(dirname $0)/../)
 VL3D_SCRIPT_DIR=$VL3D_DIR/vl3d.py
-EXPERIMENT_NAME=lmhveg
-MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_XIrRGB_lmhveg/T4/pipe
+EXPERIMENT_NAME=buildveg
+MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_XIrRGB_buildveg/T4/pipe/
 JSON_DIR=$VL3D_DIR/experiments/$EXPERIMENT_NAME/$(whoami)
 
 case $(whoami) in

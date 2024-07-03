@@ -5,9 +5,9 @@
         "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_214_minmaxnorm.laz"
     ],
     "out_pcloud": [
-        "path_to_output_clouds/MERGE_208/*",
-        "path_to_output_clouds/MERGE_211/*",
-        "path_to_output_clouds/MERGE_214/*"
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/lmhveg/MERGE_208/*",
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/lmhveg/MERGE_211/*",
+        "/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/lmhveg/MERGE_214/*"
     ],
     "sequential_pipeline": [
         {
@@ -77,8 +77,8 @@
         },
         {
             "predict": "PredictivePipeline",
-            "model_path": "path_to_model_pipe",
-            "nn_path": "path_to_model_nn"
+            "model_path": "/mnt/netapp1/Store_usccimyg/tmp/models/lmhveg/usccimyg_execution_16/KPC_T4.pipe",
+            "nn_path": "/mnt/netapp1/Store_usccimyg/tmp/models/lmhveg/usccimyg_execution_16/KPC_T4.keras"
         },
         {
             "writer": "ClassifiedPcloudWriter",
