@@ -25,7 +25,7 @@ PATHS = {  # Paths relative to the root directory
     'global_eval': 'report/global_eval.log',
     'confusion_matrix': 'report/confusion_matrix.log',
     'rf_distribution': 'training_eval/receptive_fields_distribution.log',
-    'uncertainty': 'uncertainty/uncertainty.laz',
+    'uncertainty': 'uncertainty/uncertainty.las',
     'class_distribution_plot': 'plot/class_distribution.svg',
     'confusion_matrix_plot': 'plot/confusion_matrix.svg',
     'pwise_entropy_plot': 'uncertainty/point_wise_entropy_figure.svg',
