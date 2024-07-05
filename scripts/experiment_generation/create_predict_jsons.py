@@ -7,10 +7,10 @@ import copy
 ########################
 VL3D_DIR = os.path.abspath(os.getenv('VL3D_DIR'))
 
-PREDICT_JSON_PATH = os.path.join(VL3D_DIR, 'scripts', 'experiment_generation', 'predict_template.json')
+PREDICT_JSON_PATH = os.path.join(VL3D_DIR, 'scripts', 'experiment_generation', 'predict_template_buildveg.json')
 CLOUDS_ASSIGMENT_PATH = os.path.join(VL3D_DIR, 'experiments', 'clouds_assigment.json')
 
-EXPERIMENT_NAME='vegetation'
+EXPERIMENT_NAME='buildveg'
 
 OUT_PATH='path_to_output_clouds'
 PIPE_PATH='path_to_model_pipe'

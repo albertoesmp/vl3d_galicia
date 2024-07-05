@@ -1,9 +1,9 @@
 #!/bin/bash
 
-MODEL=sed_model
-EXPERIMENT_NAME=sed_experiment_name
-OUTPUT_PATH=sed_output_path
-JSON_DIR=sed_json_dir
+MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/kpc_final_XIrRGB_buildveg/T4/pipe/
+EXPERIMENT_NAME=buildveg
+OUTPUT_PATH=/mnt/netapp1/Store_usccimyg/Results/galicia_vl3d/buildveg
+JSON_DIR=/mnt/netapp2/Store_uni/home/usc/ci/myg/Codigos/vl3d_galicia/experiments/buildveg/usccimyg
 
 pipe_filename=$(basename $(find $MODEL -name "*.pipe"))
 nn_filename=$(basename $(find $MODEL -name "*.keras"))

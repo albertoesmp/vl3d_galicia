@@ -16,14 +16,14 @@ CLOUDS_ASSIGMENT_JSON= os.path.join(EXPERIMENTS_PATH, 'clouds_assigment.json')
 os.makedirs(EXPERIMENTS_PATH, exist_ok=True)
 
 # Failed point clouds not to be included in the experiments
-FAILED_CLOUDS = ['78', '20', '201', '94', '134']
+DISCARDED_CLOUDS = ['78', '20', '201', '94', '134', '260', '68', '216', '21']
 
-FAILED_CLOUDS = [os.path.join(CLOUDS_PATH, f'RGBIr_MERGE_{num}_minmaxnorm.laz') for num in FAILED_CLOUDS]
+DISCARDED_CLOUDS = [os.path.join(CLOUDS_PATH, f'RGBIr_MERGE_{num}_minmaxnorm.laz') for num in DISCARDED_CLOUDS]
 
 # Get all files to be deal
 files = glob.glob(os.path.join(CLOUDS_PATH, 'RGBIr_MERGE_*_minmaxnorm.laz'))
 
-files = [f for f in files if f not in FAILED_CLOUDS]
+files = [f for f in files if f not in DISCARDED_CLOUDS]
 
 MAX_POINTS_PER_GROUP = 500_000_000
 
