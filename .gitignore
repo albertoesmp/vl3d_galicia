@@ -183,3 +183,4 @@ myvl3d.sh
 
 # Cesga
 scripts/slurm/logs/
+experiments/clouds_assigment.json
