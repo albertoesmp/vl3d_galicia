@@ -180,3 +180,6 @@ myvl3d.sh
 
 # Vim files
 *.swp
+
+# Cesga
+scripts/slurm/logs/
