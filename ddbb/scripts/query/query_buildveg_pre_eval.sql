@@ -13,7 +13,7 @@ FROM resultsets
         JOIN datasets on (resultsets.dataset_id = datasets.id)
         JOIN models on (resultsets.model_id = models.id)
         JOIN global_resultsets on (resultsets.global_resultset_id = global_resultsets.id)
-WHERE datasets.name like any(array['%MERGE_21%', '%MERGE_216%', '%MERGE_260%', '%MERGE_68%'])
-	and datasets.name like '%BUILD_VEG'
+WHERE datasets.name like any(array['%MERGE\_21\_%', '%MERGE\_216\_%', '%MERGE\_260\_%', '%MERGE\_68\_%'])
+	and datasets.name like '%norm\_BUILD\_VEG'
 GROUP BY models.id
 ORDER BY "F1" desc
