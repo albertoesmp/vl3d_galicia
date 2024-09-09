@@ -123,7 +123,8 @@ class PointCloud:
         except Exception as ex:
             raise PointCloudException(
                 'PointCloud get_features_matrix method received unexpected '
-                'feature names. Supported feature names for the particular '
+                f'feature names:\n{fnames}'
+                '\n\nSupported feature names for the particular '
                 f'point cloud are:\n{self.get_features_names()}'
             ) from ex
 
@@ -186,7 +187,7 @@ class PointCloud:
         :rtype: :class:`np.ndarray`
         """
         self.proxy_load()
-        return np.array(self.las['prediction'])
+        return np.array(self.las['Prediction'])
 
     def has_predictions(self):
         """
@@ -261,19 +262,29 @@ class PointCloud:
             a feature and each row a point (as a numpy array). See
             :class:`np.ndarray`.
         :param ftypes: The list or tuple of types representing the type for
-            each new feature. If it is a single type, then all feature are
+            each new feature. If it is a single type, then all features are
             assumed to have the same type.
         :return: The updated point cloud.
         :rtype: :class:`.PointCloud`
         """
         self.proxy_load()
+        # Correct ftypes because < 32 bits per float is not supported
+        if ftypes == np.float16:
+            ftypes = np.float32
+            LOGGING.LOGGER.warning(
+                'PointCloud.add_features changed the feature type from 16 '
+                'bits to 32 bits because the former is not supported for '
+                'output point clouds.'
+            )
         # Extract useful information
         nfeats = feats.shape[1]
         # Check each feature has its own name
         if len(fnames) != nfeats:
             raise PointCloudException(
                 "There is no one-to-one relationship between features and "
-                "names."
+                "names.\n"
+                f'Feature names ({len(fnames)}): {fnames}\n'
+                f'Number of features: {nfeats}'
             )
         # Handle single type specification
         if not isinstance(ftypes, (list, tuple)):
@@ -308,6 +319,7 @@ class PointCloud:
         :return: The updated point cloud.
         :rtype: :class:`.PointCloud`
         """
+        self.proxy_load()
         fnames = [  # Filter out names of non-extra dims features
             fname for fname in fnames if fname not in NON_EXTRA_DIMS_FEATURES
         ]
@@ -364,6 +376,23 @@ class PointCloud:
         self.las = None
         if proxy_release:
             self.proxy.release()
+
+    def set_coordinates(self, X):
+        """
+        Set the point-wise coordinates of the point cloud from the given
+        structure space matrix X.
+
+        :param X: The structure space matrix, i.e., a matrix where rows are
+            points and columns represent coordinates.
+        :return: The updated point cloud.
+        :rtype: :class:`.PointCloud`
+        """
+        self.proxy_load()
+        scales, offsets = self.las.header.scales, self.las.header.offsets
+        self.las.X = (X[:, 0] - offsets[0])/scales[0]
+        self.las.Y = (X[:, 1] - offsets[1])/scales[1]
+        self.las.Z = (X[:, 2] - offsets[2])/scales[2]
+        return self
 
     # ---   PROXY METHODS   --- #
     # ------------------------- #

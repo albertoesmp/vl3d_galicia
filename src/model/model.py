@@ -2,10 +2,12 @@
 # ------------------- #
 from abc import abstractmethod
 from src.main.vl3d_exception import VL3DException
+from src.model.tdcomp.training_data_component import TrainingDataComponent
 from src.utils.dict_utils import DictUtils
 from src.utils.imputer_utils import ImputerUtils
 from src.utils.tuner_utils import TunerUtils
 from src.eval.kfold_evaluator import KFoldEvaluator
+from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
@@ -63,6 +65,12 @@ class Model:
     :ivar stratkfold_plot_path: The path where the plot representing the
         evaluation of the k-folding procedure must be written.
     :vartype stratkfold_plot_path: str
+    :ivar training_data_pipeline: List of dictionaries such that each
+        dictionary provides a key-word specification of a component to be used
+        to transform or select the training data. Note that the components
+        will be sequentially applied to the data in the same order they are
+        given in the list.
+    :vartype training_data_pipeline: list of dict
     """
 
     # ---  SPECIFICATION ARGUMENTS  --- #
@@ -88,7 +96,8 @@ class Model:
             'fnames': spec.get('fnames', None),
             'stratkfold_report_path': spec.get('stratkfold_report_path', None),
             'stratkfold_plot_path': spec.get('stratkfold_plot_path', None),
-            'model_args': spec.get('model_args', None)
+            'model_args': spec.get('model_args', None),
+            'training_data_pipeline': spec.get('training_data_pipeline', None)
         }
         # Delete keys with None value
         kwargs = DictUtils.delete_by_val(kwargs, None)
@@ -122,7 +131,7 @@ class Model:
             self.hypertuner = hypertuner_class(
                 **hypertuner_class.extract_tuner_args(self.hypertuner)
             )
-        # Get feature names straight forward
+        # Get feature names straightforward
         self.fnames = kwargs.get("fnames", None)
         # Validate feature names
         if self.fnames is None:
@@ -134,6 +143,15 @@ class Model:
         )
         self.stratkfold_plot_path = kwargs.get('stratkfold_plot_path', None)
         self.model_args = kwargs.get("model_args", None)
+        self.training_data_pipeline_spec = kwargs.get(
+            'training_data_pipeline', None
+        )
+        if self.training_data_pipeline_spec is not None:
+            self.training_data_pipeline = TrainingDataComponent.build_pipeline(
+                self.training_data_pipeline_spec
+            )
+        else:
+            self.training_data_pipeline = None
 
     # ---   MODEL METHODS   --- #
     # ------------------------- #
@@ -183,6 +201,9 @@ class Model:
             pcloud.proxy_dump()  # Save memory from pcloud data if necessary
         if self.imputer is not None:
             X = self.imputer.impute(X)
+        # Handle data types to optimize memory consumption
+        X = self.optimize_data_types(X=X)
+        # Compute and return predictions
         return self._predict(X)
 
     @abstractmethod
@@ -288,11 +309,18 @@ class Model:
         :return: The trained model.
         :rtype: :class:`.Model`
         """
+        # Obtain input
         X = self.get_input_from_pcloud(pcloud)
         y = pcloud.get_classes_vector()
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
         if self.imputer is not None:
             X, y = self.imputer.impute(X, y)
+        if getattr(self, 'training_data_pipeline', None) is not None:
+            for comp in self.training_data_pipeline:
+                X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        X, y = self.optimize_data_types(X=X, y=y)
+        # Do the training
         self.training(X, y)
         self.on_training_finished(X, y)
         return self
@@ -318,6 +346,12 @@ class Model:
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
         if self.imputer is not None:
             X, y = self.imputer.impute(X, y)
+        if self.training_data_pipeline is not None:
+            for comp in self.training_data_pipeline:
+                X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        X, y = self.optimize_data_types(X=X, y=y)
+        # Split data
         Xtrain, Xtest, ytrain, ytest = train_test_split(
             X, y,
             test_size=self.autoval_size,
@@ -362,6 +396,12 @@ class Model:
         pcloud.proxy_dump()  # Save memory from point cloud data if necessary
         if self.imputer is not None:
             X, y = self.imputer.impute(X, y)
+        if self.training_data_pipeline is not None:
+            for comp in self.training_data_pipeline:
+                X, y = comp(X, y)
+        # Handle data types to optimize memory consumption
+        X, y = self.optimize_data_types(X=X, y=y)
+        # Prepare stratified k-folding
         skf = StratifiedKFold(
             n_splits=self.num_folds,
             shuffle=self.shuffle_points,
@@ -432,3 +472,51 @@ class Model:
         :rtype: :class:`np.ndarray`
         """
         pass
+
+    # ---   UTIL METHODS   --- #
+    # ------------------------ #
+    def optimize_data_types(self, X=None, y=None):
+        """
+        Optimize the data types, depending on the current configuration of the
+        framework.
+
+        :param X: The input data.
+        :param y: The reference data.
+        :return: The updated data types.
+        :rtype: tuple of :class:`np.ndarray`
+        """
+        # Handle data types of input data to optimize memory consumption
+        if X is not None:
+            structure_space_bits = VL3DCFG['MODEL']['structure_space_bits']
+            if structure_space_bits < 64:
+                if isinstance(X, list) and len(X) > 1:
+                    # Compute center of bounding box
+                    a, b = np.min(X[0], axis=0), np.max(X[0], axis=0)
+                    c = (a+b)/2.0
+                    # Shift before reducing bits to avoid position corruption
+                    if structure_space_bits == 32:
+                        X[0] = (X[0]-c).astype(np.float32)
+                    elif structure_space_bits == 16:
+                        X[0] = (X[0]-c).astype(np.float16)
+                    else:
+                        raise ModelException(
+                            'Model could not change the data type for the '
+                            'structure space.'
+                        )
+            if VL3DCFG['MODEL']['feature_space_bits'] == 32:
+                if isinstance(X, np.ndarray):
+                    X = X.astype(np.float32)
+                elif isinstance(X, list) and len(X) > 1:
+                    X[1] = X[1].astype(np.float32)
+        # Handle data types of reference data to optimize memory consumption
+        if y is not None:
+            if VL3DCFG['MODEL']['classification_space_bits'] == 8:
+                y = y.astype(np.uint8)
+            elif VL3DCFG['MODEL']['classification_space_bits'] == 16:
+                y = y.astype(np.uint16)
+            elif VL3DCFG['MODEL']['classification_space_bits'] == 32:
+                y = y.astype(np.uint32)
+            # Return optimized data and references
+            return X, y
+        # Return optimized data without references
+        return X

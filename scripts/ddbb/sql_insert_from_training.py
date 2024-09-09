@@ -91,8 +91,11 @@ def analyze_experiment(training_json_path, experiment_dir):
             return ''.join(result[0])
     # Read training json
     training_json = ''
-    regexp = re.compile(
-        f'/(kpc|pnetpp)(_final_[A-Za-z]*{model_folder_suffix})/'
+    """regexp = re.compile(  # General case
+        f'/(kpc|pnetpp|pnet)(_final_[A-Za-z]*{model_folder_suffix})/'
+    )"""
+    regexp = re.compile(  # For alternative PNET only
+        f'/(kpc|pnetpp|pnet)(_final_[A-Za-z]*{model_folder_suffix})_alt/'
     )
     model_name = None
     with open(training_json_path, 'r') as infile:

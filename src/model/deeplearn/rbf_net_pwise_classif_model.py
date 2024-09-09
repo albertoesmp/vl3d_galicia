@@ -188,6 +188,17 @@ class RBFNetPwiseClassifModel(ClassificationModel):
         """
         See :meth:`model.Model.on_training_finished`.
         """
+        # Skip predictions-based after-training evaluation if not needed
+        if (
+            self.training_evaluation_report_path is None and
+            self.training_class_evaluation_report_path is None and
+            self.training_confusion_matrix_report_path is None and
+            self.training_confusion_matrix_plot_path is None and
+            self.training_class_distribution_report_path is None and
+            self.training_class_distribution_plot_path is None and
+            self.training_classified_point_cloud_path is None
+        ):
+            return
         # Compute predictions on training data
         zhat, yhat = PointNetPwiseClassifModel.on_training_finished_predict(
             self, X, y, yhat
@@ -196,7 +207,8 @@ class RBFNetPwiseClassifModel(ClassificationModel):
         super().on_training_finished(X, y, yhat=yhat)
         # Evaluate computed predictions
         PointNetPwiseClassifModel.on_training_finished_evaluate(
-            self, X, y, zhat, yhat
+            self, X, y, zhat, yhat,
+            reducer=getattr(self.model, "prediction_reducer", None)
         )
 
     # ---  PREDICTION METHODS  --- #
