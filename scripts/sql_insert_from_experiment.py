@@ -117,7 +117,7 @@ def analyze_class_eval(experiment_dir):
             readline(infile)  # Skip first two lines
         line = readline(infile)
         while len(line) > 0:
-            record = [line[:22].strip(' '), line[22:]]
+            record = [line[:21].strip(' '), line[21:]]
             scores = [float(x) for x in record[1].split(',')]
             evals.append({
                 'class_name': record[0].strip(" "),
