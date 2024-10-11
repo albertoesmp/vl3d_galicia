@@ -1,0 +1,92 @@
+{
+	"in_pcloud": [		
+		"/ext4/lidar_data/pnoa/second_edition/vl3d/out/cesga/selected/buildveg/MERGE_34/uncertainty/uncertainty.las"
+	],
+	"out_pcloud": [
+		"/ext4/lidar_data/pnoa/second_edition/vl3d/out/cesga/selected/buildveg/MERGE_34/raster_eval/*"
+	],
+	"sequential_pipeline": [
+		{
+            "eval": "RasterGridEvaluator",
+            "crs": "+proj=utm +zone=29 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs",
+            "plot_path": "*geotiff/",
+            "xres": 5.0,
+            "yres": 5.0,
+            "grid_iter_step": 100,
+            "grids": [
+                    {
+                            "fnames": ["building"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "building_mean"
+                    },
+					{
+                            "fnames": ["vegetation"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "vegetation_mean"
+                    },
+					{
+                            "fnames": ["other"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "other_mean"
+                    },
+                    {
+                            "fnames": ["Prediction"],
+                            "target_val": 0,
+                            "reduce": "binary_mask",
+                            "count_threshold": 3,
+                            "empty_val": "nan",
+                            "oname": "building_mask"
+                    },
+					{
+                            "fnames": ["Prediction"],
+                            "target_val": 1,
+                            "reduce": "binary_mask",
+                            "count_threshold": 3,
+                            "empty_val": "nan",
+                            "oname": "vegetation_mask"
+                    },
+					{
+                            "fnames": ["Prediction"],
+                            "target_val": 2,
+                            "reduce": "binary_mask",
+                            "count_threshold": 3,
+                            "empty_val": "nan",
+                            "oname": "other_mask"
+                    },
+                    {
+                            "fnames": ["building", "vegetation", "other"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "BVO_mean"
+                    },
+                    {
+                            "fnames": ["PointWiseEntropy"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "pwise_entropy_mean"
+                    },
+                    {
+                            "fnames": ["PointWiseEntropy"],
+                            "reduce": "max",
+                            "empty_val": "nan",
+                            "oname": "pwise_entropy_max"
+                    },
+					{
+                            "fnames": ["ClassAmbiguity"],
+                            "reduce": "mean",
+                            "empty_val": "nan",
+                            "oname": "class_ambiguity_mean"
+                    },
+                    {
+                            "fnames": ["ClassAmbiguity"],
+                            "reduce": "max",
+                            "empty_val": "nan",
+                            "oname": "class_ambiguity_max"
+                    }
+            ]
+    }
+	]
+}

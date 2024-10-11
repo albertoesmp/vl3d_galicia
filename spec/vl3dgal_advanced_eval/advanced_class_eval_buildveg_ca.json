@@ -1,0 +1,148 @@
+{
+	"in_pcloud": [		
+		"/ext4/lidar_data/pnoa/second_edition/vl3d/out/cesga/selected/buildveg/MERGE_34/uncertainty/uncertainty.las"
+	],
+	"out_pcloud": [
+		"/ext4/lidar_data/pnoa/second_edition/vl3d/out/cesga/selected/buildveg/MERGE_34/adv_eval_ca/*"
+	],
+	"sequential_pipeline": [
+		{
+		  "eval": "AdvancedClassificationEvaluator",
+		  "class_names": ["building", "vegetation", "other"],
+		  "metrics": ["OA", "P", "R", "F1", "IoU", "wP", "wR", "wF1", "wIoU", "MCC", "Kappa"],
+		  "class_metrics": ["P", "R", "F1", "IoU"],
+		  "report_path": "*report/global_eval.log",
+		  "plot_path": "*report/global_plot.svg",
+		  "class_report_path": "*report/class_eval.log",
+		  "class_plot_path": "*report/class_eval.svg",
+		  "confusion_matrix_report_path" : "*report/confusion_matrix.log",
+		  "confusion_matrix_plot_path" : "*report/confusion_matrix.svg",
+		  "confusion_matrix_normalization_strategy": "row",
+		  "class_distribution_report_path": "*report/class_distribution.log",
+		  "class_distribution_plot_path": "*report/class_distribution.svg",
+		  "domain_name": "CA cut",
+		  "filters": [
+			{
+			  "name": "ca0_1",
+			  "x": 0.1,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.1,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_2",
+			  "x": 0.2,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.2,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_3",
+			  "x": 0.3,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.3,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_4",
+			  "x": 0.4,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.4,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_5",
+			  "x": 0.5,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.5,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_6",
+			  "x": 0.6,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.6,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_7",
+			  "x": 0.7,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.7,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_8",
+			  "x": 0.8,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.8,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca0_9",
+			  "x": 0.9,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 0.9,
+				  "action": "preserve"
+				}
+			  ]
+			},
+			{
+			  "name": "ca1",
+			  "x": 1.0,
+			  "conditions": [
+				{
+				  "value_name": "ClassAmbiguity",
+				  "condition_type": "less_than_or_equal_to",
+				  "value_target": 1.0,
+				  "action": "preserve"
+				}
+			  ]
+			}
+		  ]
+		}
+	]
+}
