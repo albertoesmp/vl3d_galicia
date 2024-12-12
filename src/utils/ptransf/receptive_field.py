@@ -21,7 +21,7 @@ class ReceptiveField:
     # ---   RECEPTIVE FIELD METHODS   --- #
     # ----------------------------------- #
     @abstractmethod
-    def fit(self, X, x, structure_float_type=np.float64):
+    def fit(self, X, x, structure_float_type=np.float64, id=None):
         """
         Fit the receptive field to represent the given points.
 
@@ -32,6 +32,15 @@ class ReceptiveField:
         :type x: :class:`np.ndarray`
         :param structure_float_type: The decimal type for the structure space.
         :type structure_float_type: :class:`np.dtype`
+        :param id: Either an integer or a string identifying the receptive
+            field that is being fit. Alternatively it can be None. Note that
+            this argument is meant to be used only for certain purposes, but it
+            is not fundamental for the receptive field. An example can be
+            identifying the current receptive field to name an output report
+            (see :class:`.ReceptiveFieldOversamplingReport`,
+            :meth:`.ReceptiveFieldFPS.fit`, and
+            :meth:`.ReceptiveFieldFPS.compute_fps_on_3D_pcloud`).
+        :type id: int or str
         :return: The fit receptive field itself (for fluent programming).
         :rtype: :class:`.ReceptiveField`
         """
@@ -89,3 +98,16 @@ class ReceptiveField:
         :rtype: :class:`np.ndarray`
         """
         pass
+
+    # ---  MEMORY UTILS  --- #
+    # ---------------------- #
+    def canibalize(self, rf):
+        """
+        Take the values from given receptive field.
+
+        :param rf: Receptive field whose attributes will be canibalized.
+        """
+        raise NotImplementedError(
+            'ReceptiveField does not implement the canibalize method. '
+            f'{self.__class__.__name__} must provide its own implementation.'
+        )

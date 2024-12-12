@@ -55,7 +55,7 @@ class PointCloud:
 
     # ---   INIT   --- #
     # ---------------- #
-    def __init__(self, las):
+    def __init__(self, las, mem_check_threshold=None):
         """
         Initialize a PointCloud instance.
         See the :class:`.PointCloudFactoryFacade` for methods to successfully
@@ -65,7 +65,7 @@ class PointCloud:
         """
         # Assign attributes
         self.las = las
-        self.proxy = MemToFileProxy()
+        self.proxy = MemToFileProxy(mem_check_threshold=mem_check_threshold)
 
     # ---  ACCESS-ONLY METHODS  --- #
     # ----------------------------- #
@@ -197,9 +197,9 @@ class PointCloud:
         :rtype: bool
         """
         self.proxy_load()
-        return 'prediction' in self.get_features_names() and \
-            self.las['prediction'] is not None and \
-            len(self.las.prediction) > 0
+        return 'Prediction' in self.get_features_names() and \
+            self.las['Prediction'] is not None and \
+            len(self.las.Prediction) > 0
 
     def equals(self, pcloud, compare_header=True):
         """
@@ -324,6 +324,7 @@ class PointCloud:
             fname for fname in fnames if fname not in NON_EXTRA_DIMS_FEATURES
         ]
         self.las.remove_extra_dims(fnames)  # Remove the features
+        return self
 
     def preserve_mask(self, mask):
         """

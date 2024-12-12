@@ -2,6 +2,7 @@
 # ------------------- #
 from src.clustering.postproc.clustering_post_processor import \
     ClusteringPostProcessor, ClusteringException
+from src.geometry.OrientedBoundingBox import OrientedBoundingBox
 import src.main.main_logger as LOGGING
 import open3d
 import numpy as np
@@ -16,7 +17,7 @@ class ClusterEnveloper(ClusteringPostProcessor):
 
     Clustering post-processor that computes the requested envelopes for each
     cluster.
-    See :class:`.ClusteringPostProcessor`
+    See :class:`.ClusteringPostProcessor`.
 
     :ivar envelopes: List of dictionaries defining each envelope.
     """
@@ -158,13 +159,12 @@ class ClusterEnveloper(ClusteringPostProcessor):
             self.bboxes = []
         # Compute bounding box vertices
         bbox = {}
-        points = open3d.utility.Vector3dVector(X)
-        o3d_bbox = open3d.geometry.OrientedBoundingBox.create_from_points(points)
-        bbox['vertices'] = np.asarray(o3d_bbox.get_box_points())
+        o_bbox = OrientedBoundingBox.create_from_points(X)
+        bbox['vertices'] = np.asarray(o_bbox.get_box_points())
         bbox['cluster_label'] = cidx
         # Compute enclosed volume, if requested
         if spec.get('compute_volume', False):
-            bbox['volume'] = o3d_bbox.volume()
+            bbox['volume'] = o_bbox.get_volume()
         # Store computed bounding box
         self.bboxes.append(bbox)
 

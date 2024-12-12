@@ -15,6 +15,10 @@ from src.model.deeplearn.layer.grouping_point_net_layer import \
     GroupingPointNetLayer
 from src.model.deeplearn.layer.kpconv_layer import KPConvLayer
 from src.model.deeplearn.layer.strided_kpconv_layer import StridedKPConvLayer
+from src.model.deeplearn.layer.light_kpconv_layer import LightKPConvLayer
+from src.model.deeplearn.layer.strided_light_kpconv_layer import \
+    StridedLightKPConvLayer
+from src.model.deeplearn.layer.hourglass_layer import HourglassLayer
 from src.utils.dl_utils import DLUtils
 from src.utils.dict_utils import DictUtils
 from src.main.main_config import VL3DCFG
@@ -54,11 +58,11 @@ class ConvAutoencPwiseClassif(Architecture):
         self.fnames = kwargs.get('fnames', None)
         if self.fnames is None:
             self.fnames = ['ones']  # If no features are given, use ones
-        self.pre_runnable = HierarchicalPreProcessor(
-            **kwargs['pre_processing']
-        )
-        self.post_runnable = HierarchicalPostProcessor(self.pre_runnable)
         self.num_classes = kwargs.get('num_classes', None)
+        pre_kwargs = kwargs.get('pre_processing')
+        pre_kwargs['num_classes'] = self.num_classes
+        self.pre_runnable = HierarchicalPreProcessor(**kwargs['pre_processing'])
+        self.post_runnable = HierarchicalPostProcessor(self.pre_runnable)
         self.feature_extraction = kwargs.get('feature_extraction', None)
         pre_processor = self.pre_runnable.pre_processor
         self.structure_alignment = kwargs.get('structure_alignment', None)
@@ -79,6 +83,8 @@ class ConvAutoencPwiseClassif(Architecture):
         self.upsampling_bn_momentum = kwargs.get(
             'upsampling_bn_momentum', 0.0
         )
+        self.upsampling_hourglass = kwargs.get('upsampling_hourglass', None)
+        self.conv1d = kwargs.get('conv1d', True)
         self.conv1d_kernel_initializer = kwargs.get(
             'conv1d_kernel_initializer', 'glorot_normal'
         )
@@ -100,6 +106,9 @@ class ConvAutoencPwiseClassif(Architecture):
         self.last_upsampling_tensor = None
         self.kpconv_layers = None
         self.skpconv_layers = None
+        self.lkpconv_layers = None
+        self.slkpconv_layers = None
+        self.parallel_hourglass_layers = None
 
     # ---   ARCHITECTURE METHODS   --- #
     # -------------------------------- #
@@ -281,6 +290,8 @@ class ConvAutoencPwiseClassif(Architecture):
             self.build_downsampling_pnet_hierarchy()
         elif feat_extract_type_low == 'kpconv':
             self.build_downsampling_kpconv_hierarchy()
+        elif feat_extract_type_low == 'lightkpconv':
+            self.build_downsampling_lightkpconv_hierarchy()
         else:
             raise DeepLearningException(
                 f'ConvAutoencPwiseClassif received a "{feat_extract_type}" '
@@ -391,6 +402,7 @@ class ConvAutoencPwiseClassif(Architecture):
         x = self.F if self.aligned_F is None else self.aligned_F
         Xs = self.Xs if self.aligned_Xs is None else self.aligned_Xs
         self.kpconv_layers, self.skpconv_layers = [], []
+        self.parallel_hourglass_layers = []
         for _ in range(ops_per_depth[0]):
             x, Dout = self.kpconv_prewrap(x, 1, i)
             kpcl = KPConvLayer(
@@ -460,9 +472,10 @@ class ConvAutoencPwiseClassif(Architecture):
 
     def build_kpconv_downsampling_layer(self, Xs, x, d, i):
         """
-        Build a downsampling layer in the context of the KPConv model (i.e.,
-        support also :class:`.StridedKPConvLayer` apart from
-        :class:`.FeaturesDownsamplingLayer`.
+        Build a downsampling layer in the context of the KPConv and light
+        KPConv models (i.e., support also :class:`.StridedKPConvLayer` and
+        :class:`.StridedLightKPConvLayer` apart from
+        :class:`.FeaturesDownsamplingLayer`).
 
         :param Xs: The list of receptive field-wise structure spaces.
         :type Xs: list
@@ -491,11 +504,115 @@ class ConvAutoencPwiseClassif(Architecture):
             )
             self.skpconv_layers.append(skpcl)
             return skpcl([Xs[d], Xs[d+1], x, self.NDs[d]])
+        elif downsampling_filter == 'strided_lightkpconv':
+            slkpcl = StridedLightKPConvLayer(
+                sigma=self.feature_extraction['sigma'][i],
+                kernel_radius=self.feature_extraction['kernel_radius'][i],
+                num_kernel_points=self.feature_extraction['num_kernel_points'][i],
+                deformable=self.feature_extraction['deformable'][i],
+                Dout=self.feature_extraction['feature_space_dims'][i],
+                W_initializer=self.feature_extraction['W_initializer'][i],
+                W_regularizer=self.feature_extraction['W_regularizer'][i],
+                W_constraint=self.feature_extraction['W_constraint'][i],
+                A_trainable=self.feature_extraction['A_trainable'][i],
+                A_initializer=self.feature_extraction['A_initializer'][i],
+                A_regularizer=self.feature_extraction['A_regularizer'][i],
+                A_constraint=self.feature_extraction['A_constraint'][i],
+                name=f'DOWN_SLKPConv_d{d + 2}_{i + 1}'
+            )
+            self.slkpconv_layers.append(slkpcl)
+            return slkpcl([Xs[d], Xs[d + 1], x, self.NDs[d]])
         else:
             return FeaturesDownsamplingLayer(
                 filter=self.downsampling_filter,
                 name=f'DOWN_d{d+2}'
             )([Xs[d], Xs[d+1], x, self.NDs[d]])
+
+    def build_downsampling_lightkpconv_hierarchy(self):
+        """
+        Build the downsampling hierarchy based on the light KPConv operator.
+        """
+        self.skip_links = []
+        i = 0
+        ops_per_depth = self.feature_extraction['operations_per_depth']
+        x = self.F if self.aligned_F is None else self.aligned_F
+        Xs = self.Xs if self.aligned_Xs is None else self.aligned_Xs
+        self.lkpconv_layers, self.slkpconv_layers = [], []
+        self.parallel_hourglass_layers = []
+        for _ in range(ops_per_depth[0]):
+            x, Dout = self.kpconv_prewrap(x, 1, i)
+            lkpcl = LightKPConvLayer(
+                sigma=self.feature_extraction['sigma'][i],
+                kernel_radius=self.feature_extraction['kernel_radius'][i],
+                num_kernel_points=self.feature_extraction['num_kernel_points'][i],
+                deformable=self.feature_extraction['deformable'][i],
+                Dout=Dout,
+                W_initializer=self.feature_extraction['W_initializer'][i],
+                W_regularizer=self.feature_extraction['W_regularizer'][i],
+                W_constraint=self.feature_extraction['W_constraint'][i],
+                A_trainable=self.feature_extraction['A_trainable'][i],
+                A_initializer=self.feature_extraction['A_initializer'][i],
+                A_regularizer=self.feature_extraction['A_regularizer'][i],
+                A_constraint=self.feature_extraction['A_constraint'][i],
+                name=f'LightKPConv_d1_{i+1}'
+            )
+            self.lkpconv_layers.append(lkpcl)
+            x = lkpcl([Xs[0], x, self.Ns[0]])
+            if self.feature_extraction['bn']:
+                x = tf.keras.layers.BatchNormalization(
+                    momentum=self.feature_extraction['bn_momentum'],
+                    name=f'LightKPConv_d1_{i+1}_BN'
+                )(x)
+            if self.feature_extraction['activate']:
+                x = tf.keras.layers.ReLU(
+                    name=f'LightKPConv_d1_{i+1}_ReLU'
+                )(x)
+            x = self.kpconv_postwrap(x, 1, i)
+            i += 1
+        self.skip_links.append(x)
+        for d in range(self.max_depth-1):
+            x = self.build_kpconv_downsampling_layer(Xs, x, d, i)
+            if self.feature_extraction['bn']:
+                x = tf.keras.layers.BatchNormalization(
+                    momentum=self.feature_extraction['bn_momentum'],
+                    name=f'DOWN_d{d+2}_{i+1}_BN'
+                )(x)
+            if self.feature_extraction['activate']:
+                x = tf.keras.layers.ReLU(
+                    name=f'DOWN_d{d+2}_{i+1}_ReLU'
+                )(x)
+            for _ in range(ops_per_depth[d+1]):
+                x, Dout = self.kpconv_prewrap(x, d+2, i)
+                lkpcl = LightKPConvLayer(
+                    sigma=self.feature_extraction['sigma'][i],
+                    kernel_radius=self.feature_extraction['kernel_radius'][i],
+                    num_kernel_points=self.feature_extraction['num_kernel_points'][i],
+                    deformable=self.feature_extraction['deformable'][i],
+                    Dout=Dout,
+                    W_initializer=self.feature_extraction['W_initializer'][i],
+                    W_regularizer=self.feature_extraction['W_regularizer'][i],
+                    W_constraint=self.feature_extraction['W_constraint'][i],
+                    A_trainable=self.feature_extraction['A_trainable'][i],
+                    A_initializer=self.feature_extraction['A_initializer'][i],
+                    A_regularizer=self.feature_extraction['A_regularizer'][i],
+                    A_constraint=self.feature_extraction['A_constraint'][i],
+                    name=f'LightKPConv_d{d+2}_{i+1}'
+                )
+                self.lkpconv_layers.append(lkpcl)
+                x = lkpcl([Xs[d+1], x, self.Ns[d+1]])
+                if self.feature_extraction['bn']:
+                    x = tf.keras.layers.BatchNormalization(
+                        momentum=self.feature_extraction['bn_momentum'],
+                        name=f'LightKPConv_d{d+2}_{i+1}_BN'
+                    )(x)
+                if self.feature_extraction['activate']:
+                    x = tf.keras.layers.ReLU(
+                        name=f'LightKPConv_d{d+2}_{i+1}_ReLU'
+                    )(x)
+                x = self.kpconv_postwrap(x, d+2, i)
+                i += 1
+            self.skip_links.append(x)
+        self.last_downsampling_tensor = x
 
     def build_upsampling_hierarchy(self):
         """
@@ -519,20 +636,54 @@ class ConvAutoencPwiseClassif(Architecture):
             )([x, skip_link])
             # 1D convolutions after upsampling
             filters = self.feature_extraction['feature_space_dims'][reverse_d]
-            x = tf.keras.layers.Conv1D(
-                filters,
-                kernel_size=1,
-                strides=1,
-                padding="valid",
-                kernel_initializer=self.conv1d_kernel_initializer,
-                name=f'Conv1D_d{reverse_d+1}'
-            )(x)
+            if self.conv1d:
+                x = tf.keras.layers.Conv1D(
+                    filters,
+                    kernel_size=1,
+                    strides=1,
+                    padding="valid",
+                    kernel_initializer=self.conv1d_kernel_initializer,
+                    name=f'UpConv1D_d{reverse_d+1}'
+                )(x)
+            # Hourglass after upsampling
+            if self.upsampling_hourglass is not None:
+                Din = x.shape[-1]
+                subspace_factor = self.upsampling_hourglass.get(
+                    'subspace_factor', None
+                )
+                if subspace_factor is None:
+                    raise DeepLearningException(
+                        'ConvAutoencPwiseClassi only supports upsampling '
+                        'hourglasses specified with subspace factor.'
+                    )
+                Dh = int(subspace_factor * max(Din, filters))
+                x = HourglassLayer(
+                    Dh,
+                    filters,
+                    activation=self.upsampling_hourglass['activation'],
+                    activation2=self.upsampling_hourglass['activation2'],
+                    regularize=self.upsampling_hourglass['regularize'],
+                    spectral_strategy=self.upsampling_hourglass.get(
+                        'spectral_strategy', 'approx'
+                    ),
+                    beta=self.upsampling_hourglass['loss_factor'],
+                    W1_initializer=self.upsampling_hourglass['W1_initializer'],
+                    W1_regularizer=self.upsampling_hourglass['W1_regularizer'],
+                    W1_constraint=self.upsampling_hourglass['W1_constraint'],
+                    W2_initializer=self.upsampling_hourglass['W2_initializer'],
+                    W2_regularizer=self.upsampling_hourglass['W2_regularizer'],
+                    W2_constraint=self.upsampling_hourglass['W2_constraint'],
+                    name=f'UpHG_{reverse_d+1}'
+                )(x)
             if self.upsampling_bn:
                 x = tf.keras.layers.BatchNormalization(
                     momentum=self.upsampling_bn_momentum,
-                    name=f'BN_d{reverse_d+1}'
+                    name=f'UpBN_d{reverse_d+1}'
                 )(x)
-            x = tf.keras.layers.Activation("relu")(x)
+            x = tf.keras.layers.Activation(
+                "relu",
+                name=f'UpReLU_d{reverse_d+1}'
+            )(x)
         self.last_upsampling_tensor = x
 
     # ---   SERIALIZATION   --- #
@@ -600,6 +751,16 @@ class ConvAutoencPwiseClassif(Architecture):
             for layer in self.nn.layers
             if type(layer) == StridedKPConvLayer
         ]
+        # Track light KPConv layers
+        self.lkpconv_layers = [
+            layer for layer in self.nn.layers
+            if type(layer) == LightKPConvLayer
+        ]
+        self.slkpconv_layers = [
+            layer
+            for layer in self.nn.layers
+            if type(layer) == StridedLightKPConvLayer
+        ]
 
     # ---  KPCONV UTIL METHODS  --- #
     # ----------------------------- #
@@ -619,12 +780,72 @@ class ConvAutoencPwiseClassif(Architecture):
         wrap_spec = self.feature_extraction.get(
             'unary_convolution_wrapper', None
         )
-        # No wrapper
-        if wrap_spec is None:
-            return x, self.feature_extraction['feature_space_dims'][idx]
-        # Apply pre-wrapper
+        # Get Hourglass specification
+        hourglass_spec = self.feature_extraction.get(
+            'hourglass_wrapper', None
+        )
+        # Get input dimensionality
         Din = self.feature_extraction['feature_space_dims'][idx]
-        Dout = Din//2
+        # Default output with no wrappers at all
+        out_x = x
+        out_dim = self.feature_extraction['feature_space_dims'][idx]
+        # Handle unary wrapper
+        if wrap_spec is not None:
+            out_x, out_dim = self.unary_convolution_prewrap(
+                wrap_spec, Din, out_x, depth, idx
+            )
+            Din = out_dim  # Further wrappers need the updated input dim
+        # Handle hourglass wrapper
+        if hourglass_spec is not None:
+            out_x, out_dim = self.hourglass_prewrap(
+                hourglass_spec, Din, out_x, depth, idx
+            )
+            Din = out_dim  # Further wrappers need the updated input dim
+        # Return
+        return out_x, out_dim
+
+
+    def kpconv_postwrap(self, x, depth, idx):
+        """
+        Wrap the output of a KPConv block with unary convolutions (also known
+        as shared MLPs).
+
+        :param x: The input to be wrapped.
+        :param depth: The depth of the KPConv being post-wrapped.
+        :param idx: The index of the KPConv being post-wrapped.
+        :return: The input for the next layer
+        """
+        # Get KPConv wrapper specification
+        wrap_spec = self.feature_extraction.get(
+            'unary_convolution_wrapper', None
+        )
+        # Get Hourglass specification
+        hourglass_spec = self.feature_extraction.get(
+            'hourglass_wrapper', None
+        )
+        # Get output dimensionality
+        Dout = self.feature_extraction['feature_space_dims'][idx]
+        # Default output with no wrappers at all
+        out_x = x
+        # Handle unary wrapper
+        if wrap_spec is not None:
+            x = self.unary_convolution_postwrap(wrap_spec, Dout, x, depth, idx)
+        # Handle hourglass wrapper
+        if hourglass_spec is not None:
+            x = self.hourglass_postwrap(hourglass_spec, Dout, x, depth, idx)
+        # Return
+        return x
+
+
+    # ---  WRAPPER BLOCKS  --- #
+    # ------------------------ #
+    def unary_convolution_prewrap(self, wrap_spec, Din, x, depth, idx):
+        """
+        See :meth:`.ConvAutoencPwiseClassif.kpconv_prewrap`.
+        """
+        # Extract variables
+        Dout = Din//wrap_spec.get('feature_dim_divisor', 2)
+        # Build layers
         x = tf.keras.layers.Conv1D(
             Dout,
             kernel_size=1,
@@ -641,27 +862,14 @@ class ConvAutoencPwiseClassif(Architecture):
             wrap_spec.get('activation', 'relu'),
             name=f'PreWrap_d{depth}_{idx+1}_ACT'
         )(x)
+        # Return
         return x, Dout
 
-    def kpconv_postwrap(self, x, depth, idx):
+    def unary_convolution_postwrap(self, wrap_spec, Dout, x, depth, idx):
         """
-        Wrap the output of a KPConv block with unary convolutions (also known
-        as shared MLPs).
-
-        :param x: The input to be wrapped.
-        :param depth: The depth of the KPConv being post-wrapped.
-        :param idx: The index of the KPConv being post-wrapped.
-        :return: The input for the next layer
+        See :meth:`.ConvAutoencPwiseClassif.unary_convolution_postwrap`.
         """
-        # Get KPConv wrapper specification
-        wrap_spec = self.feature_extraction.get(
-            'unary_convolution_wrapper', None
-        )
-        # No wrapper
-        if wrap_spec is None:
-            return x
-        # Apply post-wrapper
-        Dout = self.feature_extraction['feature_space_dims'][idx]
+        # Build layers
         x = tf.keras.layers.Conv1D(
             Dout,
             kernel_size=1,
@@ -678,6 +886,135 @@ class ConvAutoencPwiseClassif(Architecture):
             wrap_spec.get('activation', 'relu'),
             name=f'PostWrap_d{depth}_{idx+1}_ACT'
         )(x)
+        # Return
+        return x
+
+
+    def hourglass_prewrap(self, hourglass_spec, Din, x, depth, idx):
+        """
+        See :meth:`.ConvAutoencPwiseClassif.kpconv_prewrap`.
+        """
+        # Extract variables
+        subspace_factor = hourglass_spec.get('subspace_factor', None)
+        dim_div = hourglass_spec.get('feature_dim_divisor', 4)
+        Dout = Din//dim_div
+        Dout_par = Din
+        if subspace_factor is not None:
+            Dh = int(subspace_factor * max(Din, Dout))
+            Dh_par = int(subspace_factor * max(Din, Dout_par))
+        else:
+            Dh = int(hourglass_spec['internal_dim'][idx])
+            Dh_par = int(hourglass_spec['parallel_internal_dim'][idx])
+        # Build parallel hourglass
+        x_par = HourglassLayer(
+            Dh_par,
+            Dout_par,
+            activation=hourglass_spec['activation'][idx],
+            activation2=hourglass_spec['activation2'][idx],
+            regularize=hourglass_spec['regularize'][idx],
+            spectral_strategy=hourglass_spec.get(
+                'spectral_strategy', 'approx'
+            ),
+            beta=hourglass_spec['loss_factor'],
+            W1_initializer=hourglass_spec['W1_initializer'][idx],
+            W1_regularizer=hourglass_spec['W1_regularizer'][idx],
+            W1_constraint=hourglass_spec['W1_constraint'][idx],
+            W2_initializer=hourglass_spec['W2_initializer'][idx],
+            W2_regularizer=hourglass_spec['W1_regularizer'][idx],
+            W2_constraint=hourglass_spec['W1_constraint'][idx],
+            name=f'ParHG_d{depth}_{idx+1}'
+        )(x)
+        # Build hourglass
+        x = HourglassLayer(
+            Dh,
+            Dout,
+            activation=hourglass_spec['activation'][idx],
+            activation2=hourglass_spec['activation2'][idx],
+            regularize=hourglass_spec['regularize'][idx],
+            spectral_strategy=hourglass_spec.get(
+                'spectral_strategy', 'approx'
+            ),
+            beta=hourglass_spec['loss_factor'],
+            W1_initializer=hourglass_spec['W1_initializer'][idx],
+            W1_regularizer=hourglass_spec['W1_regularizer'][idx],
+            W1_constraint=hourglass_spec['W1_constraint'][idx],
+            W2_initializer=hourglass_spec['W2_initializer'][idx],
+            W2_regularizer=hourglass_spec['W1_regularizer'][idx],
+            W2_constraint=hourglass_spec['W1_constraint'][idx],
+            name=f'PreHG_d{depth}_{idx+1}'
+        )(x)
+        # Handle batch normalization
+        if hourglass_spec.get('bn', False):
+            # When applying batch normalization, it is recommended to build
+            # the hourglass with sigma2 (second activation) as the identity.
+            x = tf.keras.layers.BatchNormalization(
+                momentum=hourglass_spec.get('bn_momentum', 0.0),
+                name=f'PreHG_d{depth}_{idx+1}_BN'
+            )(x)
+            x_par = tf.keras.layers.BatchNormalization(
+                momentum=hourglass_spec.get('bn_momentum', 0.0),
+                name=f'ParHG_d{depth}_{idx + 1}_BN'
+            )(x_par)
+            act2 = hourglass_spec['activation2'][idx]
+            if act2 is not None and act2.lower() != 'identity':
+                x = tf.keras.layers.Activation(
+                    act2,
+                    name=f'PreHG_d{depth}_{idx+1}_ACT'
+                )(x)
+                x_par = tf.keras.layers.Activation(
+                    act2,
+                    name=f'ParHG_d{depth}_{idx + 1}_ACT'
+                )(x_par)
+        # Register parallel hourglass so it can be handled during postwrap
+        self.parallel_hourglass_layers.append(x_par)
+        # Return
+        return x, Dout
+
+    def hourglass_postwrap(self, hourglass_spec, Dout, x, depth, idx):
+        """
+        See :meth:`.ConvAutoencPwiseClassif.kpconv_postwrap`.
+        """
+        # Extract variables
+        Din = x.shape[-1]
+        subspace_factor = hourglass_spec.get('subspace_factor', None)
+        if subspace_factor is not None:
+            Dh = int(subspace_factor * max(Din, Dout))
+        else:
+            Dh = int(hourglass_spec['internal_dim'][idx])
+        # Build hourglass
+        x = HourglassLayer(
+            Dh,
+            Dout,
+            activation=hourglass_spec['activation'][idx],
+            activation2=hourglass_spec['activation2'][idx],
+            regularize=hourglass_spec['regularize'][idx],
+            spectral_strategy=hourglass_spec.get(
+                'spectral_strategy', 'approx'
+            ),
+            beta=hourglass_spec['loss_factor'],
+            W1_initializer = hourglass_spec['W1_initializer'][idx],
+            W1_regularizer = hourglass_spec['W1_regularizer'][idx],
+            W1_constraint = hourglass_spec['W1_constraint'][idx],
+            W2_initializer = hourglass_spec['W2_initializer'][idx],
+            W2_regularizer = hourglass_spec['W1_regularizer'][idx],
+            W2_constraint = hourglass_spec['W1_constraint'][idx],
+            name = f'PostHG_d{depth}_{idx + 1}'
+        )(x)
+        # Linear superposition wrt parallel hourglass
+        x_par = self.parallel_hourglass_layers[idx]
+        x = tf.keras.layers.Add()([x, x_par])
+        # Batch normalization
+        if hourglass_spec.get('out_bn', True):
+            x = tf.keras.layers.BatchNormalization(
+                momentum=hourglass_spec.get('out_bn_momentum', 0.98),
+                name=f'PostHG_d{depth}_{idx+1}_BN'
+            )(x)
+        # ReLU activation
+        x = tf.keras.layers.Activation(
+            hourglass_spec.get('activation', 'relu')[idx],
+            name=f'PostHG_d{depth}_{idx+1}_ACT'
+        )(x)
+        # Return
         return x
 
     # ---  FIT LOGIC CALLBACKS  --- #
@@ -723,6 +1060,42 @@ class ConvAutoencPwiseClassif(Architecture):
                     Wpast=None
                 )
                 cache_map['skpconv_Wpast'].append(np.array(skpconv_layer.W))
+        # Prefit logic for Light KPConv layer representation
+        if(
+            self.lkpconv_layers is not None and
+            cache_map.get('lkpconv_representation_dir', None) is not None
+        ):
+            cache_map['lkpconv_Wpast'] = []
+            cache_map['lkpconv_Apast'] = []
+            for i, lkpconv_layer in enumerate(self.lkpconv_layers):
+                lkpconv_layer.export_representation(
+                    os.path.join(
+                        cache_map['lkpconv_representation_dir'],
+                        f'INIT_{lkpconv_layer.name}'
+                    ),
+                    out_prefix=cache_map['out_prefix'],
+                    Wpast=None
+                )
+                cache_map['lkpconv_Wpast'].append(np.array(lkpconv_layer.W))
+                cache_map['lkpconv_Apast'].append(np.array(lkpconv_layer.A))
+        # Prefit logic for Strided Light KPConv layer representation
+        if(
+            self.slkpconv_layers is not None and
+            cache_map.get('slkpconv_representation_dir', None) is not None
+        ):
+            cache_map['slkpconv_Wpast'] = []
+            cache_map['slkpconv_Apast'] = []
+            for i, slkpconv_layer in enumerate(self.slkpconv_layers):
+                slkpconv_layer.export_representation(
+                    os.path.join(
+                        cache_map['slkpconv_representation_dir'],
+                        f'INIT_{slkpconv_layer.name}'
+                    ),
+                    out_prefix=cache_map['out_prefix'],
+                    Wpast=None
+                )
+                cache_map['slkpconv_Wpast'].append(np.array(slkpconv_layer.W))
+                cache_map['slkpconv_Apast'].append(np.array(slkpconv_layer.A))
 
     def posfit_logic_callback(self, cache_map):
         """
@@ -760,5 +1133,35 @@ class ConvAutoencPwiseClassif(Architecture):
                     ),
                     out_prefix=cache_map['out_prefix'],
                     Wpast=cache_map['skpconv_Wpast'][i]
+                )
+        # Postfit logic for Light KPConv layer representation
+        if(
+            self.lkpconv_layers is not None and
+            cache_map.get('lkpconv_representation_dir')
+        ):
+            for i, lkpconv_layer in enumerate(self.lkpconv_layers):
+                lkpconv_layer.export_representation(
+                    os.path.join(
+                        cache_map['lkpconv_representation_dir'],
+                        f'TRAINED_{lkpconv_layer.name}'
+                    ),
+                    out_prefix=cache_map['out_prefix'],
+                    Wpast=cache_map['lkpconv_Wpast'][i],
+                    Apast=cache_map['lkpconv_Apast'][i]
+                )
+        # Postfit logic Strided Light KPConv layer representation
+        if(
+            self.slkpconv_layers is not None and
+            cache_map.get('slkpconv_representation_dir', None) is not None
+        ):
+            for i, slkpconv_layer in enumerate(self.slkpconv_layers):
+                slkpconv_layer.export_representation(
+                    os.path.join(
+                        cache_map['slkpconv_representation_dir'],
+                        f'TRAINED_{slkpconv_layer.name}'
+                    ),
+                    out_prefix=cache_map['out_prefix'],
+                    Wpast=cache_map['slkpconv_Wpast'][i],
+                    Apast=cache_map['slkpconv_Apast'][i]
                 )
 

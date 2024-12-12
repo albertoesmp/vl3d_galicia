@@ -31,7 +31,9 @@ class PointCloudFactoryFacade:
         return PointCloudFileFactory(path).make()
 
     @staticmethod
-    def make_from_arrays(X, F, y=None, header=None, fnames=None, scale=0.001):
+    def make_from_arrays(
+        X, F, y=None, header=None, fnames=None, scale=0.001, logging=True
+    ):
         """
         Build a PointCloud from given arrays, and (optionally) header.
 
@@ -43,9 +45,14 @@ class PointCloudFactoryFacade:
             named f1,...,fn.
         :param scale: The scale for the LAS header. It governs the spatial
             precision of the points.
+        :param logging: Govern whether the logging system must be used
+            (``True`) or not (``False``). In general (by default) it will be
+            used. However, certain calls (e.g., multiprocessing calls) might
+            fail when calling the LOGGING system from different processes. In
+            these cases, it is necessary to disable logging.
         :return: Built PointCloud
         :rtype: :class:`.PointCloud`
         """
         return PointCloudArraysFactory(
             X, F, y=y, header=header, fnames=fnames
-        ).make(scale=scale)
+        ).make(scale=scale, logging=logging)

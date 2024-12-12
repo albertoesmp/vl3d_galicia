@@ -64,13 +64,7 @@ class FurthestPointSubsamplingPostProcessor:
                 'X': inputs['X'][0],
                 'z': inputs['z']
             }
-        z = GridSubsamplingPostProcessor.post_process(
-            _inputs,
-            self.fps_preproc.last_call_receptive_fields,
-            self.fps_preproc.last_call_neighborhoods,
-            nthreads=self.fps_preproc.nthreads,
-            reducer=reducer
-        )
+        z = self.post_process(_inputs, reducer)
         end = time.perf_counter()
         LOGGING.LOGGER.info(
             f'The furthest point subsampling post processor generated {len(z)} '
@@ -79,3 +73,16 @@ class FurthestPointSubsamplingPostProcessor:
             f'in {end-start:.3f} seconds.'
         )
         return z
+
+    def post_process(self, inputs, reducer):
+        """
+        Assists the :meth:`.FurthestPointSubsamplingPreProcessor.__call__`
+        providing the post-process logic itself.
+        """
+        return GridSubsamplingPostProcessor.post_process(
+            inputs,
+            self.fps_preproc.last_call_receptive_fields,
+            self.fps_preproc.last_call_neighborhoods,
+            nthreads=self.fps_preproc.nthreads,
+            reducer=reducer
+        )

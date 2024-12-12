@@ -16,9 +16,13 @@ class FeaturesDownsamplingLayer(Layer):
     :math:`n_f` features each.
 
     It can use a mean-based filter to reduce the features (
-    see :meth:`FeaturesDownsamplingLayer.mean_filter`) or a Gaussian-like
+    see :meth:`FeaturesDownsamplingLayer.mean_filter`), a Gaussian-like
     filter to reduce the features considering the distances between the
-    points (see :meth:`FeaturesDownsamplingLayer.gaussian_filter`).
+    points (see :meth:`FeaturesDownsamplingLayer.gaussian_filter`), or a
+    exponential-like filter to reduce the features considering the distances
+    to the contrary as the Gausslian-like filter, i.e., assigning greater
+    weights to points further from the center
+    (see :meth:`FeaturesDownsamplingLayer.exponential_filter`).
     Alternatively, a simpler nearest-neighbor filter can be used too
     (see :meth:`FeaturesDownsamplingLayer.nearest_filter`).
 
@@ -30,7 +34,7 @@ class FeaturesDownsamplingLayer(Layer):
     :math:`K` is the batch size.
 
     :ivar filter: The name of the filter to be used. Either ``"mean"``,
-        ``"gaussian"``, or ``"nearest"``.
+        ``"gaussian"``, ``"exponential"``, or ``"nearest"``.
     :vartype filter: str
     :ivar filter_f: The method to be used for filtering, derived from the
         ``filter`` attribute.
@@ -51,6 +55,8 @@ class FeaturesDownsamplingLayer(Layer):
             self.filter_f = self.mean_filter
         elif filter_low == 'gaussian':
             self.filter_f = self.gaussian_filter
+        elif filter_low == 'exponential':
+            self.filter_f = self.exponential_filter
         elif filter_low == 'nearest':
             self.filter_f = self.nearest_filter
         else:
@@ -138,6 +144,57 @@ class FeaturesDownsamplingLayer(Layer):
         Where:
 
         .. math::
+            g_{kip} = \exp\left(-\dfrac{
+                \lVert
+                    (\mathcal{X}_a)_{kn_{kip}^D*} -
+                    (\mathcal{X}_b)_{ki*}
+                \rVert^2
+            }{
+                (d_{ki}^*)^2
+            }\right)
+
+        And:
+
+        .. math::
+            d_{ki}^* = \max_{1 \leq p \leq n_n} \; {
+                \lVert
+                    (\mathcal{X}_a)_{kn_{kip}^D*} -
+                    (\mathcal{X}_b)_{ki*}
+                \rVert
+            }
+
+
+        :return: :math:`\mathcal{Y} \in \mathbb{R}^{K \times R \times n_f}`
+        """
+        D_sq = FeaturesDownsamplingLayer.compute_squared_distances(Xa, Xb, ND)
+        omega_sq = tf.reduce_max(D_sq, axis=2)  # The kernels' squared lengths
+        gaussians = tf.exp(-D_sq/tf.expand_dims(omega_sq, 2))
+        gaussian_norms = tf.reduce_sum(gaussians, axis=2)
+        Fout = FeaturesDownsamplingLayer.gather_input_features(Fin, ND)
+        Fout = tf.transpose(  # Gaussian x F_downsampled
+            gaussians * tf.transpose(Fout, [3, 0, 1, 2]),
+            [1, 2, 3, 0]
+        )
+        Fout = tf.reduce_sum(Fout, axis=2)  # Output features
+        Fout = tf.transpose(  # Normalized output features
+            tf.transpose(Fout, [2, 0, 1])/gaussian_norms,
+            [1, 2, 0]
+        )
+        return Fout
+
+    @staticmethod
+    def exponential_filter(Xa, Xb, Fin, ND):
+        r"""
+        .. math::
+            y_{kij} = \left(\sum_{p=1}^{n_n}{g_{kip}}\right)^{-1}
+                \sum_{p=1}^{n_n}{
+                    g_{kip}
+                    f_{kn_{kip}^Dj}
+                }
+
+        Where:
+
+        .. math::
             g_{kip} = \exp\left(\dfrac{
                 \lVert
                     (\mathcal{X}_a)_{kn_{kip}^D*} -
@@ -162,16 +219,16 @@ class FeaturesDownsamplingLayer(Layer):
         """
         D_sq = FeaturesDownsamplingLayer.compute_squared_distances(Xa, Xb, ND)
         omega_sq = tf.reduce_max(D_sq, axis=2)  # The kernels' squared lengths
-        gaussians = tf.exp(D_sq/tf.expand_dims(omega_sq, 2))
-        gaussian_norms = tf.reduce_sum(gaussians, axis=2)
+        exps = tf.exp(D_sq/tf.expand_dims(omega_sq, 2))
+        exp_norms = tf.reduce_sum(exps, axis=2)
         Fout = FeaturesDownsamplingLayer.gather_input_features(Fin, ND)
-        Fout = tf.transpose(  # Gaussian x F_downsampled
-            gaussians * tf.transpose(Fout, [3, 0, 1, 2]),
+        Fout = tf.transpose(  # Exponential x F_downsampled
+            exps * tf.transpose(Fout, [3, 0, 1, 2]),
             [1, 2, 3, 0]
         )
         Fout = tf.reduce_sum(Fout, axis=2)  # Output features
         Fout = tf.transpose(  # Normalized output features
-            tf.transpose(Fout, [2, 0, 1])/gaussian_norms,
+            tf.transpose(Fout, [2, 0, 1])/exp_norms,
             [1, 2, 0]
         )
         return Fout

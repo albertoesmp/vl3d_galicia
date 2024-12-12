@@ -102,7 +102,7 @@ class SupportNeighborhoods:
 
     # ---  NEIGHBORHOOD COMPUTATION METHODS  --- #
     # ------------------------------------------ #
-    def compute(self, X, y=None):
+    def compute(self, X, y=None, kdt=None):
         r"""
         Compute/find the requested neighborhoods in the given input point cloud
         represented by the matrix of coordinates :math:`\pmb{X}`.
@@ -113,6 +113,7 @@ class SupportNeighborhoods:
             It is an OPTIONAL argument that is only necessary when the
             neighborhoods must be found following a given class distribution.
         :type y: :class:`np.ndarray`
+        :param kdt: The precomputed KDTree for the structure space X, if any.
         :return: A tuple which first element are the support points
             representing the centers of the neighborhoods and which second
             element is a list of neighborhoods, where each neighborhood is
@@ -146,9 +147,9 @@ class SupportNeighborhoods:
                 center_on_X=self.center_on_pcloud,
                 nthreads=self.nthreads
             )
-            kdt = KDT(X2D)
-            kdt_sup = KDT(sup_X)
-            I = kdt_sup.query_ball_tree(kdt, self.neighborhood_spec['radius'])
+            I = SupportNeighborhoods.compute_cylindrical_neighborhoods(
+                X2D, sup_X, self.neighborhood_spec, kdt=kdt
+            )
             sup_X = np.hstack([sup_X, np.zeros((sup_X.shape[0], 1))])
         elif ngbhd_type_low == 'sphere':
             # Spheres with a greater than zero radius
@@ -164,9 +165,9 @@ class SupportNeighborhoods:
                 center_on_X=self.center_on_pcloud,
                 nthreads=self.nthreads
             )
-            kdt = KDT(X)
-            kdt_sup = KDT(sup_X)
-            I = kdt_sup.query_ball_tree(kdt, self.neighborhood_spec['radius'])
+            I = SupportNeighborhoods.compute_spherical_neighborhoods(
+                X, sup_X, self.neighborhood_spec, kdt=kdt
+            )
         elif ngbhd_type_low == 'rectangular2d':
             # 2D rectangular boundary on xy, infinite on z
             X2D = X[:, :2]
@@ -185,22 +186,9 @@ class SupportNeighborhoods:
                 center_on_X=self.center_on_pcloud,
                 nthreads=self.nthreads
             )
-            # Compute the min radius cylindrical neighborhood that contains the
-            # rectangular prism with infinite height
-            boundary_radius = np.sqrt(
-                radius[0]*radius[0]+radius[1]*radius[1]
+            I = SupportNeighborhoods.compute_rectangular2D_neighborhoods(
+                X2D, sup_X, self.neighborhood_spec, radius=radius, kdt=kdt
             )
-            kdt = KDT(X2D)
-            kdt_sup = KDT(sup_X)
-            I = kdt_sup.query_ball_tree(kdt, boundary_radius)
-            # Discard points outside the 2D rectangular boundary
-            XY = [X2D[Ii][:, 0:2] - sup_X[i] for i, Ii in enumerate(I)]
-            mask = [
-                (XYi[:, 0] >= -radius[0]) * (XYi[:, 0] <= radius[0]) *
-                (XYi[:, 1] >= -radius[1]) * (XYi[:, 1] <= radius[1])
-                for XYi in XY
-            ]
-            I = [np.array(Ii)[mask[i]].tolist() for i, Ii in enumerate(I)]
             # Fill missing 3D coordinate (z) with zero
             sup_X = np.hstack([sup_X, np.zeros((sup_X.shape[0], 1))])
         elif ngbhd_type_low == 'rectangular3d':
@@ -220,42 +208,10 @@ class SupportNeighborhoods:
                 center_on_X=self.center_on_pcloud,
                 nthreads=self.nthreads
             )
-            # Compute the min radius spherical neighborhood that contains the
-            # rectangular prism
-            boundary_radius = np.sqrt(
-                radius[0]*radius[0]+radius[1]*radius[1]+radius[2]*radius[2]
+            I = SupportNeighborhoods.compute_rectangular3D_neighborhoods(
+                X, sup_X, self.neighborhood_spec, kdt=kdt,
+                radius=radius, support_chunk_size=self.support_chunk_size
             )
-            kdt = KDT(X)
-            Iout = []
-            num_chunks, chunk_size = 1,  len(sup_X)
-            if self.support_chunk_size > 0:
-                chunk_size = self.support_chunk_size
-                num_chunks = int(np.ceil(len(sup_X)/chunk_size))
-            for chunk_idx in range(num_chunks):
-                # Extract chunk
-                sup_idx_a = chunk_idx*chunk_size
-                sup_idx_b = min(
-                    (chunk_idx+1)*chunk_size,
-                    len(sup_X)
-                )
-                chunk_sup_X = sup_X[sup_idx_a:sup_idx_b]
-                # Operate on chunk
-                kdt_sup = KDT(chunk_sup_X)
-                chunk_I = kdt_sup.query_ball_tree(kdt, boundary_radius)
-                # Discard points outside 3D rectangular boundary
-                XYZ = [X[Ii] - chunk_sup_X[i] for i, Ii in enumerate(chunk_I)]
-                mask = [
-                    (XYZi[:, 0] >= -radius[0]) * (XYZi[:, 0] <= radius[0]) *
-                    (XYZi[:, 1] >= -radius[1]) * (XYZi[:, 1] <= radius[1]) *
-                    (XYZi[:, 2] >= -radius[2]) * (XYZi[:, 2] <= radius[2])
-                    for XYZi in XYZ
-                ]
-                chunk_I = [
-                    np.array(Ii)[mask[i]].tolist()
-                    for i, Ii in enumerate(chunk_I)
-                ]
-                Iout = Iout + chunk_I
-            I = Iout
         else:
             raise ValueError(
                 'SupportNeighborhoods object does not expect a '
@@ -263,3 +219,134 @@ class SupportNeighborhoods:
             )
         # Return found neighborhood
         return sup_X, I
+
+    @staticmethod
+    def compute_cylindrical_neighborhoods(
+        X, sup_X, neighborhood_spec, kdt=None
+    ):
+        """
+        Assists the :meth:`.SupportNeighborhood.compute` method computing
+        cylindrical neighborhoods for each of the support points in the given
+        point cloud.
+
+        :param X: The structure space of the point cloud.
+        :type X: :class:`np.ndarray`
+        :param sup_X: The support structure space, i.e., the coordinates of
+            the center points for each neighborhood.
+        :type sup_X: :class:`np.ndarray`
+        :param neighborhood_spec: The neighborhood specification.
+        :type neighborhood_spec: dict
+        :param kdt: The KDTree representing the structure space of the point
+            cloud (not the support). If given, it will be used. If not given,
+            it will be built inside the function's scope.
+        """
+        if kdt is None:
+            kdt = KDT(X)
+        kdt_sup = KDT(sup_X)
+        return kdt_sup.query_ball_tree(kdt, neighborhood_spec['radius'])
+
+    @staticmethod
+    def compute_spherical_neighborhoods(
+        X, sup_X, neighborhood_spec, kdt=None
+    ):
+        """
+        Assists the :meth:`.SupportNeighborhoods.compute` method computing a
+        spherical neighborhoods for each of the support points in the given
+        point cloud.
+
+        See :meth:`.SupportNeighborhoods.compute_cylindrical_neighborhoods` for
+        a description of the function's arguments.
+        """
+        if kdt is None:
+            kdt = KDT(X)
+        kdt_sup = KDT(sup_X)
+        return kdt_sup.query_ball_tree(kdt, neighborhood_spec['radius'])
+
+    @staticmethod
+    def compute_rectangular2D_neighborhoods(
+        X, sup_X, neighborhood_spec, radius=None, kdt=None
+    ):
+        """
+        Assists the :meth:`.SupportNeighborhoods.compute` method computing a
+        rectangular 2D neighborhoods for each of the support points in the
+        given point cloud.
+
+        See :meth:`.SupportNeighborhoods.compute_cylindrical_neighborhoods` for
+        a description of the function's arguments.
+        """
+        if radius is None:
+            radius = neighborhood_spec['radius']
+            if not isinstance(radius, list):
+                radius = [radius, radius]
+        # Compute the min radius cylindrical neighborhood that contains the
+        # rectangular prism with infinite height
+        boundary_radius = np.sqrt(
+            radius[0]*radius[0]+radius[1]*radius[1]
+        )
+        if kdt is None:
+            kdt = KDT(X)
+        kdt_sup = KDT(sup_X)
+        I = kdt_sup.query_ball_tree(kdt, boundary_radius)
+        # Discard points outside the 2D rectangular boundary
+        XY = [X[Ii] - sup_X[i] for i, Ii in enumerate(I)]
+        mask = [
+            (XYi[:, 0] >= -radius[0]) * (XYi[:, 0] <= radius[0]) *
+            (XYi[:, 1] >= -radius[1]) * (XYi[:, 1] <= radius[1])
+            for XYi in XY
+        ]
+        return [np.array(Ii)[mask[i]].tolist() for i, Ii in enumerate(I)]
+
+    @staticmethod
+    def compute_rectangular3D_neighborhoods(
+        X, sup_X, neighborhood_spec, radius=None, support_chunk_size=0, kdt=None
+    ):
+        """
+        Assists the :meth:`.SupportNeighborhoods.compute` method computing a
+        rectangular 3D neighborhoods for each of the support points in the
+        given point cloud.
+
+        See :meth:`.SupportNeighborhoods.compute_cylindrical_neighborhoods` for
+        a description of the function's arguments.
+        """
+        # 3D rectangular boundary (voxel if all axis share the same length)
+        if radius is None:
+            radius = neighborhood_spec['radius']
+            if not isinstance(radius, list):
+                radius = [radius, radius, radius]
+        # Compute the min radius spherical neighborhood that contains the
+        # rectangular prism
+        boundary_radius = np.sqrt(
+            radius[0]*radius[0]+radius[1]*radius[1]+radius[2]*radius[2]
+        )
+        if kdt is None:
+            kdt = KDT(X)
+        Iout = []
+        num_chunks, chunk_size = 1,  len(sup_X)
+        if support_chunk_size > 0:
+            chunk_size = support_chunk_size
+            num_chunks = int(np.ceil(len(sup_X)/chunk_size))
+        for chunk_idx in range(num_chunks):
+            # Extract chunk
+            sup_idx_a = chunk_idx*chunk_size
+            sup_idx_b = min(
+                (chunk_idx+1)*chunk_size,
+                len(sup_X)
+            )
+            chunk_sup_X = sup_X[sup_idx_a:sup_idx_b]
+            # Operate on chunk
+            kdt_sup = KDT(chunk_sup_X)
+            chunk_I = kdt_sup.query_ball_tree(kdt, boundary_radius)
+            # Discard points outside 3D rectangular boundary
+            XYZ = [X[Ii] - chunk_sup_X[i] for i, Ii in enumerate(chunk_I)]
+            mask = [
+                (XYZi[:, 0] >= -radius[0]) * (XYZi[:, 0] <= radius[0]) *
+                (XYZi[:, 1] >= -radius[1]) * (XYZi[:, 1] <= radius[1]) *
+                (XYZi[:, 2] >= -radius[2]) * (XYZi[:, 2] <= radius[2])
+                for XYZi in XYZ
+            ]
+            chunk_I = [
+                np.array(Ii)[mask[i]].tolist()
+                for i, Ii in enumerate(chunk_I)
+            ]
+            Iout = Iout + chunk_I
+        return Iout

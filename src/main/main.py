@@ -25,8 +25,9 @@ def main(rootdir=''):
     :param rootdir: Path to the directory where the vl3d.py script is located.
     :type rootdir: path
     """
-    # Configure logging
-    LOGGING.main_logger_init(rootdir=rootdir)
+    # Configure logging (if not loaded)
+    if LOGGING.LOGGER is None:
+        LOGGING.main_logger_init(rootdir=rootdir)
     # Load global config
     main_config.main_config_init(rootdir=rootdir)
     # Parse input arguments

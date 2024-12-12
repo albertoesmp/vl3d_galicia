@@ -1,7 +1,7 @@
 ---
 # Default configuration for all miners
-structure_space_bits: 64
-feature_space_bits: 64
+structure_space_bits: 32
+feature_space_bits: 32
 
 # Default configuration of geometric features miner
 GeomFeatsMiner:

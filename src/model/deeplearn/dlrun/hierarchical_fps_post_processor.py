@@ -65,13 +65,7 @@ class HierarchicalFPSPostProcessor:
                 'X': inputs['X'][0],
                 'z': inputs['z']
             }
-        z = GridSubsamplingPostProcessor.post_process(
-            _inputs,
-            self.hfps_preproc.last_call_receptive_fields,
-            self.hfps_preproc.last_call_neighborhoods,
-            nthreads=self.hfps_preproc.nthreads,
-            reducer=reducer
-        )
+        z = self.post_process(_inputs, reducer)
         end = time.perf_counter()
         LOGGING.LOGGER.info(
             f'The hierarchical FPS post processor generated {len(z)} '
@@ -80,3 +74,16 @@ class HierarchicalFPSPostProcessor:
             f'in {end-start:.3f} seconds.'
         )
         return z
+
+    def post_process(self, inputs, reducer):
+        """
+        Assists the :meth:`.HierarchicalFPSPostProcessor.__call__`
+        providing the post-process logic itself.
+        """
+        return GridSubsamplingPostProcessor.post_process(
+            inputs,
+            self.hfps_preproc.last_call_receptive_fields,
+            self.hfps_preproc.last_call_neighborhoods,
+            nthreads=self.hfps_preproc.nthreads,
+            reducer=reducer
+        )

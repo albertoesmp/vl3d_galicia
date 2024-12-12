@@ -187,7 +187,7 @@ class SmoothFeatsMiner(Miner):
                     f'{infname}_{fname}_k{self.neighborhood["k"]}'
                     for fname in self.fnames for infname in self.input_fnames
                 ]
-            elif neighborhood_type_low == 'sphere':
+            else:
                 self.frenames = [
                     f'{infname}_{fname}_r{self.neighborhood["radius"]}'
                     for fname in self.fnames for infname in self.input_fnames

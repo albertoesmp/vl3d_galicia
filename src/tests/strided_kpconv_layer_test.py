@@ -14,7 +14,7 @@ class StridedKPConvLayerTest(VL3DTest):
     :author: Alberto M. Esmoris PEna
 
     Strided kernel point convolution (Strided KPConv) layer test that checks
-    the operation of a strided KPConv layer yield the expected results.
+    the operation of a strided KPConv layer yields the expected results.
     """
     # ---   INIT   --- #
     # ---------------- #
@@ -69,7 +69,7 @@ class StridedKPConvLayerTest(VL3DTest):
             np.array([F1a, F2a], dtype='float32'),
             np.array([ND1, ND2], dtype='int')
         ]
-        # Instantiate KPConv layer
+        # Instantiate strided KPConv layer
         skpcl = StridedKPConvLayer(
             sigma=0.5,
             kernel_radius=1.5,
@@ -78,7 +78,7 @@ class StridedKPConvLayerTest(VL3DTest):
             Dout=dim_out
         )
         skpcl.build([inputs[i].shape for i in range(len(inputs))])
-        # Compute grouping PointNet layer
+        # Compute strided KPConv layer
         with tf.device("cpu:0"):
             skpcl_out = skpcl.call(inputs)
         # Validate

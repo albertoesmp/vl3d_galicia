@@ -545,3 +545,20 @@ class ReceptiveFieldGS(ReceptiveField):
         :rtype: int
         """
         return int(np.prod(np.ceil(2/cell_size)))
+
+    # ---  MEMORY UTILS  --- #
+    # ---------------------- #
+    def canibalize(self, rf):
+        """
+        See :meth:`.ReceptiveField.canibalize`.
+        """
+        self.cell_size = rf.cell_size
+        self.dimensionality = rf.dimensionality
+        self.bounding_radii = rf.bounding_radii
+        self.num_cells = rf.num_cells
+        self.N = rf.N
+        rf.N = None
+        self.x = rf.x
+        rf.x = None
+        self.m = rf.m
+        del rf

@@ -138,7 +138,7 @@ class MinmaxNormalizer(FeatureTransformer):
         See :class:`.FeatureTransformer` and
         :meth:`feature_transformer.FeatureTransformer.get_names_of_transformed_features`
         """
-        if self.frenames is not None:
+        if getattr(self, 'frenames', None) is not None:
             return self.frenames
         return self.fnames
 

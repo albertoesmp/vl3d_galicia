@@ -7,24 +7,33 @@ from src.tests.keras_test import KerasTest
 from src.tests.receptive_field_test import ReceptiveFieldTest
 from src.tests.hierarchical_receptive_field_test import \
     HierarchicalReceptiveFieldTest
+from src.tests.fps_pre_processing_test import FPSPreProcessingTest
 from src.tests.features_structuring_layer_test import \
     FeaturesStructuringLayerTest
-from src.tests.rbf_feat_extract_layer_test import \
-    RBFFeatExtractLayerTest
-from src.tests.rbf_feat_processing_layer_test import \
-    RBFFeatProcessingLayerTest
+from src.tests.rbf_feat_extract_layer_test import RBFFeatExtractLayerTest
+from src.tests.rbf_feat_processing_layer_test import RBFFeatProcessingLayerTest
 from src.tests.features_downsampling_layer_test import \
     FeaturesDownsamplingLayerTest
-from src.tests.features_upsampling_layer_test import \
-    FeaturesUpsamplingLayerTest
-from src.tests.grouping_point_net_layer_test import \
-    GroupingPointNetLayerTest
+from src.tests.features_upsampling_layer_test import FeaturesUpsamplingLayerTest
+from src.tests.grouping_point_net_layer_test import GroupingPointNetLayerTest
 from src.tests.kpconv_layer_test import KPConvLayerTest
 from src.tests.strided_kpconv_layer_test import StridedKPConvLayerTest
+from src.tests.light_kpconv_layer_test import LightKPConvLayerTest
+from src.tests.strided_light_kpconv_layer_test import \
+    StridedLightKPConvLayerTest
+from src.tests.hourglass_layer_test import HourglassLayerTest
 from src.tests.model_serialization_test import ModelSerializationTest
 from src.tests.las_inout_test import LASInoutTest
 from src.tests.vl3dpp_binding_test import VL3DPPBindingTest
 from src.tests.vl3dpp_backend_test import VL3DPPBackendTest
+from src.tests.vl3dpp_support_neighborhoods_test import \
+    VL3DPPSupportNeighborhoodsTest
+from src.tests.vl3dpp_oversampler_test import VL3DPPOversamplerTest
+from src.tests.vl3dpp_dl_fps_pre_proc_test import VL3DPPDLFPSPreProcTest
+from src.tests.vl3dpp_dl_hierarchical_fps_pre_proc_test import \
+    VL3DPPDLHierarchicalFPSPreProcTest
+from src.tests.vl3dpp_dl_label_reduction_test import VL3DPPDLLabelReductionTest
+from src.tests.vl3dpp_dl_post_proc_test import VL3DPPDLPostProcTest
 from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 import numpy as np

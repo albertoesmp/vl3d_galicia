@@ -111,7 +111,7 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
 
         :param inputs: A key-word input where the key "X" gives the input
             dataset and the "y" (OPTIONALLY) gives the reference values that
-            can be used to fit/train a PointNet model. If "X" is a list, then
+            can be used to fit/train a DL model. If "X" is a list, then
             the first element is assumed to be the matrix X of coordinates
             and the second the matrix F of features.
         :type inputs: dict
@@ -125,6 +125,8 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         X, F, y = inputs['X'], None, inputs.get('y', None)
         if isinstance(X, list):
             X, F = X[0], X[1]
+        # Determine number of classes if not available
+        ReceptiveFieldPreProcessor.num_classes_from_pwise_labels(self, y)
         # Extract neighborhoods
         sup_X, I = self.find_neighborhood(X, y=y)
         # Remove empty neighborhoods and corresponding support points
@@ -154,8 +156,8 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         )
         # Features ready to be fed into the neural network
         Fout = self.handle_features_reduction(
-            F,
-            len(I),  # number of neighborhoods
+            F,  # Features
+            I,  # Neighbors from input (original) point cloud
             lambda rfi, Xouti, F : [  # reduce function f(rf_i, Xout_i, f)
                 rfi.reduce_values(Xouti, F[:, j], fill_nan=True)
                 for j in range(F.shape[1])
@@ -259,7 +261,6 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             sup_X = np.vstack([
                 X[idx_by_class[i]] for i in range(len(idx_by_class))
             ])
-            np.random.shuffle(sup_X)
             # Return support points from point-wise classes
             return sup_X
         # Build support points without considering point-wise classes
@@ -274,9 +275,7 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             l = separation_factor * sphere_radius  # Cell size
             sup_X = np.meshgrid(
                 *[
-                    np.concatenate([
-                        np.arange(xmin[j], xmax[j], l), [xmax[j]]
-                    ])
+                    np.concatenate([np.arange(xmin[j], xmax[j]+l, l)])
                     for j in range(X.shape[1])
                 ]
             )

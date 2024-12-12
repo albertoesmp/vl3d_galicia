@@ -3,6 +3,7 @@
 from src.main.vl3d_exception import VL3DException
 import src.main.main_logger as LOGGING
 import traceback
+import logging
 
 
 # ---   EXCEPTIONS   --- #
@@ -68,7 +69,11 @@ class VL3DTest:
         # Run test
         try:
             status = self.run()
+            # Make sure logging system is enabled
+            LOGGING.LOGGER.setLevel(logging.DEBUG)  # Restore logging
         except Exception as ex:
+            # Make sure logging system is enabled
+            LOGGING.LOGGER.setLevel(logging.DEBUG)  # Restore logging
             LOGGING.LOGGER.warning(
                 f'{self.name} raised and exception: {ex}\n\n'
                 f'{traceback.format_exc()}'

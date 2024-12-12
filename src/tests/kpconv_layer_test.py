@@ -30,7 +30,7 @@ class KPConvLayerTest(VL3DTest):
 
         :return: True if :class:`.KPConvLayer` works as expected for the test
             cases, False otherwise.
-        :rtype bool:
+        :rtype: bool
         """
         # Generate test data
         points_per_axis = 10
@@ -62,7 +62,7 @@ class KPConvLayerTest(VL3DTest):
             Dout=dim_out
         )
         kpcl.build([inputs[i].shape for i in range(len(inputs))])
-        # Compute grouping PointNet layer
+        # Compute KPConv layer
         with tf.device("cpu:0"):
             kpcl_out = kpcl.call(inputs)
         # Validate

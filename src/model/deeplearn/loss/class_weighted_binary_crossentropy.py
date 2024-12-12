@@ -26,6 +26,7 @@ def vl3d_class_weighted_binary_crossentropy(class_weight):
 
     def _vl3d_class_weighted_binary_crossentropy(y_true, y_pred):
         # Baseline binary cross entropy
+        y_true = tf.cast(y_true, dtype=tf.float32)
         bce = tf.keras.backend.binary_crossentropy(y_true, y_pred)
         # Compute vector of class weights
         cw = y_true * class_weight[1] + (1.0 - y_true) * class_weight[0]

@@ -61,7 +61,7 @@ class ClassificationReport(Report):
         """
         # Initialize
         s = '\n    Classification report\n' \
-            '=============================\n'
+            '================================\n'
         # Fill with available information
         if self.has_global_eval_info():
             s += '\n'+self.to_global_eval_string()+'\n'
@@ -91,7 +91,7 @@ class ClassificationReport(Report):
         # ---  Body  --- #
         for score in self.metric_scores:
             s += f' {100*score:10.3f},'
-        s = s[:-1]
+        s = s[:-1] + '\n'
         # Return
         return s
 
@@ -175,7 +175,7 @@ class ClassificationReport(Report):
         out_prefix=None
     ):
         """
-        Write the classification report to a file.
+        Write the classification report to files.
 
         :param report_path: See :class:`.ClassificationEvaluator`.
         :param class_report_path: See :class:`.ClassificationEvaluator`.
@@ -230,7 +230,8 @@ class ClassificationReport(Report):
             if not check():
                 LOGGING.LOGGER.debug(
                     'ClassificationReport did NOT write report on '
-                    f'{report_name} to "{path}"'
+                    f'{report_name} to "{path}" because data was not '
+                    'available.'
                 )
                 continue
             # Expand path if necessary

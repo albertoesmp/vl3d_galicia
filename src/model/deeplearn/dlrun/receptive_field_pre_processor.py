@@ -2,9 +2,12 @@
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.main.main_config import VL3DCFG
+import src.main.main_logger as LOGGING
 import joblib
+from joblib.externals.loky import get_reusable_executor
 import numpy as np
 from abc import abstractmethod
+import gc
 
 
 # ---   CLASS   --- #
@@ -54,6 +57,10 @@ class ReceptiveFieldPreProcessor:
         points. When False, support points do not necessarily match points
         from the point cloud.
     :vartype center_on_pcloud: bool
+    :ivar num_classes: The number of different classes that the pre-processor
+        is expected to support when dealing with point-wise labels representing
+        classes.
+    :vartype num_classes: int
     :ivar receptive_fields_dir: Directory where the point clouds representing
         the many receptive fields will be exported (OPTIONAL).
     :vartype receptive_fields_dir: str or None
@@ -100,6 +107,7 @@ class ReceptiveFieldPreProcessor:
             'training_class_distribution', None
         )
         self.center_on_pcloud = kwargs.get('center_on_pcloud', False)
+        self.num_classes = kwargs.get('num_classes', None)
         self.nthreads = kwargs.get('nthreads', 1)
         self.receptive_fields_distribution_report_path = kwargs.get(
             'receptive_fields_distribution_report_path', None
@@ -363,18 +371,30 @@ class ReceptiveFieldPreProcessor:
         if structure_space_bits == 32:
             structure_float_type = np.float32
         # Compute receptive fields
-        self.last_call_receptive_fields = joblib.Parallel(n_jobs=self.nthreads)(
+        copied_receptive_fields = joblib.Parallel(n_jobs=self.nthreads)(
             joblib.delayed(
                 self.last_call_receptive_fields[i].fit
             )(
-                X[Ii], sup_X[i], structure_float_type
+                X[Ii],
+                sup_X[i],
+                structure_float_type=structure_float_type,
+                id=i
             )
             for i, Ii in enumerate(I)
         )
+        # Cannibalize copies when computed on children processes
+        if self.nthreads != 1:
+            for i, rfi in enumerate(self.last_call_receptive_fields):
+                crfi = copied_receptive_fields[i]
+                rfi.canibalize(crfi)
+            del copied_receptive_fields
+            copied_receptive_fields = None
+            get_reusable_executor().shutdown(wait=True)  # Release loky workers
+            gc.collect()
         # Return computed receptive fields
         return self.last_call_receptive_fields
 
-    def handle_features_reduction(self, F, num_neighborhoods, rv, Xout=None):
+    def handle_features_reduction(self, F, I, rv, Xout=None):
         """
         Handle the features reduction operation when the receptive field is
         called. In doing so, a reduce value function (rv) from the
@@ -384,8 +404,10 @@ class ReceptiveFieldPreProcessor:
         :meth:`receptive_field.ReceptiveField.reduce_values`.
 
         :param F: The matrix of features.
-        :param num_neighborhoods: The number of neighborhoods involved in the
-            reduction.
+        :param I: The list of neighborhoods. Each element of I is itself a list
+            of indices that represents the neighborhood in the point cloud
+            that corresponds to the point in the receptive field.
+        :type I: list
         :param rv: The reduce value function that receives three arguments as
             input. The i-th receptive field (rf_i), the structure space matrix
             for the i-th receptive field (Xout_i), and the matrix of features
@@ -406,14 +428,50 @@ class ReceptiveFieldPreProcessor:
             return None
         # Handle Xout
         if Xout is None:
-            Xout = [None for i in range(num_neighborhoods)]
+            Xout = [None for i in range(len(I))]
         # Reduce features
         return np.array(joblib.Parallel(n_jobs=self.nthreads)(
             joblib.delayed(rv)(
-                self.last_call_receptive_fields[i], Xout[i], F
+                self.last_call_receptive_fields[i], Xout[i], F[Ii]
             )
-            for i in range(num_neighborhoods)
+            for i, Ii in enumerate(I)
         )).transpose([0, 2, 1])
+
+    @staticmethod
+    def num_classes_from_pwise_labels(preproc, y):
+        if getattr(preproc, 'num_classes', None) is None and y is not None:
+            preproc.num_classes = len(np.unique(y))
+            LOGGING.LOGGER.debug(
+                'ReceptiveFieldPreProcessor derived the number '
+                'of classes from the input point-wise labels. This is '
+                'inefficient and should not happen because the number of '
+                'classes is known a priori.'
+            )
+
+    def purge_receptive_fields(self):
+        """
+        Function to clean all the receptive fields stored in the pre-processor.
+        """
+        # Check if cleaning is needed
+        needs_cleaning = (
+            self.last_call_neighborhoods is not None or
+            self.last_call_receptive_fields is not None
+        )
+        if not needs_cleaning:
+            return
+        # Clean neighborhoods
+        for Ii in self.last_call_neighborhoods:
+            del Ii
+        del self.last_call_neighborhoods
+        self.last_call_neighborhoods = None
+        # Clean receptive fields
+        for rfi in self.last_call_receptive_fields:
+            del rfi
+        del self.last_call_receptive_fields
+        self.last_call_receptive_fields =None
+        # Call garbage collector
+        gc.collect()
+
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
@@ -434,6 +492,7 @@ class ReceptiveFieldPreProcessor:
             'to_unit_sphere': self.to_unit_sphere,
             'training_class_distribution': self.training_class_distribution,
             'center_on_pcloud': self.center_on_pcloud,
+            'num_classes': self.num_classes,
             'nthreads': self.nthreads,
             'receptive_fields_dir': None,
             'receptive_fields_distribution_report_path': None,
@@ -468,6 +527,7 @@ class ReceptiveFieldPreProcessor:
         self.to_unit_sphere = state.get('to_unit_sphere', False)
         self.training_class_distribution = state['training_class_distribution']
         self.center_on_pcloud = state['center_on_pcloud']
+        self.num_classes = state.get('num_classes', 0)
         self.nthreads = state['nthreads']
         self.receptive_fields_dir = None
         self.receptive_fields_distribution_report_path = None

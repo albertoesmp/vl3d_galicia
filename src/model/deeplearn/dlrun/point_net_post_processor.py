@@ -5,6 +5,8 @@ from src.model.deeplearn.dlrun.grid_subsampling_post_processor import \
     GridSubsamplingPostProcessor
 from src.model.deeplearn.dlrun.furthest_point_subsampling_post_processor \
     import FurthestPointSubsamplingPostProcessor
+from src.model.deeplearn.dlrun.furthest_point_subsampling_post_processorpp \
+    import FurthestPointSubsamplingPostProcessorPP
 
 
 # ---   CLASS   --- #
@@ -45,6 +47,10 @@ class PointNetPostProcessor:
             )
         elif self.pnet_preproc.pre_processor_type == 'furthest_point_subsampling':
             self.post_processor = FurthestPointSubsamplingPostProcessor(
+                self.pnet_preproc.pre_processor
+            )
+        elif self.pnet_preproc.pre_processor_type == 'furthest_point_subsamplingpp':
+            self.post_processor = FurthestPointSubsamplingPostProcessorPP(
                 self.pnet_preproc.pre_processor
             )
         else:

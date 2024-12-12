@@ -42,6 +42,11 @@ class FeatureTransformer:
     :ivar selected_features: Either boolean mask or list of indices
         corresponding to the selected features (columns of the feature matrix).
     :vartype selected_features: list
+    :ivar update_and_preserve: Boolean flag to control whether to discard
+        all features but the transformed/updated ones (False, default) or
+        to update the transformed features and preserve all the other
+        features (True).
+    :vartype update_and_preserve: bool
     """
 
     # ---  SPECIFICATION ARGUMENTS  --- #
@@ -59,7 +64,8 @@ class FeatureTransformer:
         kwargs = {
             'fnames': spec.get('fnames', None),
             'report_path': spec.get('report_path', None),
-            'plot_path': spec.get('plot_path', None)
+            'plot_path': spec.get('plot_path', None),
+            'update_and_preserve': spec.get('update_and_preserve', None)
         }
         # Delete keys with None value
         kwargs = DictUtils.delete_by_val(kwargs, None)
@@ -78,6 +84,7 @@ class FeatureTransformer:
         self.fnames = kwargs.get('fnames', None)
         self.report_path = kwargs.get('report_path', None)
         self.plot_path = kwargs.get('plot_path', None)
+        self.update_and_preserve = kwargs.get('update_and_preserve', False)
         self.selected_features = None
 
     # ---  FEATURE TRANSFORM METHODS  --- #
@@ -87,7 +94,7 @@ class FeatureTransformer:
         """
         The fundamental transformation logic defining the feature transformer.
 
-        :param F: The input matrix of features to be imputed.
+        :param F: The input matrix of features to be transformed.
         :type F: :class:`np.ndarray`
         :param y: The vector of point-wise classes.
         :type y: :class:`np.ndarray`
@@ -132,14 +139,21 @@ class FeatureTransformer:
             out_prefix=out_prefix
         )
         fnames = self.get_names_of_transformed_features(fnames=fnames)
-        # Return new point cloud
-        return PointCloudFactoryFacade.make_from_arrays(
-            pcloud.get_coordinates_matrix(),
-            F,
-            y=pcloud.get_classes_vector(),
-            header=self.build_new_las_header(pcloud),
-            fnames=fnames
-        )
+        # Return output
+        if self.update_and_preserve:
+            # Return updated point cloud
+            return pcloud\
+                .remove_features(self.fnames)\
+                .add_features(fnames, F, ftypes=F.dtype)
+        else:
+            # Return new point cloud
+            return PointCloudFactoryFacade.make_from_arrays(
+                pcloud.get_coordinates_matrix(),
+                F,
+                y=pcloud.get_classes_vector(),
+                header=self.build_new_las_header(pcloud),
+                fnames=fnames
+            )
 
     def report(self, report, out_prefix=None):
         """

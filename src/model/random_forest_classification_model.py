@@ -176,7 +176,10 @@ class RandomForestClassificationModel(ClassificationModel):
         ev = RandForestEvaluator(
             problem_name='Trained Random Forest Classification Model',
             num_decision_trees=self.decision_plot_trees,
-            compute_permutation_importance=self.importance_report_permutation,
+            compute_permutation_importance=(
+                self.importance_report_permutation and
+                self.importance_report_path is not None
+            ),
             max_tree_depth=self.decision_plot_max_depth
         ).eval(self, X=X, y=y)
         end = time.perf_counter()

@@ -2,6 +2,9 @@
 # ------------------- #
 from src.tests.vl3d_test import VL3DTest
 from src.utils.ptransf.receptive_field_gs import ReceptiveFieldGS
+from src.utils.ptransf.receptive_field_fps import ReceptiveFieldFPS
+import scipy
+from scipy.spatial import KDTree as KDT
 import numpy as np
 
 
@@ -18,6 +21,7 @@ class ReceptiveFieldTest(VL3DTest):
     # ---------------- #
     def __init__(self):
         super().__init__('Receptive field test')
+        self.eps = 1e-5
 
     # ---  TEST INTERFACE  --- #
     # ------------------------ #
@@ -30,8 +34,26 @@ class ReceptiveFieldTest(VL3DTest):
         :rtype: bool
         """
         status = True
+        # Do grid receptive field tests
+        status = status and self.test_grid_receptive_fields()
+        # Do FPS receptive field tests
+        status = status and self.test_fps_receptive_fields()
+        # Return
+        return status
+
+    # ---   RECEPTIVE FIELD TESTS   --- #
+    # --------------------------------- #
+    def test_grid_receptive_fields(self):
+        """
+        Run grid receptive field tests.
+
+        :return: True if RepcetiveFieldGS works as expected for the test cases,
+            False otherwise.
+        :rtype: bool
+        """
+        status = True
         # 1) Test regular 2D receptive field
-        status = status and self.test_receptive_field(
+        status = status and self.test_grid_receptive_field(
             bounding_radii=np.array([5.0, 5.0]),
             cell_size=np.array([0.4, 0.4]),
             center_point=np.array([5.0, 5.0]),
@@ -145,7 +167,7 @@ class ReceptiveFieldTest(VL3DTest):
             ], dtype=int)
         )
         # 2) Test irregular 2D receptive field
-        status = status and self.test_receptive_field(
+        status = status and self.test_grid_receptive_field(
             bounding_radii=np.array([1.0, 1.0]),
             cell_size=np.array([1/3, 2/3]),
             center_point=np.array([0.0, 0.0]),
@@ -225,7 +247,7 @@ class ReceptiveFieldTest(VL3DTest):
             ], dtype=int)
         )
         # 3) Test regular 3D receptive field
-        status = status and self.test_receptive_field(
+        status = status and self.test_grid_receptive_field(
             bounding_radii=np.array([1.5, 1.5, 1.5]),
             cell_size=np.array([2/3, 2/3, 2/3]),
             center_point=np.array([1.5, 1.5, 1.5]),
@@ -331,7 +353,7 @@ class ReceptiveFieldTest(VL3DTest):
             ], dtype=int)
         )
         # 4) Test irregular 3D receptive field
-        status = status and self.test_receptive_field(
+        status = status and self.test_grid_receptive_field(
             bounding_radii=np.array([7.5, 3.5, 5]),
             cell_size=np.array([2/3, 2, 1]),
             center_point=np.array([7.5, 3.5, 5]),
@@ -380,10 +402,38 @@ class ReceptiveFieldTest(VL3DTest):
         # Return
         return status
 
+    def test_fps_receptive_fields(self):
+        """
+        Run FPS receptive field tests.
+
+        :return: True if ReceptiveFieldFPS works as expected for the test cases,
+            False otherwise.
+        """
+        status = True
+        # Generate test data
+        m = 8192  # Number of points
+        nf = 2  # Number of features
+        nc = 4  # Number of classes
+        X = np.random.uniform(-1, 1, (m, 3))
+        F = np.random.normal(0, 1, (m, nf))
+        y = np.random.randint(0, nc, m)
+        # Run tests
+        status = status and ReceptiveFieldTest.test_fps_receptive_field(
+            X, F, y, {
+                'num_points': 64,
+                'num_encoding_neighbors': 8,
+                'fast': False,
+                'oversampling': None
+            },
+            self.eps
+        )
+        # Return
+        return status
+
     # ---  UTIL METHODS  --- #
     # ---------------------- #
     @staticmethod
-    def test_receptive_field(
+    def test_grid_receptive_field(
         bounding_radii,
         cell_size,
         center_point,
@@ -396,9 +446,9 @@ class ReceptiveFieldTest(VL3DTest):
         eps=1e-6
     ):
         """
-        Build a receptive field with the input points and propagate the given
-        values. Then, the results are compared with the expected outputs to
-        validate the implementation.
+        Build a grid receptive field with the input points and propagate the
+        given values. Then, the results are compared with the expected outputs
+        to validate the implementation.
 
         :param bounding_radii: The bounding radii to build the receptive
             field.
@@ -462,6 +512,48 @@ class ReceptiveFieldTest(VL3DTest):
         # Validate propagated values
         propagated_values = rf.propagate_values(values_to_propagate, safe=True)
         if np.sum(np.abs(propagated_values-expected_propagated_values)) > eps:
+            return False
+        # Return on success
+        return True
+
+    @staticmethod
+    def test_fps_receptive_field(X, F, y, rfArgs, eps):
+        """
+        Build a FPS receptive field with the input points and check that the
+        features and labels are encoded as expected.
+
+        :param X: The structure space for the test.
+        :type X: :class:`np.ndarray`
+        :param F: The feature space for the test.
+        :type F: :class:`np.ndarray`
+        :param y: The point-wise labels for the test.
+        :type y: :class:`np.ndarray`
+        :param rfArgs: The key-word arguments to build the FPS receptive field.
+            See :class:`.ReceptiveFieldFPS`.
+        :type rfArgs: dict
+        :param eps: The decimal tolerance threshold.
+        :type eps: float
+        """
+        # Centroid of X as center for receptive field
+        x = np.mean(X, axis=0)
+        # Build and fit receptive field
+        fps = ReceptiveFieldFPS(**rfArgs)
+        fps.fit(X, x)
+        # Reduce features and labels
+        fpsF = np.array([
+            fps.reduce_values(None, F[:, j]) for j in range(F.shape[1])
+        ]).T
+        fpsy = fps.reduce_values(
+            None, y, reduce_f=lambda x: scipy.stats.mode(x)[0]
+        )
+        # Validate reduced features and labels
+        kdt = KDT(X-x)
+        I = kdt.query(fps.Y, k=fps.num_encoding_neighbors)[1]
+        refF = np.array([np.mean(F[Ii], axis=0) for Ii in I])
+        if not np.allclose(fpsF, refF, rtol=0, atol=eps):
+            return False
+        refy = np.array([scipy.stats.mode(y[Ii])[0] for Ii in I])
+        if np.any(fpsy != refy):
             return False
         # Return on success
         return True

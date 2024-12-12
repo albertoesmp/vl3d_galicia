@@ -18,6 +18,10 @@ from src.model.deeplearn.layer.grouping_point_net_layer import \
     GroupingPointNetLayer
 from src.model.deeplearn.layer.kpconv_layer import KPConvLayer
 from src.model.deeplearn.layer.strided_kpconv_layer import StridedKPConvLayer
+from src.model.deeplearn.layer.light_kpconv_layer import LightKPConvLayer
+from src.model.deeplearn.layer.strided_light_kpconv_layer \
+    import StridedLightKPConvLayer
+from src.model.deeplearn.layer.hourglass_layer import HourglassLayer
 from src.inout.io_utils import IOUtils
 import src.main.main_logger as LOGGING
 from src.utils.dict_utils import DictUtils
@@ -37,14 +41,16 @@ DL_CUSTOM_OBJECTS = {
     'FeaturesUpsamplingLayer': FeaturesUpsamplingLayer,
     'GroupingPointNetLayer': GroupingPointNetLayer,
     'KPConvLayer': KPConvLayer,
-    'StridedKPConvLayer': StridedKPConvLayer
+    'StridedKPConvLayer': StridedKPConvLayer,
+    'LightKPConvLayer': LightKPConvLayer,
+    'StridedLightKPConvLayer': StridedLightKPConvLayer,
+    'HourglassLayer': HourglassLayer
 }
 
 # ---  GLOBALS  --- #
 # ----------------- #
 # Global variable so deserialization supports path updates
 new_nn_path = None
-
 
 # ---   CLASS   --- #
 # ----------------- #
@@ -107,6 +113,7 @@ class Architecture:
             VL3DCFG['MODEL']['Architecture']
         )
         # Assign architecture attributes
+        self.name = kwargs.get('arch_name', 'UNNAMED_ARCHITECTURE')
         self.pre_runnable = kwargs.get('pre_runnable', None)
         self.post_runnable = kwargs.get('post_runnable', None)
         self.nn = None  # By default, there is no built neural network
@@ -183,7 +190,7 @@ class Architecture:
         self.nn = tf.keras.Model(
             inputs=self.inlayer,
             outputs=outlayer,
-            name='PointNet'
+            name=self.name
         )
         # Plot the architecture's graph
         self.plot()
@@ -310,6 +317,7 @@ class Architecture:
             )
         # Return architecture state (for serialization)
         return {  # Must not include built architecture
+            'name': self.name,
             'pre_runnable': self.pre_runnable,
             'post_runnable': self.post_runnable,
             'nn': None,
@@ -328,6 +336,7 @@ class Architecture:
         :return: Nothing, but modifies the internal state of the object.
         """
         # Must rebuild the architecture (it was not serialized)
+        self.name = state['name']
         self.pre_runnable = state['pre_runnable']
         self.post_runnable = state['post_runnable']
         self.nn_path = state['nn_path'] if new_nn_path is None else new_nn_path

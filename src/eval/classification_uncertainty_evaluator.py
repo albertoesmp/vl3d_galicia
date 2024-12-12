@@ -34,6 +34,10 @@ class ClassificationUncertaintyEvaluator(Evaluator):
     :ivar include_probabilities: Whether to include the probabilities in the
         resulting evaluation (True) or not (False).
     :vartype include_probabilities: bool
+    :ivar probability_eps: The value representing the zero, to avoid NaNs
+        when computing the logarithms of the likelihoods/probabilities.
+        If it is exactly zero, then the zeroes will not be replaced by this
+        value.
     :ivar include_weighted_entropy: Whether to include the weighted entropy
         in the resulting evaluation (True) or not (False).
     :vartype include_weighted_entropy: bool
@@ -96,6 +100,7 @@ class ClassificationUncertaintyEvaluator(Evaluator):
             'class_names': spec.get('class_names', None),
             'ignore_classes': spec.get('ignore_classes', None),
             'include_probabilities': spec.get('include_probabilities', None),
+            'probability_eps': spec.get('probability_eps', None),
             'include_weighted_entropy': spec.get(
                 'include_weighted_entropy', None
             ),
@@ -142,6 +147,7 @@ class ClassificationUncertaintyEvaluator(Evaluator):
         self.class_names = kwargs.get('class_names', None)
         self.ignore_classes = kwargs.get('ignore_classes', None)
         self.include_probabilities = kwargs.get('include_probabilities', True)
+        self.probability_eps = kwargs.get('probability_eps', 1e-7)
         self.include_weighted_entropy = kwargs.get(
             'include_weighted_entropy', True
         )
@@ -210,6 +216,8 @@ class ClassificationUncertaintyEvaluator(Evaluator):
         if len(Zhat.shape) < 2:
             Zhat = Zhat.reshape((-1, 1))
             Zhat = np.hstack([1-Zhat, Zhat])
+        if self.probability_eps > 0:
+            Zhat[Zhat == 0] = min(self.probability_eps, np.min(Zhat[Zhat > 0]))
         # Compute point-wise Shannon's entropy
         pwise_entropy = self.compute_pwise_entropy(Zhat)
         # Compute point-wise weighted Shannon's entropy
@@ -563,13 +571,13 @@ class ClassificationUncertaintyEvaluator(Evaluator):
     # -------------------------- #
     def eval_args_from_state(self, state):
         """
-        Obtain the arguments to call the DLModelEvaluator from the current
-        pipeline's state.
+        Obtain the arguments to call the ClassificationUncertaintyEvaluator
+        from the current pipeline's state.
 
         :param state: The pipeline's state.
         :type state: :class:`.SimplePipelineState`
         :return: The dictionary of arguments for calling
-            ClassificationUncertaintyEvaluator
+            ClassificationUncertaintyEvaluator.
         :rtype: dict
         """
         return {

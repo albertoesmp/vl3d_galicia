@@ -16,6 +16,7 @@ import scipy
 import numpy as np
 import joblib
 import time
+import gc
 
 
 # ---   CLASS   --- #
@@ -81,6 +82,9 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
             'fast_flag_per_depth', [False for i in range(self.depth)]
         )
         self.neighborhood_spec = kwargs.get('neighborhood', None)  # Support
+        self.receptive_field_oversampling = kwargs.get(
+            'receptive_field_oversampling', None
+        )
         # Validate attributes
         if(
             self.num_downsampling_neighbors is None or
@@ -199,13 +203,21 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         X, F, y = inputs['X'], None, inputs.get('y', None)
         if isinstance(X, list):
             X, F = X[0], X[1]
-        else:
-            F = np.ones((X.shape[0], 1), dtype=float)
+        # TODO Pending : The else commented below might be safely removed after
+        # 2025/11/20 if no problems are detected (in principle, ones are
+        # generated before reaching this point).
+        """else:
+            F = np.ones((X.shape[0], 1), dtype=float)"""
+        # Determine number of classes if not available
+        ReceptiveFieldPreProcessor.num_classes_from_pwise_labels(self, y)
+        # Purge old state before computing new one
+        self.purge_receptive_fields()
         # Extract support neighborhoods
         sup_X, I = self.find_neighborhood(X, y=y)
         # Remove empty neighborhoods and corresponding support points
         I, sup_X = HierarchicalFPSPreProcessor.clean_support_neighborhoods(
-            sup_X, I, self.num_points_per_depth[0]
+            sup_X, I, self.num_points_per_depth[0],
+            oversampling=self.receptive_field_oversampling
         )
         # Export support points if requested
         if inputs.get('plots_and_reports', True):
@@ -233,7 +245,8 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
                 fast_flag_per_depth=self.fast_flag_per_depth,
                 num_downsampling_neighbors=self.num_downsampling_neighbors,
                 num_pwise_neighbors=self.num_pwise_neighbors,
-                num_upsampling_neighbors=self.num_upsampling_neighbors
+                num_upsampling_neighbors=self.num_upsampling_neighbors,
+                receptive_field_oversampling=self.receptive_field_oversampling
             )
             for Ii in I
         ]
@@ -249,13 +262,13 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         )
         # Features ready to be fed into the neural network
         Fout = self.handle_features_reduction(
-            F,
-            len(I),  # number of neighborhoods
+            F,  # Features
+            I,  # Neighbors from input (original) point cloud
             lambda rfi, Xouti, F: [  # reduce function f(rf_i, Xout_i, F)
                 rfi.reduce_values(None, F[:, j]) for j in range(F.shape[1])
             ]
         )
-        if Fout is None:
+        if Fout is None and F is not None:
             raise DeepLearningException(
                 'HierarchicalFPSPreProcessor yielded a null Fout (None). '
                 'This MUST not happen.'
@@ -268,11 +281,21 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
             ])
             for d in range(1, self.depth)
         ]
+        # Transform substructure spaces to unit sphere if requested
         if self.to_unit_sphere:
-            Xdout = list(map(
-                ReceptiveFieldPreProcessor.transform_to_unit_sphere,
-                Xdout
-            ))
+            Xdout = [
+                np.array(list(map(
+                    ReceptiveFieldPreProcessor.transform_to_unit_sphere,
+                    Xdout[d]
+                )))
+                for d in range(self.depth-1)
+            ]
+            # Update receptive field with unit sphere structure spaces
+            for i in range(len(I)):
+                # At first depth
+                self.last_call_receptive_fields[i].Ys[0] = Xout[i]
+                for d in range(1, self.depth):  # Depth after first one
+                    self.last_call_receptive_fields[i].Ys[d] = Xdout[d-1][i]
         # Neighborhoods for hierarchical representation
         Dout = np.array([
             self.last_call_receptive_fields[i].get_downsampling_matrices()
@@ -288,7 +311,7 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         ], dtype='object').T.tolist()
         # Prepare basic output
         out = [Xout, Fout] + Xdout + Dout[1:] + Nout + Uout[1:]
-        out = [np.array(X) for X in out]
+        out = [None if X is None else np.array(X) for X in out]
         # Handle labels
         if y is not None:
             yout = self.reduce_labels(Xout, y, I=I)
@@ -308,13 +331,13 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
     # ---   UTIL METHODS   --- #
     # ------------------------ #
     @staticmethod
-    def clean_support_neighborhoods(sup_X, I, num_points):
+    def clean_support_neighborhoods(sup_X, I, num_points, oversampling=None):
         """
         See :class:`.FurthestPointSubsamplingPreProcessor` and
         :meth:`furthest_point_subsampling_pre_processor.FurthestPointSubsamplingPreProcessor.clean_support_neighborhoods`.
         """
         return FurthestPointSubsamplingPreProcessor.clean_support_neighborhoods(
-            sup_X, I, num_points
+            sup_X, I, num_points, oversampling=oversampling
         )
 
     def reduce_labels(self, X_rf, y, I=None):
@@ -398,6 +421,10 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
             self.fast_flag_per_depth = spec['fast_flag_per_depth']
         if 'neighborhood_spec' in spec_keys:
             self.neighborhood_spec = spec['neighborhood_spec']
+        if 'receptive_field_oversampling' in spec_keys:
+            self.receptive_field_oversampling = spec[
+                'receptive_field_oversampling'
+            ]
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
@@ -419,6 +446,8 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         state['depth'] = self.depth
         state['fast_flag_per_depth'] = self.fast_flag_per_depth
         state['neighborhood_spec'] = self.neighborhood_spec
+        state['receptive_field_oversampling'] = \
+            self.receptive_field_oversampling
         # Return
         return state
 
@@ -444,3 +473,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         self.depth = state['depth']
         self.fast_flag_per_depth = state['fast_flag_per_depth']
         self.neighborhood_spec = state['neighborhood_spec']
+        self.receptive_field_oversampling = state.get(
+            'receptive_field_oversampling', None
+        )

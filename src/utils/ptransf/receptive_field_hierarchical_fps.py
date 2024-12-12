@@ -62,6 +62,11 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
     :ivar max_depth: The max depth of the hierarchy, i.e., how many receptive
         fields.
     :vartype max_depth: int
+    :ivar receptive_field_oversampling: The oversampling specification for the
+        receptive fields (OPTIONAL). See
+        :meth:`ReceptiveFieldFPS.compute_fps_on_3D_pcloud` and
+        :meth:`ReceptiveFieldFPS.oversample` for further details.
+    :vartype receptive_field_oversampling: dict or None
     :ivar NDs: The :math:`\pmb{N}^D_d` matrices of
         indices for downsampling with depth :math:`d=1,\ldots,d^*`.
         More concretely, :math:`n^D_{dij}`
@@ -162,6 +167,9 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
             'num_upsampling_neighbors', [1, 16, 8, 8, 4]
         )
         self.max_depth = len(self.num_points_per_depth)
+        self.receptive_field_oversampling = kwargs.get(
+            'receptive_field_oversampling', None
+        )
         self.NDs = [  # The downsampling matrices of indices (computed at fit)
             None for i in range(self.max_depth)
         ]
@@ -178,7 +186,7 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
 
     # ---  RECEPTIVE FIELD METHODS  --- #
     # --------------------------------- #
-    def fit(self, X, x, structure_float_type=np.float64):
+    def fit(self, X, x, structure_float_type=np.float64, id=None):
         r"""
         Fit the receptive field to represent the given points by taking the
         subset of the furthest points in a recursive way leading to a hierarchy
@@ -195,6 +203,7 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
         :type x: :class:`np.ndarray`
         :param structure_float_type: The decimal type for the structure space.
         :type structure_float_type: :class:`np.dtype`
+        :param id: See :meth:`.ReceptiveField.fit`.
         :return: The fitted receptive field itself (for fluent programming).
         :rtype: :class:`.ReceptiveFieldHierarchicalFPS`
         """
@@ -220,7 +229,9 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
                 Xd,
                 fast=self.fast_flag_per_depth[d],
                 num_points=self.num_points_per_depth[d],
-                structure_float_type=structure_float_type
+                structure_float_type=structure_float_type,
+                oversampling=self.receptive_field_oversampling,
+                id=id
             )
             # Find the downsampling matrix at depth d (NDd)
             kdt = KDT(Xd)
@@ -367,3 +378,28 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
                 self.Ns[d] = self.Ns[d].astype(int_type_self)
             if int_type_up is not None:
                 self.NUs[d] = self.NUs[d].astype(int_type_up)
+
+    # ---  MEMORY UTILS  --- #
+    # ---------------------- #
+    def canibalize(self, rf):
+        """
+        See :meth:`.ReceptiveField.canibalize`.
+        """
+        self.num_points_per_depth = rf.num_points_per_depth
+        self.fast_flag_per_depth = rf.fast_flag_per_depth
+        self.num_downsampling_neighbors = rf.num_downsampling_neighbors
+        self.num_pwise_neighbors = rf.num_pwise_neighbors
+        self.num_upsampling_neighbors = rf.num_upsampling_neighbors
+        self.max_pdeth = rf.max_depth
+        self.receptive_field_oversampling = rf.receptive_field_oversampling
+        self.NDs = rf.NDs
+        rf.NDs = None
+        self.Ns = rf.Ns
+        rf.Ns = None
+        self.NUs = rf.NUs
+        rf.NUs = None
+        self.x = rf.x
+        rf.x = None
+        self.Ys = rf.Ys
+        rf.Ys = None
+        del rf

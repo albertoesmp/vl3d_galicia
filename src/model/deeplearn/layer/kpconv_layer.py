@@ -55,7 +55,7 @@ class KPConvLayer(Layer):
         is false, but it will be updated once the layer is built.
     :vartype built_Q: bool
     :ivar built_W: Whether the :math:`m_q` weight matrices
-        :math:`\pmb{W} \in \mathbb{D_{\mathrm{in}} \times D_{\mathrm{out}}}`
+        :math:`\pmb{W} \in \mathbb{R}^{D_{\mathrm{in}} \times D_{\mathrm{out}}}`
         corresponding to each kernel point are built or not.
         Initially it is false, but it will be updated once the
         layer is built.
@@ -142,15 +142,8 @@ class KPConvLayer(Layer):
             )
         # Build the kernel's weights (if not yet)
         if not self.built_W:
-            self.W = self.add_weight(
-                shape=(self.num_kernel_points, Din, self.Dout),
-                initializer=self.W_initializer,
-                regularizer=self.W_regularizer,
-                constraint=self.W_constraint,
-                dtype='float32',
-                trainable=True,
-                name='W'
-            )
+            self.W = self.build_W(Din)
+            self.built_W = True
         self.built = True
 
     def call(self, inputs, training=False, mask=False):
@@ -272,6 +265,28 @@ class KPConvLayer(Layer):
         )
         # Return output features
         return tf.reduce_sum(tf.matmul(WF, self.W), axis=1)
+
+    # ---   BUILDING METHODS   --- #
+    # ---------------------------- #
+    def build_W(self, Din):
+        r"""
+        Assist the :meth:`.KPConvLayer.build` method in building the
+        :math:`\mathcal{W} \in \mathbb{R}^{K \times D_{\mathrm{in}} \times D_{\mathrm{out}}}`
+        tensor, i.e., the convolution weights.
+
+        :param Din: The dimensionality of the input feature space
+            :math:`D_{\mathrm{in}}`.
+        :type Din: int
+        """
+        return self.add_weight(
+            shape=(self.num_kernel_points, Din, self.Dout),
+            initializer=self.W_initializer,
+            regularizer=self.W_regularizer,
+            constraint=self.W_constraint,
+            dtype='float32',
+            trainable=True,
+            name='W'
+        )
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #

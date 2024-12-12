@@ -56,8 +56,9 @@ class EntropicPredReduceStrategy(PredReduceStrategy):
 
         \hat{e}_{i_k} = \dfrac{\mathcal{E}(\pmb{z}_{i_k})}{e^*} \in (0, 1)
 
-    NOTE that a min clip value :math:`\eps_*` will be considered to replace
-    all values below it to avoid logarithm of zero or division by zero cases.
+    NOTE that a min clip value :math:`\epsilon_*` will be considered to
+    replace all values below it to avoid logarithm of zero or division by zero
+    cases.
 
     See :class:`.PredReduceStrategy`.
 

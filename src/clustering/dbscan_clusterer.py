@@ -127,7 +127,7 @@ class DBScanClusterer(Clusterer):
             elif precluster_low in ['prediction', 'predictions']:
                 y = pcloud.get_predictions_vector()
             else:
-                y = pcloud.get_features(self.precluster_name)
+                y = pcloud.get_features_matrix(self.precluster_name)
             # Determine domain of preclusters
             y_dom = self.precluster_domain
             if y_dom is None:
@@ -164,11 +164,20 @@ class DBScanClusterer(Clusterer):
             assigned to any point.
         :rtype: int
         """
+        # Center at midrange
+        a, b = np.min(X, axis=0), np.max(X, axis=0)
+        c = (a + b) / 2.0
+        X = X - c
+        # Compute DBScan
         o3d_cloud = open3d.geometry.PointCloud()
         o3d_cloud.points = open3d.utility.Vector3dVector(X)
-        c = cluster_idx + np.array(o3d_cloud.cluster_dbscan(
+        c = np.array(o3d_cloud.cluster_dbscan(
             self.radius,
             self.min_points,
             print_progress=False
         ), dtype=int)
-        return int(np.max(c))+1, c
+        # Update cluster indices for any clean (not noise) point
+        clean_mask = c > -1  # True if not noise, False otherwise
+        c[clean_mask] += cluster_idx
+        # Return next cluster id and DBScan-based clusters
+        return max(cluster_idx, int(np.max(c))+1), c

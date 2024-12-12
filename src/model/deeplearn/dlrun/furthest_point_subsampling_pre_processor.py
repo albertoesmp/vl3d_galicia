@@ -66,6 +66,9 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         self.num_encoding_neighbors = kwargs.get('num_encoding_neighbors', 3)
         self.fast = kwargs.get('fast', False)
         self.neighborhood_spec = kwargs.get('neighborhood', None)  # Support
+        self.receptive_field_oversampling = kwargs.get(
+            'receptive_field_oversampling', None
+        )
         if self.neighborhood_spec is None:
             raise DeepLearningException(
                 'The FurthestPointSubsamplingPreProcessor did not receive '
@@ -96,12 +99,17 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         X, F, y = inputs['X'], None, inputs.get('y', None)
         if isinstance(X, list):
             X, F = X[0], X[1]
+        # Determine number of classes if not available
+        ReceptiveFieldPreProcessor.num_classes_from_pwise_labels(self, y)
+        # Purge old state before computing new one
+        self.purge_receptive_fields()
         # Extract neighborhoods
         sup_X, I = self.find_neighborhood(X, y=y)
         # Remove empty neighborhoods and corresponding support points
         I, sup_X = FurthestPointSubsamplingPreProcessor\
             .clean_support_neighborhoods(
-                sup_X, I, self.num_points
+                sup_X, I, self.num_points,
+                oversampling=self.receptive_field_oversampling
             )
         self.last_call_neighborhoods = I
         # Export support points if requested
@@ -111,7 +119,8 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             ReceptiveFieldFPS(
                 num_points=self.num_points,
                 num_encoding_neighbors=self.num_encoding_neighbors,
-                fast=self.fast
+                fast=self.fast,
+                receptive_field_oversampling=self.receptive_field_oversampling
             )
             for Ii in I
         ]
@@ -126,8 +135,8 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         )
         # Features ready to be fed into the neural network
         Fout = self.handle_features_reduction(
-            F,
-            len(I),  # number of neighborhoods
+            F,  # Features
+            I,  # Neighbors from input (original) point cloud
             lambda rfi, Xouti, F : [  # reduce function f(rf_i, Xout_i, F)
                 rfi.reduce_values(None, F[:, j]) for j in range(F.shape[1])
             ]
@@ -166,7 +175,7 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
     # ---   UTIL METHODS   --- #
     # ------------------------ #
     @staticmethod
-    def clean_support_neighborhoods(sup_X, I, num_points):
+    def clean_support_neighborhoods(sup_X, I, num_points, oversampling=None):
         """
         Compute the clean version of the given support neighborhoods, i.e.,
         support points in sup_X and their neighborhoods as defined in I but
@@ -177,13 +186,22 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         :param I: The indices (in the original point domain) corresponding
             to each support point. In other words, I[i] gives the indices
             in X of support point i in X_sup.
+        :param num_points: The expected number of points.
+        :param oversampling: The oversampling specification, if any.
         :return: The clean matrix of coordinates representing the support
             points and their neighborhoods.
         :rtype: tuple
         """
+        # Determine min points depending on oversampling strategy
+        min_points = num_points if oversampling is None else oversampling.get(
+            'min_points', 0
+        )
         # Remove neighborhoods with less than num_points neighbors
-        non_empty_mask = [len(Ii) >= num_points for Ii in I]
-        I = [Ii for i, Ii in enumerate(I) if non_empty_mask[i]]
+        non_empty_mask = [len(Ii) >= min_points for Ii in I]
+        I = [
+            np.array(Ii, dtype=np.uint32)
+            for i, Ii in enumerate(I) if non_empty_mask[i]
+        ]
         sup_X = sup_X[non_empty_mask]
         return I, sup_X
 
@@ -286,6 +304,10 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             self.fast = spec['fast']
         if 'neighborhood_spec' in spec_keys:
             self.neighborhood_spec = spec['neighborhood_spec']
+        if 'receptive_field_oversampling' in spec_keys:
+            self.receptive_field_oversampling = spec[
+                'receptive_field_oversampling'
+            ]
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
@@ -306,6 +328,8 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         state['num_encoding_neighbors'] = self.num_encoding_neighbors
         state['fast'] = self.fast
         state['neighborhood_spec'] = self.neighborhood_spec
+        state['receptive_field_oversampling'] = \
+            self.receptive_field_oversampling
         # Return state
         return state
 
@@ -328,3 +352,6 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         self.num_encoding_neighbors = state['num_encoding_neighbors']
         self.fast = state['fast']
         self.neighborhood_spec = state['neighborhood_spec']
+        self.receptive_field_oversampling = state.get(
+            'receptive_field_oversampling', None
+        )

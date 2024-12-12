@@ -105,7 +105,7 @@ class KPConvLayerPlot(MplPlot):
         """
         Plot the kernel's structure.
 
-        :param kwargs: The key-word arguments:
+        :param kwargs: The key-word arguments.
         :return: Nothing, but the plot is written to a file.
         """
         # Prepare figure
@@ -173,8 +173,8 @@ class KPConvLayerPlot(MplPlot):
         Plot the kernel's weights.
 
         :param W: The tensor whose slices are the weights of the kernel.
-        :param plot_name: The name of the plot
-        :param plot_title: The title of the plot
+        :param plot_name: The name of the plot.
+        :param plot_title: The title of the plot.
         :param kwargs: The key-word arguments.
         :return: Nothing, but the plot is written to a file.
         """
@@ -199,7 +199,7 @@ class KPConvLayerPlot(MplPlot):
         self, W, plot_name, plot_title, plot_function, **kwargs
     ):
         """
-        Assist the :meth:`KPConvLayerPlot.plot_kernel_weights` function
+        Assist the :meth:`.KPConvLayerPlot.plot_kernel_weights` function.
         """
         # Prepare figure
         fig = plt.figure(figsize=(16, 10))
@@ -224,7 +224,7 @@ class KPConvLayerPlot(MplPlot):
         Assist the :meth:`KPConvLayerPlot.plot_kernel_weights` function by
         providing the logic to plot a matrix of weights as a matrix.
         """
-        mat = ax.matshow(Wk, origin='lower', cmap='seismic')
+        mat = ax.matshow(Wk, origin='lower', cmap='turbo')
         ax.xaxis.tick_bottom()
         fig.colorbar(mat, ax=ax)
 

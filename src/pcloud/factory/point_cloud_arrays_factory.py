@@ -3,6 +3,8 @@
 from src.pcloud.factory.point_cloud_factory import PointCloudFactory, \
     PointCloudFactoryException
 from src.pcloud.point_cloud import PointCloud
+import src.main.main_logger as LOGGING
+from src.main.main_config import VL3DCFG
 import laspy
 import numpy as np
 import copy
@@ -58,10 +60,17 @@ class PointCloudArraysFactory(PointCloudFactory):
         # Load defaults when necessary
         if self.F is not None and self.fnames is None:
             self.fnames = [f'f{i}' for i in range(1, self.F.shape[1]+1)]
+        # Load defaults from config
+        self.las_version = VL3DCFG['IO']['PointCloudArraysFactory'][
+            'las_version'
+        ]
+        self.las_point_format = VL3DCFG['IO']['PointCloudArraysFactory'][
+            'las_point_format'
+        ]
 
     # ---  FACTORY METHODS  --- #
     # ------------------------- #
-    def make(self, scale=0.001):
+    def make(self, scale=0.001, logging=True):
         """
         Make a point cloud from arrays.
         See :meth:`point_cloud_factory.PointCloudFactory.make`
@@ -69,14 +78,14 @@ class PointCloudArraysFactory(PointCloudFactory):
         # Initialize LAS
         if self.header is None:  # Initialize from scratch
             las = laspy.create(
-                point_format=1,
-                file_version="1.2"
+                file_version=self.las_version,
+                point_format=self.las_point_format
             )
             las.header.offsets = np.min(self.X, axis=0)
             las.header.scales = [scale]*3
             if self.F is not None:
                 extra_bytes = [
-                    laspy.ExtraBytesParams(name=fname, type='f')
+                    laspy.ExtraBytesParams(name=fname, type=self.F.dtype)
                     for fname in self.fnames if fname not in [
                         # Exclude default features like intensity
                         'intensity'
@@ -88,15 +97,46 @@ class PointCloudArraysFactory(PointCloudFactory):
             header.point_count = self.X.shape[0]
             las = laspy.LasData(header)
         # Assign coordinates
-        las.x = self.X[:, 0]
-        las.y = self.X[:, 1]
-        las.z = self.X[:, 2]
+        if self.X.dtype != las.x.dtype:
+            if logging:
+                LOGGING.LOGGER.warning(
+                    'PointCloudArraysFactory changed coordinate type from '
+                    f'{self.X.dtype} (internal) to {las.x.dtype} (LAS/LAZ).'
+                )
+            las.x = self.X[:, 0].astype(las.x.dtype)
+            las.y = self.X[:, 1].astype(las.y.dtype)
+            las.z = self.X[:, 2].astype(las.z.dtype)
+        else:
+            las.x = self.X[:, 0]
+            las.y = self.X[:, 1]
+            las.z = self.X[:, 2]
         # Assign features
         if self.F is not None:
             for i, fname in enumerate(self.fnames):
-                las[fname] = self.F[:, i]
+                if las[fname].dtype != self.F.dtype:
+                    if logging:
+                        LOGGING.LOGGER.warning(
+                            'PointCloudArraysFactory changed feature '
+                            f'"{fname}" type from {self.F.dtype} (internal) '
+                            f'to {las[fname].dtype} (LAS/LAZ).'
+                        )
+                    las[fname] = self.F[:, i].astype(las[fname].dtype)
+                else:
+                    las[fname] = self.F[:, i]
         # Assign classification
         if self.y is not None:
-            las.classification = self.y
+            if las.classification.dtype != self.y.dtype:
+                if logging:
+                    LOGGING.LOGGER.warning(
+                        'PointCloudArraysFactory changed classification type '
+                        f'from {self.y.dtype} (internal) to '
+                        f'{las.classification.dtype} (LAS/LAZ).'
+                    )
+                las.classification = self.y.astype(las.classification.dtype)
+            else:
+                las.classification = self.y
         # Return point cloud
-        return PointCloud(las)
+        return PointCloud(
+            las,
+            mem_check_threshold=None if logging else 1.0
+        )

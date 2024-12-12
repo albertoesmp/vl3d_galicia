@@ -17,9 +17,11 @@ from src.clustering.clusterer import Clusterer
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer
 from src.utils.ctransf.class_transformer import ClassTransformer
+from src.utils.ptransf.point_transformer import PointTransformer
 from src.utils.imputer_utils import ImputerUtils
 from src.utils.ftransf_utils import FtransfUtils
 from src.utils.ctransf_utils import CtransfUtils
+from src.utils.ptransf_utils import PtransfUtils
 from src.utils.ptransf.fps_decorator_transformer import FPSDecoratorTransformer
 from src.model.model_op import ModelOp
 from src.inout.writer import Writer
@@ -98,6 +100,12 @@ class SequentialPipeline(Pipeline):
                     **ctransf_class.extract_ctransf_args(comp)
                 )
                 self.sequence.append(ctransf)
+            if comp.get('point_transformer', None) is not None:  # Hdl. ptr.
+                ptransf_class = PtransfUtils.extract_ptransf_class(comp)
+                ptransf = ptransf_class(
+                    **ptransf_class.extract_ptransf_args(comp)
+                )
+                self.sequence.append(ptransf)
             if comp.get("train", None) is not None:  # Handle train
                 model_class = MainTrain.extract_model_class(comp)
                 pretrained = comp.get('pretrained_model', None)
@@ -228,7 +236,10 @@ class SequentialPipeline(Pipeline):
                         f'in {fps_end-fps_start:.3f} seconds.'
                     )
             if i == 0:  # Get feature names and header from first point cloud
-                fnames = pcloud_i.get_features_names()
+                if 'fnames' in concat:
+                    fnames = concat['fnames']
+                else:
+                    fnames = pcloud_i.get_features_names()
                 header = pcloud_i.get_header()
             # Concatenate coordinates, features, and classes
             X.append(pcloud_i.get_coordinates_matrix())

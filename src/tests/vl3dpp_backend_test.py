@@ -1,5 +1,6 @@
 from src.tests.vl3d_test import VL3DTest, VL3DTestException
 from src.vl3dpp import vl3dpp_loader
+import os
 
 
 class VL3DPPBackendTest(VL3DTest):
@@ -25,11 +26,12 @@ class VL3DPPBackendTest(VL3DTest):
         # Load and import
         vl3dpp_loader.vl3dpp_load(logging=False, warning=True)
         import pyvl3dpp as vl3dpp
-        # Get example matrix
-        import numpy as np
-        X = np.random.normal(0, 1, (25, 3))
-        F = np.random.normal(0, 1, (25, 16))
-        Fhat = vl3dpp.mine_smooth_feats(X, F)
-        if Fhat is None:
+        # Prepare working directory so C++ test_data is available
+        rootdir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        os.chdir(os.path.join(rootdir, 'cpp'))
+        # Run tests
+        failed_count = vl3dpp.main_test()
+        os.chdir(rootdir)
+        if failed_count > 0:
             return False
         return True  # Test : success

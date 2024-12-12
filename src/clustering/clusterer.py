@@ -4,6 +4,7 @@ from abc import abstractmethod
 import src.main.main_logger as LOGGING
 from src.main.vl3d_exception import VL3DException
 from src.utils.dict_utils import DictUtils
+import numpy as np
 import time
 
 
@@ -189,6 +190,14 @@ class Clusterer:
             labels).
         :rtype: :class:`.PointCloud`
         """
+        # Determine minimum integer type
+        itype = np.int64
+        int_range = np.max(c) - np.min(c)
+        if int_range < 256:
+            itype = np.int16
+        elif int_range < 2147483648:
+            itype = np.int32
+        # Add feature
         return pcloud.add_features(
-            [self.cluster_name], c.reshape(-1, 1), ftypes=['d']
+            [self.cluster_name], c.reshape(-1, 1), ftypes=itype
         )

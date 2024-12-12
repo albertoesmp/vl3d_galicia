@@ -15,6 +15,7 @@ class ClassificationEvaluation(Evaluation):
     :class:`.ClassificationEvaluator`.
 
     :ivar class_names: See :class:`.ClassificationEvaluator`.
+    :ivar ignore_classes: See :class:`.ClassificationEvaluator`.
     :ivar metric_names: See :class:`.ClassificationEvaluator`.
     :ivar class_metric_names: See :class:`.ClassificationEvaluator`.
     :ivar yhat_count: The count of cases per predicted label.
@@ -25,6 +26,10 @@ class ClassificationEvaluation(Evaluation):
     :ivar conf_mat: The confusion matrix where rows are the expected or true
         labels and columns are the predicted labels.
     :vartype conf_mat: :class:`np.ndarray`
+    :ivar conf_mat_norm_type: The type of normalization strategy to be applied
+        to the confusion matrix when plotting it. Either None or a string from
+        ["row", "col", "full"].
+    :vartype conf_mat_norm_type: str or None
     :ivar metric_scores: The score for each metric, i.e., metric_scores[i] is
         the computed score corresponding to metric_names[i].
     :vartype metric_scores: :class:`np.ndarray`
@@ -44,11 +49,13 @@ class ClassificationEvaluation(Evaluation):
         super().__init__(**kwargs)
         # Initialize attributes of ClassificationEvaluation
         self.class_names = kwargs.get('class_names', None)
+        self.ignore_classes = kwargs.get('ignore_classes', None)
         self.metric_names = kwargs.get('metric_names', None)
         self.class_metric_names = kwargs.get('class_metric_names', None)
         self.yhat_count = kwargs.get('yhat_count', None)
         self.y_count = kwargs.get('y_count', None)
         self.conf_mat = kwargs.get('conf_mat', None)
+        self.conf_mat_norm_type = kwargs.get('conf_mat_norm_type', None)
         self.metric_scores = kwargs.get('metric_scores', None)
         self.class_metric_scores = kwargs.get('class_metric_scores', None)
 
@@ -56,7 +63,8 @@ class ClassificationEvaluation(Evaluation):
     # ------------------------------ #
     def report(self, **kwargs):
         """
-        Transform the ClassificationEvaluation into a ClassificationReport.
+        Transform the ClassificationEvaluation into a
+        :class:`.ClassificationReport`.
 
         See :class:`.ClassificationReport`.
 
@@ -99,9 +107,11 @@ class ClassificationEvaluation(Evaluation):
         """
         return ClassificationPlot(
             class_names=self.class_names,
+            ignore_classes=self.ignore_classes,
             yhat_count=self.yhat_count,
             y_count=self.y_count,
             conf_mat=self.conf_mat,
+            conf_mat_norm_type=self.conf_mat_norm_type,
             path=kwargs.get(
                 'path',
                 kwargs.get('confusion_matrix_path', None)

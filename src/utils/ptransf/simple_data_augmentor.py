@@ -125,7 +125,7 @@ class SimpleDataAugmentor(DataAugmentor):
                 for k in range(len(X)):
                     X[k][i] = (R@X[k][i].T).T
         else:
-            for i, Xi in X:
+            for i, Xi in enumerate(X):
                 SimpleDataAugmentor.set_rotation_matrix(R, axis, angles[i])
                 X[i] = (R@Xi.T).T
         # Return rotated structure spaces
@@ -155,7 +155,7 @@ class SimpleDataAugmentor(DataAugmentor):
                 for k in range(len(X)):
                     X[k][i] = scale_factor*X[k][i]
         else:
-            for i, Xi in X:
+            for i, Xi in enumerate(X):
                 X[i] = scale_factors[i]*Xi
         # Return scaled structure spaces
         return X
@@ -185,7 +185,7 @@ class SimpleDataAugmentor(DataAugmentor):
                     # Add jitter to the current structure space
                     X[k][i] += Jki
         else:
-            for i, Xi in X:
+            for i, Xi in enumerate(X):
                 # Compute jitter distribution for current structure space
                 Ji = SimpleDataAugmentor.compute_distribution(
                     transformation['noise_distribution'],
@@ -233,7 +233,7 @@ class SimpleDataAugmentor(DataAugmentor):
         else:
             raise ValueError(
                 'SimpleDataAugmentor.compute_distribution received an '
-                'unexpected distribution: "{type}"'
+                f'unexpected distribution: "{type}"'
             )
 
     @staticmethod

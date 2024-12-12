@@ -19,6 +19,27 @@ KFoldEvaluator:
     - 0.5
     - 0.75
 
+# Default configuration for classification evaluator
+ClassificationEvaluator:
+  # Default format for confusion matrices
+  confusion_matrix_format:
+    cmap: "Greens"
+    values_format: ".3f"
+    fontsize: 10
+    fontweight: "bold"
+    fontcolor: "black"
+    stroke_width: 2
+    stroke_foreground: "white"
+    colorbar_labelsize: 11
+    tick_labelsize: 11
+    tick_length: 3.0
+    tick_width: 1.0
+    xlabel_rotation: 70
+    xlabel_size: 11
+    ylabel_rotation: 20
+    ylabel_size: 11
+    border_size: 2
+
 # Default configuration for classification uncertainty evaluator
 ClassificationUncertaintyEvaluator:
   include_probabilities: true

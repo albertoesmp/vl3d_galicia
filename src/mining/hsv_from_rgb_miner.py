@@ -78,7 +78,7 @@ class HSVFromRGBMiner(Miner):
                 'are no RGB components available in the point cloud.'
             )
         # Extract RGB components
-        RGB = pcloud.get_features_matrix(['red', 'green', 'blue'])  # TODO Restore
+        RGB = pcloud.get_features_matrix(['red', 'green', 'blue'])
         ftype = Miner.get_feature_type()
         if RGB.dtype != ftype:
             RGB = RGB.astype(ftype)

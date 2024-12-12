@@ -3,6 +3,8 @@
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.dlrun.hierarchical_fps_post_processor import \
     HierarchicalFPSPostProcessor
+from src.model.deeplearn.dlrun.hierarchical_fps_post_processorpp import \
+    HierarchicalFPSPostProcessorPP
 
 
 # ---   CLASS   --- #
@@ -41,6 +43,10 @@ class HierarchicalPostProcessor:
         pre_processor_type = self.hierarchical_preproc.pre_processor_type
         if pre_processor_type.lower() == 'hierarchical_fps':
             self.post_processor = HierarchicalFPSPostProcessor(
+                self.hierarchical_preproc.pre_processor
+            )
+        elif pre_processor_type.lower() == 'hierarchical_fpspp':
+            self.post_processor = HierarchicalFPSPostProcessorPP(
                 self.hierarchical_preproc.pre_processor
             )
         else:  # Unexpected pre-processor

@@ -69,7 +69,7 @@ class KPConvLayerReport(Report):
         # Check
         IOUtils.validate_path_to_directory(
             path,
-            'Cannot find the directory to write the features processing '
+            'Cannot find the directory to write the KPConv '
             'layer representation'
         )
         # Output kernel's structure

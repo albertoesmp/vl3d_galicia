@@ -28,13 +28,15 @@ class ClusteringPostProcessor:
     # ---  POST-PROCESSING CALL  --- #
     # ------------------------------ #
     @abstractmethod
-    def __call__(self, clusterer, pcloud):
+    def __call__(self, clusterer, pcloud, out_prefix=None):
         """
         Abstract method that must be overridden by any concrete (instantiable)
         component of a clustering post-processing pipeline.
 
         :param clusterer: The clusterer that called the post-processor.
         :param pcloud: The point cloud that must be post-processed.
+        :param out_prefix: The output prefix in case path expansion must be
+            applied.
         :return: The post-processed point cloud.
         :rtype: :class:`.PointCloud`
         """
@@ -62,6 +64,10 @@ class ClusteringPostProcessor:
             from src.clustering.postproc.cluster_enveloper \
                 import ClusterEnveloper
             return ClusterEnveloper(**processor_spec)
+        if processor_low == 'clustercorrector':
+            from src.clustering.postproc.cluster_corrector \
+                import ClusterCorrector
+            return ClusterCorrector(**processor_spec)
         # Exception for unexpected post-processors
         raise ClusteringException(
             f'Unexpected post-processor: "{processor}"'

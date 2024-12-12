@@ -11,7 +11,7 @@ class StridedKPConvLayer(KPConvLayer):
 
     Strided version of the :class:`.KPConvLayer` layer. Instead of transforming
     :math:`R` input points with :math:`D_{\mathrm{in}}` features into :math:`R`
-    output points with :math:`D_{\mathrm{out}}`, it transforms
+    output points with :math:`D_{\mathrm{out}}` features, it transforms
     :math:`R_1` input points with :math:`D_{\mathrm{in}}` feautres into
     :math:`R_2` output points with :math:`D_{\mathrm{out}}` features, where
     typically :math:`R_1 > R_2`.

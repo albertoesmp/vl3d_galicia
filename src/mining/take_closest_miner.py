@@ -195,6 +195,14 @@ class TakeClosestMiner(Miner):
         if take_classes:
             pcloud = pcloud.set_classes_vector(y)
         if fnames is not None:
+            # Remove previous values for requested features, if any
+            to_remove_fnames = [
+                fname for fname in pcloud.get_features_names()
+                if fname in fnames
+            ]
+            if len(to_remove_fnames) > 0:
+                pcloud.remove_features(to_remove_fnames)
+            # Add new features
             frenames = fnames
             if self.frenames is not None:
                 frenames = self.frenames

@@ -43,6 +43,8 @@ class PointNet(Architecture, ABC):
         # Set feature names
         self.fnames = kwargs.get('fnames', None)
         # Update the preprocessing logic
+        pre_kwargs = kwargs['pre_processing']
+        pre_kwargs['num_classes'] = kwargs.get('num_classes', None)
         self.pre_runnable = PointNetPreProcessor(**kwargs['pre_processing'])
         # Update the postprocessing logic
         self.post_runnable = PointNetPostProcessor(self.pre_runnable)

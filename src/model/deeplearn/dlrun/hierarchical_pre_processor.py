@@ -3,6 +3,8 @@
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.dlrun.hierarchical_fps_pre_processor import \
     HierarchicalFPSPreProcessor
+from src.model.deeplearn.dlrun.hierarchical_fps_pre_processorpp import \
+    HierarchicalFPSPreProcessorPP
 
 
 # ---   CLASS   --- #
@@ -38,6 +40,8 @@ class HierarchicalPreProcessor:
         # Handle expected pre-processors
         if self.pre_processor_type.lower() == 'hierarchical_fps':
             self.pre_processor = HierarchicalFPSPreProcessor(**kwargs)
+        elif self.pre_processor_type.lower() == 'hierarchical_fpspp':
+                self.pre_processor = HierarchicalFPSPreProcessorPP(**kwargs)
         else:  # Unexpected pre-processor
             raise DeepLearningException(
                 'HierarchicalPreProcessor received an unexpected '

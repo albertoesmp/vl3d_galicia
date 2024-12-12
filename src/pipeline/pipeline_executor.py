@@ -10,6 +10,7 @@ from src.utils.ftransf.feature_transformer import FeatureTransformer, \
     FeatureTransformerException
 from src.utils.ftransf.explicit_selector import ExplicitSelector
 from src.utils.ctransf.class_transformer import ClassTransformer
+from src.utils.ptransf.point_transformer import PointTransformer
 from src.model.model_op import ModelOp
 from src.eval.evaluator import Evaluator
 from src.inout.writer import Writer
@@ -21,7 +22,9 @@ from src.inout.predictive_pipeline_writer import PredictivePipelineWriter
 from src.inout.predictions_writer import PredictionsWriter
 from src.inout.classified_pcloud_writer import ClassifiedPcloudWriter
 import src.main.main_logger as LOGGING
+from joblib.externals.loky import get_reusable_executor
 import time
+import gc
 
 
 # ---   EXCEPTIONS   --- #
@@ -211,6 +214,14 @@ class PipelineExecutor:
                     state.pcloud, out_prefix=self.out_prefix
                 )
             )
+        elif isinstance(comp, PointTransformer):  # Handle point transformer
+            # Comptue component logic and update pipeline state
+            state.update(
+                comp,
+                new_pcloud=comp.transform_pcloud(
+                    state.pcloud, out_prefix=self.out_prefix
+                )
+            )
         elif isinstance(comp, ModelOp):
             if comp.op == ModelOp.OP.TRAIN:
                 # Handle train
@@ -263,13 +274,25 @@ class PipelineExecutor:
             else:
                 # Make sure state has predictions before evaluating
                 if state.preds is None:
-                    start = time.perf_counter()
-                    state.preds = state.model.predict(state.pcloud)
-                    end = time.perf_counter()
-                    LOGGING.LOGGER.info(
-                        'Missing predictions computed before evaluation in '
-                        f'{end-start:.3f} seconds.'
-                    )
+                    if (  # Predictions from point cloud
+                        state.pcloud is not None and
+                        state.pcloud.has_predictions()
+                    ):
+                        start = time.perf_counter()
+                        state.preds = state.pcloud.get_predictions_vector()
+                        end = time.perf_counter()
+                        LOGGING.LOGGER.info(
+                            'Missing predictions taken from point cloud '
+                            f'before evaluation in {end-start:.3f} seconds.'
+                        )
+                    elif state.model is not None:  # Predictions from model
+                        start = time.perf_counter()
+                        state.preds = state.model.predict(state.pcloud)
+                        end = time.perf_counter()
+                        LOGGING.LOGGER.info(
+                            'Missing predictions computed before evaluation '
+                            f'in {end-start:.3f} seconds.'
+                        )
                 # Evaluate
                 comp(
                     state.preds,
@@ -297,6 +320,9 @@ class PipelineExecutor:
                 comp.write(state, prefix=self.out_prefix)
             else:
                 comp.write(state.pcloud, prefix=self.out_prefix)
+        # Release computational resources before calling next component
+        get_reusable_executor().shutdown(wait=True)  # Release loky workers
+        gc.collect()  # Call garbage collector
 
     def post_process(self, state, comp, comp_id, comps):
         """

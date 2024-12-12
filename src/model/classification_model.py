@@ -183,6 +183,16 @@ class ClassificationModel(Model, ABC):
         """
         See :meth:`model.Model.on_training_finished`.
         """
+        # Leave if classification evaluation will not generate an output
+        if (
+            self.training_evaluation_report_path is None and
+            self.training_class_evaluation_report_path is None and
+            self.training_confusion_matrix_report_path is None and
+            self.training_confusion_matrix_plot_path is None and
+            self.training_class_distribution_report_path is None and
+            self.training_class_distribution_plot_path is None
+        ):
+            return
         # Compute the estimations on the training dataset if not given
         if yhat is None:
             yhat = self._predict(X, F=None)

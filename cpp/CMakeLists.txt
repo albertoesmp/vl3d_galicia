@@ -26,9 +26,14 @@ include(cmake/CMakeLibraries.cmake)
 message("Libraries loaded!\n\n")
 
 # Build library
-message("Building VL3D++ ...")
+message("Building VL3D++ library ...")
 include(cmake/CMakeBuildLib.cmake)
-message("VL3D++ built!\n\n")
+message("VL3D++ library built!\n\n")
+
+# Build executables
+message("Building VL3D++ executables ...")
+include(cmake/CMakeExec.cmake)
+message("VL3D++ executables built!\n\n")
 
 # CMake finished
 message("${PROJECT_NAME} CMake finished!")

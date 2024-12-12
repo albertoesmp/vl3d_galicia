@@ -6,6 +6,8 @@ from src.pcloud.point_cloud_factory_facade import PointCloudFactoryFacade
 from src.inout.point_cloud_io import PointCloudIO
 from src.inout.io_utils import IOUtils
 from src.clustering.dbscan_clusterer import DBScanClusterer
+from src.clustering.bivariate_critical_clusterer import \
+    BivariateCriticalClusterer
 import os
 import time
 
@@ -31,7 +33,7 @@ class MainClustering:
         start = time.perf_counter()
         clusterer_class = MainClustering.extract_clusterer_class(spec)
         clusterer = clusterer_class(
-            **clusterer_class.extract_clusterer_args(spec)
+            **clusterer_class.extract_clustering_args(spec)
         )
         pcloud = PointCloudFactoryFacade.make_from_file(
             MainClustering.extract_input_path(spec)
@@ -106,6 +108,8 @@ class MainClustering:
         clusterer_low = clusterer.lower()
         if clusterer_low == 'dbscan':
             return DBScanClusterer
+        elif clusterer_low == 'bivariatecritical':
+            return BivariateCriticalClusterer
         elif clusterer_low == 'fpsdecorated':
             from src.clustering.fps_decorated_clusterer \
                 import FPSDecoratedClusterer

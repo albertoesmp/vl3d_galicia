@@ -5,6 +5,8 @@ from src.model.deeplearn.dlrun.grid_subsampling_pre_processor import \
     GridSubsamplingPreProcessor
 from src.model.deeplearn.dlrun.furthest_point_subsampling_pre_processor import\
     FurthestPointSubsamplingPreProcessor
+from src.model.deeplearn.dlrun.furthest_point_subsampling_pre_processorpp \
+    import FurthestPointSubsamplingPreProcessorPP
 
 
 # ---   CLASS   --- #
@@ -42,6 +44,10 @@ class PointNetPreProcessor:
             self.pre_processor = GridSubsamplingPreProcessor(**kwargs)
         elif self.pre_processor_type.lower() == 'furthest_point_subsampling':
             self.pre_processor = FurthestPointSubsamplingPreProcessor(**kwargs)
+        elif self.pre_processor_type.lower() == 'furthest_point_subsamplingpp':
+            self.pre_processor = FurthestPointSubsamplingPreProcessorPP(
+                **kwargs
+            )
         else:  # Unexpected pre-processor
             raise DeepLearningException(
                 'PointNetPreProcessor received an unexpected pre_processor_'

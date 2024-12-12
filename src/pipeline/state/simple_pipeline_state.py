@@ -8,6 +8,7 @@ from src.clustering.clusterer import Clusterer
 from src.utils.imput.imputer import Imputer
 from src.utils.ftransf.feature_transformer import FeatureTransformer
 from src.utils.ctransf.class_transformer import ClassTransformer
+from src.utils.ptransf.point_transformer import PointTransformer
 from src.model.model_op import ModelOp
 import src.main.main_logger as LOGGING
 
@@ -86,6 +87,8 @@ class SimplePipelineState(PipelineState):
             self.update_pcloud(comp, new_pcloud)  # Transform gen. feats.
         elif isinstance(comp, ClassTransformer):
             self.update_pcloud(comp, new_pcloud)  # Transform class (or pred.)
+        elif isinstance(comp, PointTransformer):
+            self.update_pcloud(comp, new_pcloud)  # Transform points
         elif isinstance(comp, ModelOp):
             self.update_model(comp, new_model)
             if comp.op == ModelOp.OP.TRAIN:

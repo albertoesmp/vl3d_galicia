@@ -16,9 +16,11 @@ def vl3dpp_load(logging=True, warning=True):
     """
     # Prepare paths
     sys_path = sys.path
-    cwd = os.getcwd()
-    dir_release = os.path.join(cwd, 'cpp/build')
-    dir_debug = os.path.join(cwd, 'cpp/build-debug')
+    vl3d_dir = os.environ.get('VL3D_DIR', None)  # Get from env. var. $VL3D_DIR
+    if vl3d_dir is None:  # If no env. var. $VL3D_DIR try with cwd
+        vl3d_dir = os.getcwd()
+    dir_release = os.path.join(vl3d_dir, 'cpp/build')
+    dir_debug = os.path.join(vl3d_dir, 'cpp/build-debug')
     # First, try for release
     release_loaded = dir_release in sys_path
     if release_loaded:  # Already loaded

@@ -348,6 +348,22 @@ class ModelOp:
             model_handling['skpconv_representation_dir'] = \
                 ModelOp.merge_path(out_prefix, skpconv_representation_dir)
         old_paths['skpconv_representation_dir'] = skpconv_representation_dir
+        # Handle light KPConv representation dir
+        lkpconv_representation_dir = model_handling.get(
+            'lkpconv_representation_dir', None
+        )
+        if ModelOp.path_needs_update(lkpconv_representation_dir):
+            model_handling['lkpconv_representation_dir'] = \
+                ModelOp.merge_path(out_prefix, lkpconv_representation_dir)
+        old_paths['lkpconv_representation_dir'] = lkpconv_representation_dir
+        # Handle strided light KPConv representation dir
+        slkpconv_representation_dir = model_handling.get(
+            'slkpconv_representation_dir', None
+        )
+        if ModelOp.path_needs_update(slkpconv_representation_dir):
+            model_handling['slkpconv_representation_dir'] = \
+                ModelOp.merge_path(out_prefix, slkpconv_representation_dir)
+        old_paths['slkpconv_representation_dir'] = slkpconv_representation_dir
         # Handle checkpoint path
         checkpoint_path = model_handling.get('checkpoint_path', None)
         if ModelOp.path_needs_update(checkpoint_path):
@@ -406,7 +422,7 @@ class ModelOp:
         # Handle training support points report path
         tsp_report = preproc.get('training_support_points_report_path', None)
         if ModelOp.path_needs_update(tsp_report):
-            preproc['training_support_points_report_path'] =\
+            preproc['training_support_points_report_path'] = \
                 ModelOp.merge_path(out_prefix, tsp_report)
         old_paths['training_support_points_report_path'] = tsp_report
         # Handle support points report path
@@ -415,6 +431,16 @@ class ModelOp:
             preproc['support_points_report_path'] = \
                 ModelOp.merge_path(out_prefix, sp_report)
         old_paths['support_points_report_path'] = sp_report
+        # Handle receptive field oversampling report path
+        rf_over = preproc.get('receptive_field_oversampling', None)
+        if rf_over is not None:
+            over_report = rf_over.get('report_dir', None)
+            if ModelOp.path_needs_update(over_report):
+                rf_over['report_dir'] = ModelOp.merge_path(
+                    out_prefix, over_report
+                )
+            preproc['receptive_field_oversampling'] = rf_over
+            old_paths['oversampling_report_path'] = over_report
         # Make the changes effective on the arguments
         if model_args is not None:
             self.model.model_args = model_args
@@ -547,6 +573,12 @@ class ModelOp:
         if model_handling.get('skpconv_representation_dir', None) is not None:
             model_handling['skpconv_representation_dir'] = \
                 old_paths['skpconv_representation_dir']
+        if model_handling.get('lkpconv_representation_dir', None) is not None:
+            model_handling['lkpconv_representation_dir'] = \
+                old_paths['lkpconv_representation_dir']
+        if model_handling.get('slkpconv_representation_dir', None) is not None:
+            model_handling['slkpconv_representation_dir'] = \
+                old_paths['slkpconv_representation_dir']
         # Restore checkpoint path
         if model_handling.get('checkpoint_path', None) is not None:
             model_handling['checkpoint_path'] = old_paths['checkpoint_path']
@@ -587,9 +619,15 @@ class ModelOp:
         ) is not None:
             preproc['training_support_points_report_path'] = \
                 old_paths['training_support_points_report_path']
+        # Restore support points report path
         if preproc.get('support_points_report_path', None) is not None:
             preproc['support_points_report_path'] = \
                 old_paths['support_points_report_path']
+        # Restore receptive field oversampling report path
+        rf_over = preproc.get('receptive_field_oversampling', None)
+        if rf_over is not None and rf_over.get('report_dir', None) is not None:
+            rf_over['report_dir'] = old_paths['oversampling_report_path']
+            preproc['receptive_field_oversampling'] = rf_over
         # Make the changes effective (on the arguments)
         if model_args is not None:
             self.model.model_args = model_args

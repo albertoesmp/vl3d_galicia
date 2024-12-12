@@ -113,8 +113,9 @@ class DLSequencer(tf.keras.utils.Sequence):
         batch_y = self.extract_reference_batch(start_idx, end_idx)
         # Apply data augmentation
         if self.augmentor is not None:
-            K = self.find_augmentation_elements()
-            if K is None or len(K) < 1:  # Only one element per input
+            K = self.find_augmentation_elements(batch_X)
+            if K is None or len(K) < 1 or isinstance(batch_X, np.ndarray):
+                # Only one element per input
                 batch_X = self.augmentor.augment(batch_X)
             else:  # Many elements per input
                 batch_X_K = [batch_X[k] for k in K]
@@ -182,22 +183,24 @@ class DLSequencer(tf.keras.utils.Sequence):
         """
         return np.array(self.y[start_idx:end_idx])
 
-    def find_augmentation_elements(self):
+    def find_augmentation_elements(self, batch_X):
         """
         Find the indices of the elements in the batch that must be considered
         for data augmentation. Note that these indices will depend on the
         underlying neural network architecture.
 
+        :param batch_X: The input batch that must be augmented.
+        :type batch_X: list or :class:`np.ndarray`
         :return: List of indices representing the elements that must be
             considered for data augmentation.
         :rtype: list of int
         """
         if isinstance(self.arch, ConvAutoencPwiseClassif):
             return [0] + [2+i for i in range(self.arch.max_depth-1)]
-        elif isinstance(self.arch, PointNet):
-            return [0]
-        elif isinstance(self.arch, RBFNet):
-            return [0]
+        elif isinstance(self.arch, (PointNet, RBFNet)):
+            if isinstance(batch_X, list):
+                return [0]
+            return None
         else:
             raise DeepLearningException(
                 'DLSequencer does not support data augmentation for the '
@@ -207,14 +210,15 @@ class DLSequencer(tf.keras.utils.Sequence):
     # ---  RANDOM INDEXING METHODS  --- #
     # --------------------------------- #
     def init_random_indices(self):
+        # Number of input point clouds
+        m = self.X[0].shape[0] if isinstance(self.X, list) else self.X.shape[0]
         # Determine int type
-        m = self.X[0].shape[0]  # Number of input point clouds
         int_type = np.uint64
         if m <= 256:
             int_type = np.uint8
         elif m <= 65536:
             int_type = np.uint16
-        elif m<= 4294967296:
+        elif m <= 4294967296:
             int_type = np.uint32
         # Initialize random indices
         self.Irandom = np.arange(  # Index for each input pcloud

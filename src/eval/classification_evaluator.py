@@ -63,11 +63,11 @@ class ClassificationEvaluator(Evaluator):
     def extract_eval_args(spec):
         """
         Extract the arguments to initialize/instantiate a
-        ClassificationEvaluator from a key-word specification.
+        :class:`.ClassificationEvaluator` from a key-word specification.
 
         :param spec: The key-word specification containing the arguments.
         :return: The arguments to initialize/instantiate a
-            ClassificationEvaluator.
+            :class:`.ClassificationEvaluator`.
         """
         # Initialize
         kwargs = {
@@ -82,6 +82,9 @@ class ClassificationEvaluator(Evaluator):
             ),
             'confusion_matrix_plot_path': spec.get(
                 'confusion_matrix_plot_path', None
+            ),
+            'confusion_matrix_normalization_strategy': spec.get(
+                'confusion_matrix_normalization_strategy', None
             ),
             'class_distribution_report_path': spec.get(
                 'class_distribution_report_path', None
@@ -129,6 +132,9 @@ class ClassificationEvaluator(Evaluator):
         )
         self.confusion_matrix_plot_path = kwargs.get(
             'confusion_matrix_plot_path', None
+        )
+        self.confusion_matrix_normalization_strategy = kwargs.get(
+            'confusion_matrix_normalization_strategy', None
         )
         self.class_distribution_report_path = kwargs.get(
             'class_distribution_report_path', None
@@ -213,9 +219,11 @@ class ClassificationEvaluator(Evaluator):
         # Return
         return ClassificationEvaluation(
             class_names=class_names,
+            ignore_classes=self.ignore_classes,
             yhat_count=yhat_count,
             y_count=y_count,
             conf_mat=conf_mat,
+            conf_mat_norm_type=self.confusion_matrix_normalization_strategy,
             metric_names=self.metrics,
             metric_scores=scores,
             class_metric_names=self.class_metrics,
@@ -277,7 +285,10 @@ class ClassificationEvaluator(Evaluator):
                 'class_distribution_plot_path',
                 self.class_distribution_plot_path
             )
-            if plot_path is not None:
+            if(
+                plot_path is not None or
+                class_distribution_plot_path is not None
+            ):
                 start = time.perf_counter()
                 ev.plot(
                     path=plot_path,

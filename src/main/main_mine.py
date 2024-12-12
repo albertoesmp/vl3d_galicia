@@ -5,12 +5,14 @@ from src.pcloud.point_cloud_factory_facade import PointCloudFactoryFacade
 from src.inout.point_cloud_io import PointCloudIO
 from src.inout.io_utils import IOUtils
 from src.mining.geom_feats_miner import GeomFeatsMiner
-from src.mining.covar_feats_miner import CovarFeatsMiner
 from src.mining.height_feats_miner import HeightFeatsMiner
+from src.mining.height_feats_minerpp import HeightFeatsMinerPP
 from src.mining.hsv_from_rgb_miner import HSVFromRGBMiner
 from src.mining.smooth_feats_miner import SmoothFeatsMiner
+from src.mining.smooth_feats_minerpp import SmoothFeatsMinerPP
 from src.mining.take_closest_miner import TakeClosestMiner
 from src.mining.recount_miner import RecountMiner
+from src.mining.recount_minerpp import RecountMinerPP
 import os
 import time
 
@@ -123,18 +125,22 @@ class MainMine:
         miner_low = miner.lower()
         if miner_low == 'geometricfeatures':
             return GeomFeatsMiner
-        elif miner_low == "covariancefeatures":
-            return CovarFeatsMiner
         elif miner_low == 'heightfeatures':
             return HeightFeatsMiner
+        elif miner_low in ['heightfeaturespp', 'heightfeatures++']:
+            return HeightFeatsMinerPP
         elif miner_low == 'hsvfromrgb':
             return HSVFromRGBMiner
         elif miner_low == 'smoothfeatures':
             return SmoothFeatsMiner
+        elif miner_low in ['smoothfeaturespp', 'smoothfeatures++']:
+            return SmoothFeatsMinerPP
         elif miner_low == 'takeclosestminer' or miner_low == 'takeclosest':
             return TakeClosestMiner
         elif miner_low == 'recount':
             return RecountMiner
+        elif miner_low in ['recountpp', 'recount++']:
+            return RecountMinerPP
         elif miner_low == 'fpsdecorated':
             from src.mining.fps_decorated_miner import FPSDecoratedMiner
             return FPSDecoratedMiner

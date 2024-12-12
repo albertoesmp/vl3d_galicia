@@ -2,9 +2,12 @@
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 import src.main.main_logger as LOGGING
+from src.main.main_config import VL3DCFG
 import numpy as np
 import joblib
+from joblib.externals.loky import get_reusable_executor
 import time
+import gc
 
 
 # ---   CLASS   --- #
@@ -104,7 +107,8 @@ class GridSubsamplingPostProcessor:
         """
         count = np.zeros(npoints, dtype=int)
         utype = v_propagated[0].dtype
-        u = np.zeros((npoints, nvars), dtype=utype) if nvars > 1 \
+        u = np.zeros((npoints, nvars), dtype=utype) \
+            if len(v_propagated[0].shape) > 1 \
             else np.zeros(npoints, dtype=utype)
         for i, v_prop_i in enumerate(v_propagated):
             u[I[i]] += v_prop_i
@@ -147,18 +151,59 @@ class GridSubsamplingPostProcessor:
         z_reduced = inputs['z']  # Softmax scores reduced to receptive field
         num_classes = z_reduced.shape[-1]
         # Transform each prediction by propagation
-        z_propagated = joblib.Parallel(n_jobs=nthreads)(
-            joblib.delayed(
-                rfi.propagate_values
+        max_classes_per_reduction = VL3DCFG['MODEL']['ReceptiveField'].get(
+            'max_classes_per_reduction',
+            16
+        )
+        num_spans = int(np.ceil(num_classes/max_classes_per_reduction))
+        reductions = np.zeros(
+            [X.shape[0], z_reduced.shape[-1]],
+            dtype=z_reduced.dtype
+        )
+        for class_span_idx in range(num_spans):
+            # Determine class span (interval [a, b))
+            class_start = class_span_idx*max_classes_per_reduction
+            class_end = (1+class_span_idx)*max_classes_per_reduction
+            class_end = min(num_classes, class_end)
+            num_classes_in_span = class_end-class_start
+            # Propagate reductions
+            z_propagated = joblib.Parallel(n_jobs=nthreads)(
+                joblib.delayed(
+                    rfi.propagate_values
             )(
-                z_reduced[i], reduce_strategy='mean'
+                    z_reduced[i, :, class_start:class_end],
+                    reduce_strategy='mean'
+                )
+                for i, rfi in enumerate(rf)
             )
-            for i, rfi in enumerate(rf)
-        )
-        # Reduce many point-wise predictions through given prediction reducer
-        if reducer is not None:
-            return reducer.reduce(X.shape[0], num_classes, z_propagated, I)
-        # Reduce many point-wise prediction through default function
-        return GridSubsamplingPostProcessor.pwise_reduce(
-            X.shape[0], num_classes, I, z_propagated
-        )
+            # Reduce many point-wise predictions through given reducer
+            if reducer is not None:
+                if z_reduced.shape[-1] == 1:
+                    reductions[:, class_start:class_end] = reducer.reduce(
+                        X.shape[0], num_classes_in_span, z_propagated, I
+                    ).reshape(-1, 1)
+                else:
+                    reduced = reducer.reduce(
+                        X.shape[0], num_classes_in_span, z_propagated, I
+                    )
+                    if len(reduced.shape) == 1:
+                        reduced = reduced.reshape(-1, 1)
+                    reductions[:, class_start:class_end] = reduced
+            # Reduce many point-wise predictions through default function
+            else:
+                if z_reduced.shape[-1] == 1:
+                    reductions[:, class_start:class_end] = \
+                        GridSubsamplingPostProcessor.pwise_reduce(
+                            X.shape[0], num_classes_in_span, I, z_propagated
+                        ).reshape(-1, 1)
+                else:
+                    reductions[:, class_start:class_end] = \
+                        GridSubsamplingPostProcessor.pwise_reduce(
+                            X.shape[0], num_classes_in_span, I, z_propagated
+                        )
+            # Release propagated values (no longer needed)
+            z_propagated = None
+            get_reusable_executor().shutdown(wait=True)  # Release loky workers
+            gc.collect()
+        # Return point-wise reduced probabilities
+        return reductions

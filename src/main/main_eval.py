@@ -1,4 +1,6 @@
 from src.eval.classification_evaluator import ClassificationEvaluator
+from src.eval.advanced_classification_evaluator import \
+    AdvancedClassificationEvaluator
 from src.eval.classification_uncertainty_evaluator import \
     ClassificationUncertaintyEvaluator
 from src.eval.raster_grid_evaluator import RasterGridEvaluator
@@ -46,6 +48,8 @@ class MainEval:
         eval_low = eval.lower()
         if eval_low == 'classificationevaluator':
             return ClassificationEvaluator
+        elif eval_low == 'advancedclassificationevaluator':
+            return AdvancedClassificationEvaluator
         elif eval_low == 'classificationuncertaintyevaluator':
             return ClassificationUncertaintyEvaluator
         elif eval_low == 'rastergridevaluator':

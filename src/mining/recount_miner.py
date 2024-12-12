@@ -269,11 +269,11 @@ class RecountMiner(Miner):
         # Handle NaNs
         if f.get('ignore_nan', False):
             for i, Ii in enumerate(I):
-                # Find NaNs in the i-th neighborhood of the chunk
+                # Find not NaNs in the i-th neighborhood of the chunk
                 Ff = F[Ii]
-                nan_indices = ~np.any(np.isnan(Ff), axis=1)
+                not_nan_indices = ~np.any(np.isnan(Ff), axis=1)
                 # Filter out NaNs from the i-th neighborhood
-                I[i] = np.array(Ii, dtype=int)[nan_indices].tolist()
+                I[i] = np.array(Ii, dtype=int)[not_nan_indices].tolist()
         # Compute the recounts for each neighborhood
         all_recounts = []
         for i, Ii in enumerate(I):
@@ -339,6 +339,9 @@ class RecountMiner(Miner):
         where :math:`d^*` is the distance between the :math:`(x, y)`
         coordinates of the center point and the furthest one.
         """
+        # Handle no points case
+        if len(F) == 0:
+            return 0
         # Compute radius from neighborhood, if necessary
         if r is None:
             r = np.sqrt(np.max(np.sum(np.power(X2D-x, 2), axis=1)))
@@ -371,13 +374,19 @@ class RecountMiner(Miner):
             return 0
         # Handle cylindrical neighborhoods
         if self.neighborhood['type'].lower() == 'cylinder':
+            # Compute radius from neighborhood, if necessary
+            if r is None:
+                r = np.sqrt(np.max(np.sum(
+                    np.power(X[:, :2]-x[:2], 2), axis=1)
+                ))
             z = X[:, 2]
             zmin, zmax = np.min(z), np.max(z)
             zdelta = zmax-zmin
-            bounded_cylinder_volume = (np.pi*r*r)
+            bounded_cylinder_volume = np.pi*r*r*zdelta
             if zdelta == 0:
                 return np.iinfo(int).max
             return len(F)/bounded_cylinder_volume
+        # Handle spherical neighborhoods
         # Compute radius from neighborhood, if necessary
         if r is None:
             r = np.sqrt(np.max(np.sum(np.power(X-x, 2), axis=1)))
