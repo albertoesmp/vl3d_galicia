@@ -2,30 +2,34 @@
 
 # ------------------------------------------------------------------#
 # AUTHOR: Alberto M. Esmoris Pena                                   #
-# BRIEF: Configure environment to run VL3D at CESGA FT-III          #
+# BRIEF: Configure environment to run VL3D++ at CESGA FT-III        #
 #                                                                   #
-# NOTE that the conda environment must created from a GPU node to   #
-# enable GPU acceleration for deep learning.                        #
 # ------------------------------------------------------------------#
 
 
 
 # ---  GLOBAL VARIABLES  --- #
 # -------------------------- #
-export VL3D_DIR='/home/usc/ci/aep/git/virtualearn3d/'
-export VL3D_SCRIPT='/home/usc/ci/aep/git/virtualearn3d/vl3d.py'
-export VL3D_ENV="${STORE2}/vl3d_conda_env"
+export VL3D_DIR='/mnt/netapp2/Store_uni/home/usc/ci/aep/vl3dpp'
+export VL3D_SCRIPT="${VL3D_DIR}"'/vl3d.py'
+export VL3D_CESGA_REQ="${VL3D_DIR}/cesga/requirements_cesga.txt"
+export VL3D_CPP="${VL3D_DIR}/cpp"
+export VL3D_CPP_LIB="${VL3D_CPP}/lib"
+export VL3D_CPP_LIB_INSTALL_SCRIPT="${VL3D_CPP_LIB}/lib_install_cesga.sh"
+export VL3D_CPP_BUILD_RELEASE_SCRIPT="${VL3D_CPP}/build_release.sh"
+export VL3D_PKG="${STORE}/vl3d_pkg"
 
 
 
 # ---  CONFIGURE ENVIRONMENT  --- #
 # ------------------------------- #
 # Load modules
-module load cesga/system miniconda3/22.11.1-1
-# Activate conda environment
-conda activate "${VL3D_ENV}"
-# Link ptxas
-export XLA_FLAGS=--xla_gpu_cuda_data_dir=${CONDA_PREFIX}
+module load cesga/2022 python/3.10.8 cuda/12.2.0
+# Configure PYTHONPATH prioritizing custom packages
+export PYTHONPATH=${VL3D_PKG}:${PYTHONPATH}
+# Link ptxas (cuda toolkit nvvm libdevice)
+export XLA_FLAGS=--xla_gpu_cuda_data_dir=/opt/cesga/2022/software/Core/cuda/12.2.0
+
 
 
 # ---  UTIL FUNCTIONS  --- #
