@@ -10,6 +10,8 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 
 # Common compilation flags
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 if(WIN32 OR MSVC)  # Windows flags
     set(CMAKE_CXX_FLAGS_RELEASE "/MD /O2 /Ob2 /DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "")
@@ -17,7 +19,17 @@ if(WIN32 OR MSVC)  # Windows flags
 else()  # Linux flags
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -Wall")
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -Wall")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -DNDEBUG -Wall -g")
     set(CMAKE_CXX_FLAGS "-pthread -Wno-deprecated")
+endif()
+
+# Enable ASan (Address Sanitizer), if requested
+if(${ASAN})
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+    message("Enabled Address Sanitizer (ASan)")
+else()
+    message("Disabled Address Sanitizer (ASan)")
 endif()
 
 # Add debug build definition
