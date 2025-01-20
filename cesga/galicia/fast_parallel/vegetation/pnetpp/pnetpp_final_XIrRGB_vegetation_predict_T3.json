@@ -70,17 +70,17 @@
 		"class_names": ["vegetation", "other", "ignore"],
 		"ignore_classes": ["ignore"],
 		"include_probabilities": true,
-		"include_weighted_entropy": true,
-		"include_clusters": true,
+		"include_weighted_entropy": false,
+		"include_clusters": false,
 		"weight_by_predictions": false,
-		"num_clusters": 10,
-		"clustering_max_iters": 128,
-		"clustering_batch_size": 1000000,
+		"num_clusters": 0,
+		"clustering_max_iters": 0,
+		"clustering_batch_size": 0,
 		"clustering_entropy_weights": false,
-		"clustering_reduce_function": "mean",
-		"gaussian_kernel_points": 256,
+		"clustering_reduce_function": null,
+		"gaussian_kernel_points": 0,
 		"report_path": "*uncertainty/uncertainty.las",
-		"plot_path": "*uncertainty/"
+		"plot_path": null
 	}
   ]
 }

@@ -72,9 +72,9 @@
 		"clustering_batch_size": 0,
 		"clustering_entropy_weights": false,
 		"clustering_reduce_function": null,
-		"gaussian_kernel_points": 256,
+		"gaussian_kernel_points": 0,
 		"report_path": "*uncertainty/uncertainty.las",
-		"plot_path": "*uncertainty/"
+		"plot_path": null
 	}
   ]
 }
