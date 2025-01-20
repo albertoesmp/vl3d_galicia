@@ -38,8 +38,8 @@ PATHS = {  # Paths relative to the root directory
     'kpconv_plots': 'training_eval/kpconv_layers/',
     'skpconv_plots': 'training_eval/skpconv_layers/'
 }
-#model_folder_suffix='_building'
 model_folder_suffix='_buildveg'
+#model_folder_suffix=''
 
 
 # ---  METHODS  --- #
@@ -92,11 +92,14 @@ def analyze_experiment(training_json_path, experiment_dir):
     # Read training json
     training_json = ''
     """regexp = re.compile(  # General case
-        f'/(kpc|pnetpp|pnet)(_final_[A-Za-z]*{model_folder_suffix})/'
+        f'/(kpc|pnetpp|pnet|sflnet)(_final_[A-Za-z]*{model_folder_suffix})/'
     )"""
     regexp = re.compile(  # For alternative PNET only
-        f'/(kpc|pnetpp|pnet)(_final_[A-Za-z]*{model_folder_suffix})_alt/'
+        f'/(kpc|pnetpp|pnet|sflnet)(_final_[A-Za-z]*{model_folder_suffix})_alt/'
     )
+    """regexp = re.compile(  # For alternative SFLNet try1 only
+        f'/(kpc|pnetpp|pnet|sflnet)(_try1_[A-Za-z]*{model_folder_suffix})/'
+    )"""
     model_name = None
     with open(training_json_path, 'r') as infile:
         line = infile.readline()
@@ -109,22 +112,22 @@ def analyze_experiment(training_json_path, experiment_dir):
         'model_name': model_name,
         'training_json': training_json,
         'model_summary': analyze_model_summary(training_dir),
-        'trf_distribution': analyze_rf_distribution(
-            training_dir, key='trf_distribution', paths=PATHS
-        ),
+        #'trf_distribution': analyze_rf_distribution(
+        #    training_dir, key='trf_distribution', paths=PATHS
+        #),
         'training_history': analyze_training_history(training_dir),
         # TODO Rethink : Model graph is commented due to missing lib at FT-III
         #'model_graph': load_model_graph(training_dir),
-        'class_distribution_plot': load_class_distribution_plot(training_dir),
-        'confusion_matrix_plot': load_confusion_matrix_plot(training_dir),
-        'trf_distribution_plot': load_trf_distribution_plot(training_dir),
+        #'class_distribution_plot': load_class_distribution_plot(training_dir),
+        #'confusion_matrix_plot': load_confusion_matrix_plot(training_dir),
+        #'trf_distribution_plot': load_trf_distribution_plot(training_dir),
         'training_categorical_accuracy_plot': load_training_categorical_accuracy_plot(training_dir),
         'training_loss_plot': load_training_loss_plot(training_dir),
         'training_lr_plot': load_training_lr_plot(training_dir),
         'training_summary_plot': load_training_summary_plot(training_dir),
-        'class_reduce_plot': load_class_reduce_plot(training_dir),
-        'kpconv_plots': load_kpconv_plots(training_dir),
-        'skpconv_plots': load_skpconv_plots(training_dir)
+        #'class_reduce_plot': load_class_reduce_plot(training_dir),
+        #'kpconv_plots': load_kpconv_plots(training_dir),
+        #'skpconv_plots': load_skpconv_plots(training_dir)
     }
 
 def analyze_model_summary(training_dir):
@@ -277,7 +280,11 @@ def print_sql_inserts(analysis):
     if training_json_low.find('convolutionalautoencoderpwiseclassifier'):
         family_name = 'Hierarchical autoencoder'
         if training_json_low.find('kpconv') >= 0:
-            subfamily_name = 'KPConv'
+            if training_json_low.find('hourglass') >= 0:
+                subfamily_name = 'SFLNet'
+            else:
+                subfamily_name = 'KPConv'
+
     print(
         'INSERT INTO model_types '
         '(specification, family_id, subfamily_id, notes) VALUES\n'
@@ -329,7 +336,7 @@ def print_sql_inserts(analysis):
         )
     print('\t) ON CONFLICT DO NOTHING;\n')
     # Insert training receptive field distribution
-    trfdistr = analysis['trf_distribution']
+    """trfdistr = analysis['trf_distribution']
     print(
         'INSERT INTO training_receptive_field_distributions '
         '(model_id, class_id, pred_count, pred_rf_count, ref_count, ref_rf_count) VALUES'
@@ -349,14 +356,14 @@ def print_sql_inserts(analysis):
             print('\t),')
         else:
             print('\t)')
-    print('\tON CONFLICT DO NOTHING;\n')
+    print('\tON CONFLICT DO NOTHING;\n')"""
     # Insert figures
     # TODO Rethink : Model graph is commented due to missing lib at FT-III
     #print_sql_insert_figure(
     #    analysis['model_graph'],
     #    'Model graph'
     #)
-    print_sql_insert_figure(
+    """print_sql_insert_figure(
         analysis['class_distribution_plot'],
         'Class distribution'
     )
@@ -367,7 +374,7 @@ def print_sql_inserts(analysis):
     print_sql_insert_figure(
         analysis['trf_distribution_plot'],
         'Training receptive fields distribution'
-    )
+    )"""
     print_sql_insert_figure(
         analysis['training_categorical_accuracy_plot'],
         'Categorical accuracy history'
@@ -384,12 +391,12 @@ def print_sql_inserts(analysis):
         analysis['training_summary_plot'],
         'Training history summary'
     )
-    print_sql_insert_figure(
+    """print_sql_insert_figure(
         analysis['class_reduce_plot'],
         'Class reduction distribution'
-    )
+    )"""
     # KPConv plots
-    kpconv_init, kpconv_end = analysis['kpconv_plots']
+    """kpconv_init, kpconv_end = analysis['kpconv_plots']
     if kpconv_init is not None:
         for kpconv_init in kpconv_init:
             print_sql_insert_figure(
@@ -464,6 +471,7 @@ def print_sql_inserts(analysis):
                 skpconv_end['plot_Whist_diff'],
                 f"{skpconv_end['plot_prefix']} diff hist"
             )
+    """
 
 
 def print_sql_insert_figure(figdict, plot_name):

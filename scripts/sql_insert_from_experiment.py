@@ -79,15 +79,15 @@ def analyze_experiment(experiment_dir):
         'class_eval': analyze_class_eval(experiment_dir),
         'global_eval': analyze_global_eval(experiment_dir),
         'confusion_matrix': analyze_confusion_matrix(experiment_dir),
-        'rf_distribution': analyze_rf_distribution(experiment_dir),
+        #'rf_distribution': analyze_rf_distribution(experiment_dir),
         'uncertainty': analyze_uncertainties(experiment_dir),
         'class_distribution_plot': load_class_distribution_plot(experiment_dir),
         'confusion_matrix_plot': load_confusion_matrix_plot(experiment_dir),
         'pwise_entropy_plot': load_pwise_entropy_plot(experiment_dir),
         'class_ambiguity_plot': load_class_ambiguity_plot(experiment_dir),
-        'weighted_entropy_plot': load_weighted_entropy_plot(experiment_dir),
-        'cwise_entropy_plot': load_cwise_entropy_plot(experiment_dir),
-        'rf_distribution_plot': load_rf_distribution_plot(experiment_dir),
+        #'weighted_entropy_plot': load_weighted_entropy_plot(experiment_dir),
+        #'cwise_entropy_plot': load_cwise_entropy_plot(experiment_dir),
+        #'rf_distribution_plot': load_rf_distribution_plot(experiment_dir),
         'class_reduce_plot': load_class_reduction_plot(experiment_dir)
     }
 
@@ -195,20 +195,26 @@ def analyze_uncertainties(experiment_dir):
             printerr('Ignore class will be ignored because it is not present.')
     # Extract entropies
     pwe = las['PointWiseEntropy']
-    we = las['WeightedEntropy']
-    cwe = las['ClusterWiseEntropy']
+    #we = las['WeightedEntropy']  # Not available for SFLNET
+    we = np.zeros_like(pwe)  # Zero when not available
+    #cwe = las['ClusterWiseEntropy']  # Not available for SFLNET
+    cwe = np.zeros_like(pwe)  # Zero when not available
     ca = las['ClassAmbiguity']
     # Entropy of point i given it is labeled as class x
     y = las.classification
     pwe_by_class = make_class_wise_uncertainty(pwe, y, classes)
-    we_by_class = make_class_wise_uncertainty(we, y, classes)
-    cwe_by_class = make_class_wise_uncertainty(cwe, y, classes)
+    #we_by_class = make_class_wise_uncertainty(we, y, classes)  # Not available for SFLNET
+    we_by_class = np.zeros_like(pwe_by_class)  # Zero when not available
+    #cwe_by_class = make_class_wise_uncertainty(cwe, y, classes)  # Not available for SFLNET
+    cwe_by_class = np.zeros_like(pwe_by_class)  # Zero when not available
     ca_by_class = make_class_wise_uncertainty(ca, y, classes)
     # Entropy of point i given it is predicted as x
     yhat = las['Prediction']
     pwe_by_pred = make_class_wise_uncertainty(pwe, yhat, classes)
-    we_by_pred = make_class_wise_uncertainty(we, yhat, classes)
-    cwe_by_pred = make_class_wise_uncertainty(cwe, yhat, classes)
+    #we_by_pred = make_class_wise_uncertainty(we, yhat, classes)  # Not available for SFLNET
+    we_by_pred = np.zeros_like(pwe_by_pred)  # Zero when not available
+    #cwe_by_pred = make_class_wise_uncertainty(cwe, yhat, classes)  # Not available for SFLNET
+    cwe_by_pred = np.zeros_like(pwe_by_pred)  # Zero when not available
     ca_by_pred = make_class_wise_uncertainty(ca, yhat, classes)
     # Extract likelihoods
     lkhd = [make_uncertainty_dict(las[classi]) for classi in classes]
@@ -430,7 +436,7 @@ def print_sql_inserts(analysis, dataset_name):
             print('\t)')
     print('\tON CONFLICT DO NOTHING;\n')
     # Insert receptive field distribution
-    rfdistr = analysis['rf_distribution']
+    """rfdistr = analysis['rf_distribution']
     print(
         'INSERT INTO receptive_field_distributions '
         '(resultset_id, class_id, pred_count, pred_rf_count) VALUES'
@@ -448,7 +454,7 @@ def print_sql_inserts(analysis, dataset_name):
             print('\t),')
         else:
             print('\t)')
-    print('\tON CONFLICT DO NOTHING;\n')
+    print('\tON CONFLICT DO NOTHING;\n')"""
     # Insert confusion matrix
     cmat = analysis['confusion_matrix']
     print(
@@ -638,18 +644,18 @@ def print_sql_inserts(analysis, dataset_name):
         analysis['class_ambiguity_plot'],
         'Class ambiguity'
     )
-    print_sql_insert_figure(
+    """print_sql_insert_figure(  # Not available for SFLNET
         analysis['weighted_entropy_plot'],
         'Weighted entropy'
-    )
-    print_sql_insert_figure(
+    )"""
+    """print_sql_insert_figure(  # Not available for SFLNET
         analysis['cwise_entropy_plot'],
         'Cluster-wise entropy'
-    )
-    print_sql_insert_figure(
+    )"""
+    """print_sql_insert_figure(
         analysis['rf_distribution_plot'],
         'Validation receptive fields distribution'
-    )
+    )"""
     print_sql_insert_figure(
         analysis['class_reduce_plot'],
         'Class reduction distribution'

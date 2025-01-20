@@ -1,0 +1,211 @@
+{
+  "in_pcloud": [
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_260_minmaxnorm.laz"
+  ],
+  "out_pcloud": [
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_buildveg/T5/*"
+  ],
+  "sequential_pipeline": [
+	{
+        "class_transformer": "ClassReducer",
+        "on_predictions": false,
+        "input_class_names": [
+			"miss0", "noclass", "ground", "lowveg", "midveg",
+			"highveg", "building", "noise", "miss8", "water",
+			"miss10", "miss11", "overlap", "miss13", "miss14",
+			"miss15", "miss16", "bridge", "miss18"
+		],
+        "output_class_names": ["building", "vegetation", "other", "ignore"],
+        "class_groups": [
+            ["building"],
+			["lowveg", "midveg", "highveg"],
+			["ground", "water", "bridge"],
+			[
+				"noclass", "noise", "overlap",
+				"miss0", "miss8", "miss10", "miss11", "miss13",
+				"miss14", "miss15", "miss16", "miss18"
+			]
+		],
+        "report_path": "*class_reduction.log",
+        "plot_path": "*class_reduction.svg"
+	},
+    {
+        "train": "ConvolutionalAutoencoderPwiseClassifier",
+        "pretrained_model": "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/pnetpp_final_XRGB_buildveg/T4/pipe/PNetPP_T4.model",
+        "training_type": "base",
+		"fnames": ["norm_red", "norm_green", "norm_blue"],
+        "random_seed": null,
+        "model_args": {
+			"fnames": ["norm_red", "norm_green", "norm_blue"],
+            "num_classes": 4,
+            "class_names": ["building", "vegetation", "other", "ignore"],
+            "pre_processing": {
+                "pre_processor": "hierarchical_fpspp",
+				"support_strategy_num_points": 20000,
+                "to_unit_sphere": false,
+            	"support_strategy": "fps",
+            	"support_chunk_size": 2000,
+            	"support_strategy_fast": true,
+                "center_on_pcloud": true,
+				"neighborhood": {
+                    "type": "Rectangular3D",
+                    "radius": 50.0,
+                    "separation_factor": 0.8
+                },
+                "num_points_per_depth": [1400, 600, 250],				
+				"fast_flag_per_depth": [false, false, false],
+				"num_downsampling_neighbors": [1, 16, 8],
+				"num_pwise_neighbors": [24, 16, 8],
+				"num_upsampling_neighbors": [1, 16, 8],
+                "nthreads": -1,
+                "training_receptive_fields_distribution_report_path": null,
+				"_training_receptive_fields_distribution_report_path": null,
+                "training_receptive_fields_distribution_plot_path": null,
+				"training_receptive_fields_dir": null,
+                "receptive_fields_distribution_report_path": null,
+				"_receptive_fields_distribution_report_path": null,
+                "receptive_fields_distribution_plot_path": null,
+				"receptive_fields_dir": null,
+                "training_support_points_report_path": null,
+                "support_points_report_path": null
+            },
+			"feature_extraction": {
+				"type": "PointNet",
+				"operations_per_depth": [1, 1, 1],
+				"feature_space_dims": [128, 256, 512],
+				"bn": true,
+				"bn_momentum": 0.0,
+				"activate": true,
+				"H_activation": ["relu", "relu", "relu"],
+                "H_initializer": ["glorot_uniform", "glorot_uniform", "glorot_uniform"],
+                "H_regularizer": [null, null, null],
+                "H_constraint": [null, null, null],
+                "gamma_activation": ["relu", "relu", "relu"],
+                "gamma_kernel_initializer": ["glorot_uniform", "glorot_uniform", "glorot_uniform"],
+                "gamma_kernel_regularizer": [null, null, null],
+                "gamma_kernel_constraint": [null, null, null],
+                "gamma_bias_enabled": [true, true, true],
+                "gamma_bias_initializer": ["zeros", "zeros", "zeros"],
+                "gamma_bias_regularizer": [null, null, null],
+                "gamma_bias_constraint": [null, null, null]
+			},
+			"_structure_alignment": {
+				"tnet_pre_filters_spec": [64, 128, 256],
+				"tnet_post_filters_spec": [128, 64, 32],
+				"kernel_initializer": "glorot_normal"
+			},
+			"features_alignment": null,
+			"downsampling_filter": "gaussian",
+			"upsampling_filter": "nearest",
+			"upsampling_bn": true,
+			"upsampling_momentum": 0.0,
+			"conv1d_kernel_initializer": "glorot_normal",
+			"output_kernel_initializer": "glorot_normal",
+            "model_handling": {
+                "summary_report_path": "*/model_summary.log",
+                "training_history_dir": "*/training_eval/history",
+                "_features_structuring_representation_dir": null,
+				"kpconv_representation_dir": null,
+				"skpconv_representation_dir": null,
+                "class_weight": [1, 1, 1, 0],
+                "training_epochs": 500,
+                "batch_size": 8,
+				"training_sequencer": {
+	                "type": "DLSequencer",
+	                "random_shuffle_indices": true,
+	                "augmentor": {
+	                    "transformations": [
+	                            {
+	                                "type": "Rotation",
+	                                "axis": [0, 0, 1],
+	                                "angle_distribution": {
+	                                    "type": "uniform",
+	                                    "start": -3.141592,
+	                                    "end": 3.141592
+	                                }
+	                            },
+	                            {
+	                                "type": "Scale",
+	                                "scale_distribution": {
+	                                    "type": "uniform",
+	                                    "start": 0.99,
+	                                    "end": 1.01
+	                                }
+	                            },
+	                            {
+	                                "type": "Jitter",
+	                                "noise_distribution": {
+	                                    "type": "normal",
+	                                    "mean": 0,
+	                                    "stdev": 0.001
+	                                }
+	                            }
+	                    ]
+	                }
+	            },
+                "checkpoint_path": "*/checkpoint.model",
+                "checkpoint_monitor": "loss",
+                "learning_rate_on_plateau": {
+                    "monitor": "loss",
+                    "mode": "min",
+                    "factor": 0.1,
+                    "patience": 2000,
+                    "cooldown": 5,
+                    "min_delta": 0.01,
+                    "min_lr": 1e-6
+                }
+            },
+            "compilation_args": {
+                "optimizer": {
+                    "algorithm": "Adam",
+                    "learning_rate": {
+                        "schedule": "exponential_decay",
+                        "schedule_args": {
+                            "initial_learning_rate": 1e-3,
+                            "decay_steps": 10000,
+                            "decay_rate": 0.96,
+                            "staircase": false
+                        }
+                    }
+                },
+                "loss": {
+                    "function": "class_weighted_categorical_crossentropy"
+                },
+                "metrics": [
+                    "categorical_accuracy"
+                ]
+            },
+            "architecture_graph_path": "*/model_graph.png",
+            "architecture_graph_args": {
+                "show_shapes": true,
+                "show_dtype": true,
+                "show_layer_names": true,
+                "rankdir": "TB",
+                "expand_nested": true,
+                "dpi": 300,
+                "show_layer_activations": true
+            }
+        },
+        "autoval_metrics": null,
+        "training_evaluation_metrics": null,
+        "training_class_evaluation_metrics": null,
+        "training_evaluation_report_path": null,
+        "training_class_evaluation_report_path": null,
+        "training_confusion_matrix_report_path": null,
+        "training_confusion_matrix_plot_path": null,
+        "training_class_distribution_report_path": null,
+        "training_class_distribution_plot_path": null,
+        "training_classified_point_cloud_path": null,
+		"training_activations_path": null
+    },
+    {
+      "writer": "PredictivePipelineWriter",
+      "out_pipeline": "*pipe/PNetPP_T5.pipe",
+      "include_writer": false,
+      "include_imputer": false,
+      "include_feature_transformer": false,
+      "include_miner": false,
+      "include_class_transformer": false
+    }
+  ]
+}
