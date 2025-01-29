@@ -1,4 +1,9 @@
+#ifndef _RECEPTIVE_FIELD_MODULE_
+#define _RECEPTIVE_FIELD_MODULE_
+
 /**
+ * @author Alberto M. Esmoris Pena
+ *
  * Provides functions wrapping VL3DPP to be easily called from the VL3D
  * python software.
  * More concretely, the functions here wrap receptive field components.
@@ -6,6 +11,7 @@
 
 // ***   INCLUDES   *** //
 // ******************** //
+#include <module/ReceptiveFieldModuleCommon.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
@@ -19,10 +25,14 @@
 #include <rfield/ReceptiveFieldCommon.hpp>
 #include <rfield/DLFPSPreProcessor.hpp>
 #include <rfield/DLHierarchicalFPSPreProcessor.hpp>
+#include <rfield/DLHierarchicalSGPreProcessor.hpp>
 #include <alg/Oversampler.hpp>
 #include <rfield/DLPreProcessorOutput.hpp>
 #include <rfield/DLFPSPostProcessor.hpp>
+#include <rfield/DLSGPostProcessor.hpp>
+#include <adt/grid/HierarchicalSparseGrid.hpp>
 #include <util/VL3DPPMacros.hpp>
+#include <util/MultithreadingUtils.hpp>
 
 #include <thread>
 
@@ -117,6 +127,82 @@ py::array rf_reduce_label_mode(
     return carma::mat_to_arr(out, false);
 }
 
+template <
+    typename XDecimalType,
+    typename LabelType,
+    typename IndexType
+>
+py::list rf_sparse_reduce_label_mode(
+    py::list const &X,
+    py::array const &y,
+    py::array const &size,
+    py::list const &A,
+    py::list const &n,
+    py::list const &hk,
+    py::list const &hv,
+    int const nthreads
+){
+    // Extract arguments
+    size_t const numReceptiveFields = py::len(X);
+    arma::Col<LabelType> const &_y = carma::arr_to_col_view<LabelType>(y);
+    arma::Col<XDecimalType> const &_size = carma::arr_to_col_view<XDecimalType>(
+        size
+    );
+    std::vector<arma::Mat<XDecimalType>> _X;
+    std::vector<arma::Row<XDecimalType>> _A;
+    std::vector<arma::Col<IndexType>> _n;
+    std::vector<arma::Col<IndexType>> _hk;
+    std::vector<arma::Col<IndexType>> _hv;
+    for(size_t i = 0 ; i < numReceptiveFields ; ++i){
+        _X.push_back(
+            carma::arr_to_mat_view<XDecimalType>(X[i].cast<py::array>())
+        );
+        _A.push_back(
+            carma::arr_to_row_view<XDecimalType>(A[i].cast<py::array>())
+        );
+        _n.push_back(
+            carma::arr_to_col_view<IndexType>(n[i].cast<py::array>())
+        );
+        _hk.push_back(
+            carma::arr_to_col_view<IndexType>(hk[i].cast<py::array>())
+        );
+        _hv.push_back(carma::arr_to_col_view<IndexType>(
+            hv[i].cast<py::array>())
+        );
+    }
+    // Prepare output
+    std::vector<arma::Col<LabelType>> out(numReceptiveFields);
+    // Prepare computation
+    // Handle as many threads as available, if requested
+    int _nthreads = nthreads;
+    if(nthreads==-1) _nthreads = std::thread::hardware_concurrency();
+    // Compute reduction in parallel
+    omp_set_num_threads(_nthreads);  // Use nthreads parallel threads at most
+    int const chunkSize = MultithreadingUtils::correctChunkSize(
+        numReceptiveFields, VL3DPP_OMP_CHUNK_SIZE_SMALL, _nthreads
+    );
+    #pragma omp parallel for default(none) shared( \
+        numReceptiveFields, _X, _y, _A, _size, _n, _hk, _hv, chunkSize, out \
+    ) schedule(VL3DPP_OMP_SCHEDULE, chunkSize)
+    for(size_t i = 0 ; i < numReceptiveFields ; ++i){
+        arma::Mat<XDecimalType> const &Xi = _X[i];
+        XDecimalType const sizei = _size[i];
+        arma::Row<XDecimalType> const &Ai = _A[i];
+        arma::Col<IndexType> const &ni = _n[i];
+        arma::Col<IndexType> const &hki = _hk[i];
+        arma::Col<IndexType> const &hvi = _hv[i];
+        SparseGrid sg(sizei, Ai, ni, hki, hvi);
+        out[i] = sg.template encodeVector<LabelType>(
+            Xi, _y, "mode"
+        );
+    }
+    // Transform output to python list
+    py::list pyout;
+    for(arma::Col<LabelType> const & outi : out) pyout.append(outi);
+    // Return encoded labels
+    return pyout;
+}
+
 
 template <
     typename FDecimalType,
@@ -191,36 +277,10 @@ py::list rf_dl_fps_preproc(
     arma::Mat<FDecimalType> _Fin = carma::arr_to_mat_view<FDecimalType>(Fin);
     arma::Col<LabelType> _yin = carma::arr_to_col_view<LabelType>(yin);
     // Instantiate support neighborhoods
-    std::string const nbhType = supportArgs[0].cast<std::string>();
-    InternalIndexType const nbhK = supportArgs[1].cast<InternalIndexType>();
-    arma::Col<InputXDecimalType> const nbhRadii = carma::arr_to_col_view<
-        InputXDecimalType
-    >(supportArgs[2].cast<py::array>());
-    InputXDecimalType const nbhSeparationFactor = supportArgs[3].cast<
-        InputXDecimalType
-    >();
-    std::string const strategy = supportArgs[4].cast<std::string>();
-    InternalIndexType const numPoints = supportArgs[5].cast<InternalIndexType>();
-    short const supportFast = supportArgs[6].cast<short>();
-    arma::Col<InternalIndexType> const trainingClassDistribution =
-        carma::arr_to_col_view<InternalIndexType>(
-            supportArgs[7].cast<py::array>()
-        );
-    bool const centerOnPcloud = supportArgs[8].cast<bool>();
-    bool const extraNodes = supportArgs[9].cast<bool>();
-    SupportNeighborhoods<InputXDecimalType, LabelType, InternalIndexType> sn(
-        nbhType,
-        nbhK,
-        nbhRadii,
-        nbhSeparationFactor,
-        strategy,
-        numPoints,
-        supportFast,
-        trainingClassDistribution,
-        centerOnPcloud,
-        extraNodes,
-        nthreads
-    );
+    SupportNeighborhoods<InputXDecimalType, LabelType, InternalIndexType> sn =
+        instantiateSupportNeighborhoods<
+            InputXDecimalType, LabelType, InternalIndexType
+        >(supportArgs, nthreads);
     // Instantiate oversampler
     Oversampler<OutputXDecimalType, OutputIndexType> *oversampler = nullptr;
     if(py::len(oversamplingArgs) > 0){
@@ -305,7 +365,7 @@ py::list rf_dl_hfps_preproc(
     py::list const fast,
     py::list const supportArgs,
     py::list const oversamplingArgs,
-    int nthreads
+    int const nthreads
 ){
     // Convert
     arma::Mat<InputXDecimalType> _Xin = \
@@ -317,36 +377,10 @@ py::list rf_dl_hfps_preproc(
         _fast.push_back(it->cast<short>());
     }
     // Instantiate support neighborhoods
-    std::string const nbhType = supportArgs[0].cast<std::string>();
-    InternalIndexType const nbhK = supportArgs[1].cast<InternalIndexType>();
-    arma::Col<InputXDecimalType> const nbhRadii = carma::arr_to_col_view<
-        InputXDecimalType
-    >(supportArgs[2].cast<py::array>());
-    InputXDecimalType const nbhSeparationFactor = supportArgs[3].cast<
-        InputXDecimalType
-    >();
-    std::string const strategy = supportArgs[4].cast<std::string>();
-    InternalIndexType const numPoints = supportArgs[5].cast<InternalIndexType>();
-    short const supportFast = supportArgs[6].cast<short>();
-    arma::Col<InternalIndexType> const trainingClassDistribution =
-        carma::arr_to_col_view<InternalIndexType>(
-            supportArgs[7].cast<py::array>()
-        );
-    bool const centerOnPcloud = supportArgs[8].cast<bool>();
-    bool const extraNodes = supportArgs[9].cast<bool>();
-    SupportNeighborhoods<InputXDecimalType, LabelType, InternalIndexType> sn(
-        nbhType,
-        nbhK,
-        nbhRadii,
-        nbhSeparationFactor,
-        strategy,
-        numPoints,
-        supportFast,
-        trainingClassDistribution,
-        centerOnPcloud,
-        extraNodes,
-        nthreads
-    );
+    SupportNeighborhoods<InputXDecimalType, LabelType, InternalIndexType> sn =
+        instantiateSupportNeighborhoods<
+            InputXDecimalType, LabelType, InternalIndexType
+        >(supportArgs, nthreads);
     // Instantiate oversampler
     Oversampler<OutputXDecimalType, OutputIndexType> *oversampler = nullptr;
     if(py::len(oversamplingArgs) > 0){
@@ -453,4 +487,233 @@ py::list rf_dl_hfps_preproc(
     return outpy;
 }
 
+template <
+    typename XDecimalType,
+    typename IndexType
+>
+py::list rf_dl_sg_fit(
+    py::array const &X,
+    XDecimalType const size,
+    py::array const &w,
+    py::array const &wD,
+    py::array const &wU,
+    py::array const &sD,
+    py::array const &sU,
+    int const nthreads
+){
+    // Convert
+    arma::Col<IndexType> const _w = carma::arr_to_col_view<IndexType>(w);
+    arma::Col<IndexType> const _wD = carma::arr_to_col_view<IndexType>(wD);
+    arma::Col<IndexType> const _wU = carma::arr_to_col_view<IndexType>(wU);
+    arma::Col<IndexType> const _sD = carma::arr_to_col_view<IndexType>(sD);
+    arma::Col<IndexType> const _sU = carma::arr_to_col_view<IndexType>(sU);
+    // Instantiate HierarchicalSparseGrid
+    adt::grid::HierarchicalSparseGrid<XDecimalType, IndexType> hsg(
+        size, _w, _wD, _wU, _sD, _sU, nthreads
+    );
+    // Fit HierarchicalSparseGrid
+    arma::Mat<XDecimalType> const _X = carma::arr_to_mat_view<XDecimalType>(X);
+    arma::uword const nx = _X.n_cols;
+    hsg.fit(_X);
+    // Build output
+    py::list outpy;
+    py::list h;
+    py::list hU;
+    py::list hD;
+    py::array A = carma::row_to_arr(hsg.getMinVertex());
+    size_t const maxDepth = hsg.getMaxDepth();
+    arma::Mat<IndexType> n(nx, maxDepth);
+    for(size_t t = 0 ; t < maxDepth ; ++t){
+        py::dict ht = py::cast(hsg.getMap(t));
+        h.append(ht);
+        n.col(t) = hsg.getNumAxisPartitions(t);
+        if(t < (maxDepth-1)){
+            hU.append(carma::col_to_arr<IndexType>(hsg.getDownsamplingMap(t)));
+            hD.append(carma::col_to_arr<IndexType>(hsg.getUpsamplingMap(t)));
+        }
+    }
+    outpy.append(h);
+    outpy.append(hU);
+    outpy.append(hD);
+    outpy.append(n);
+    outpy.append(A);
+    return outpy;
 }
+
+template<
+    typename XDecimalType,
+    typename FDecimalType,
+    typename IndexType,
+    typename LabelType
+>
+py::list rf_dl_hsg_preproc(
+    py::array const &Xin,
+    py::array const &Fin,
+    py::array const &yin,
+    LabelType const ny,
+    XDecimalType const size,
+    py::array const &w,
+    py::array const &wD,
+    py::array const &wU,
+    py::array const &sD,
+    py::array const &sU,
+    py::list const &supportArgs,
+    int const nthreads
+){
+    // Convert
+    arma::Mat<XDecimalType> const _Xin = carma::arr_to_mat_view<XDecimalType>(
+        Xin
+    );
+    arma::uword const nx = _Xin.n_cols;
+    arma::Mat<FDecimalType> const _Fin = carma::arr_to_mat_view<FDecimalType>(
+        Fin
+    );
+    arma::Col<LabelType> const _yin = carma::arr_to_col_view<LabelType>(yin);
+    // Instantiate support neighborhoods
+    SupportNeighborhoods<XDecimalType, LabelType, IndexType> sn =
+        instantiateSupportNeighborhoods<XDecimalType, LabelType, IndexType>(
+            supportArgs, nthreads
+        );
+    // Instantiate pre-processor
+    rfield::DLHierarchicalSGPreProcessor<
+        XDecimalType, FDecimalType, IndexType, LabelType
+    > dlHierarchicalSGPreProc(
+        sn,
+        ny,
+        size,
+        carma::arr_to_col_view<IndexType>(w),
+        carma::arr_to_col_view<IndexType>(wD),
+        carma::arr_to_col_view<IndexType>(wU),
+        carma::arr_to_col_view<IndexType>(sD),
+        carma::arr_to_col_view<IndexType>(sU),
+        nthreads
+    );
+    // Compute pre-processed receptive fields
+    DLSparsePreProcessorOutput<
+        XDecimalType,
+        FDecimalType,
+        LabelType,
+        IndexType
+    > outpp = dlHierarchicalSGPreProc(_Xin, _Fin, _yin);
+    // Wrap output in Python list
+    py::list outpy;
+    py::list Fout; // F
+    for(arma::Mat<FDecimalType> &Fouti : outpp.Fout){
+        if(Fouti.n_rows > 0 && Fouti.n_cols > 0){
+            Fout.append(carma::mat_to_arr<FDecimalType>(std::move(Fouti)));
+        }
+    }
+    outpy.append(std::move(Fout));
+    outpp.Fout = std::vector<arma::Mat<FDecimalType>>(0);
+    py::list yout; // y
+    for(arma::Col<LabelType> &youti : outpp.yout){
+        if(youti.n_rows > 0){
+            yout.append(carma::col_to_arr<LabelType>(std::move(youti)));
+        }
+    }
+    outpy.append(std::move(yout));
+    outpp.yout = std::vector<arma::Col<LabelType>>(0);
+    py::list hout; // h
+    py::list hDout; // hD
+    py::list hUout; // hU
+    py::list n; // n
+    py::list A; // A
+    arma::uword maxDepth = outpp.hsg[0].getMaxDepth();
+    for(HierarchicalSparseGrid<XDecimalType, IndexType> &hsgk : outpp.hsg){
+        py::list houtk; // hk (h for k-th receptive field)
+        py::list hDoutk; // hDk (hD for k-th receptive field)
+        py::list hUoutk; // hUk (hU for k-th receptive field)
+        arma::Mat<IndexType> nk( // nk (n for k-th receptive field)
+            nx, hsgk.getMaxDepth()
+        );
+        for(arma::uword t = 0 ; t < (maxDepth-1) ; ++t){
+            hDoutk.append(carma::col_to_arr<IndexType>(
+                hsgk.getDownsamplingMap(t)
+            ));
+            hUoutk.append(carma::col_to_arr<IndexType>(
+                hsgk.getUpsamplingMap(t)
+            ));
+        }
+        for(arma::uword t = 0 ; t < maxDepth ; ++t){
+            for(arma::uword j = 0 ; j < nx ; ++j){
+                nk.at(j, t) = hsgk.getNumAxisPartitions(t, j);
+            }
+            py::dict houtkt = py::cast( // hkt (ht for k-th receptive field)
+                hsgk.getMap(t)
+            );
+            houtk.append(houtkt);
+        }
+        // Append k-th receptive field
+        hout.append(houtk);
+        hDout.append(hDoutk);
+        hUout.append(hUoutk);
+        n.append(carma::mat_to_arr<IndexType>(nk));
+        A.append(carma::row_to_arr<XDecimalType>(hsgk.getMinVertex()));
+        // TODO Rethink : Release hsgk memory ?
+    }
+    outpy.append(hout);
+    outpy.append(hDout);
+    outpy.append(hUout);
+    outpy.append(n);
+    outpy.append(A);
+    // Return output as a Python list
+    return outpy;
+}
+
+template <
+    typename XDecimalType,
+    typename FDecimalType,
+    typename IndexType
+>
+py::array rf_dl_sg_postproc_mean(
+    std::string const &reductionType,
+    py::array const &X,
+    py::list const &zBatch,
+    XDecimalType const cellSize,
+    py::list const &A,
+    py::list const &n,
+    py::list const &h,
+    FDecimalType const minClipValue,
+    int const nthreads
+){
+    // Convert
+    size_t const bs = py::len(zBatch); // Batch size (number of rfields.)
+    vector<arma::Row<XDecimalType>> _A(bs);
+    vector<arma::Col<IndexType>> _n(bs);
+    vector<map<IndexType, IndexType>> _h(bs);
+    vector<arma::Mat<FDecimalType>> _zBatch(bs);
+    for(size_t k = 0 ; k < bs ; ++k){
+        _A[k] = carma::arr_to_row_view<XDecimalType>(A[k].cast<py::array>());
+        _n[k] = carma::arr_to_col_view<IndexType>(n[k].cast<py::array>());
+        _h[k] = h[k].cast<py::dict>().cast<map<IndexType, IndexType>>();
+        _zBatch[k] = carma::arr_to_mat_view<FDecimalType>(
+            zBatch[k].cast<py::array>()
+        );
+    }
+    arma::Mat<XDecimalType> const _X = carma::arr_to_mat_view<XDecimalType>(X);
+    // Instantiate post-processor
+    rfield::DLSGPostProcessor<
+        XDecimalType, FDecimalType, IndexType
+    > dlSGPostProc(
+        cellSize,
+        _A,
+        _n,
+        _h,
+        reductionType,
+        minClipValue,
+        nthreads
+    );
+    // Compute post-processed probabilities
+    arma::Mat<FDecimalType> out = dlSGPostProc(
+        _X,
+        _zBatch
+    );
+    // Return post-processed probabilities
+    return carma::mat_to_arr(out, false);
+}
+
+
+
+}
+
+#endif

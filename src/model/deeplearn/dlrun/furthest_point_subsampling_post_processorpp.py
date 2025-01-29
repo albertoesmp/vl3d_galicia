@@ -71,6 +71,8 @@ class FurthestPointSubsamplingPostProcessorPP(
             nthreads
         )
 
+    # ---   UTIL METHODS   --- #
+    # ------------------------ #
     @staticmethod
     def find_cpp_postproc_fun(Mdtype, Idtype, zdtype):
         """

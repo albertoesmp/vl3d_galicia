@@ -102,7 +102,9 @@ class ClassifiedPcloudReport(Report):
             success = None
         # Build output features : class-wise scores
         if self.zhat is not None:
-            if len(self.zhat.shape) == 1:  # Handle binary classif case
+            if (  # Handle binary classif case
+                len(self.zhat.shape) == 1 or self.zhat.shape[-1] == 1
+            ):
                 fnames = fnames + [
                     f'{self.class_names[0]}_to_{self.class_names[1]}'
                 ]

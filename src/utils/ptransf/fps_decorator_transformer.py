@@ -161,7 +161,7 @@ class FPSDecoratorTransformer:
             'release_encoding_neighborhoods', False
         )
         self.fast = kwargs.get('fast', False)
-        self.threads = kwargs.get('threads', -1)
+        self.threads = kwargs.get('threads', kwargs.get('nthreads', -1))
         self.representation_report_path = kwargs.get(
             'representation_report_path', None
         )

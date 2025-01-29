@@ -111,7 +111,9 @@ class SequentialPipeline(Pipeline):
                 pretrained = comp.get('pretrained_model', None)
                 if pretrained is not None:
                     model = MainTrain.extract_pretrained_model(
-                        comp, model_class
+                        comp,
+                        model_class,
+                        new_nn_path=comp.get('pretrained_nn_path', None)
                     )
                     model.overwrite_pretrained_model(comp)
                 else:

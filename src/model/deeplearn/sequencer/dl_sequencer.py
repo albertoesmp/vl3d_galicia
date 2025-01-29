@@ -1,18 +1,19 @@
 # ---   IMPORTS   --- #
 # ------------------- #
+from src.model.deeplearn.sequencer.dl_abstract_sequencer import \
+    DLAbstractSequencer
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.utils.ptransf.simple_data_augmentor import SimpleDataAugmentor
 from src.model.deeplearn.arch.point_net import PointNet
 from src.model.deeplearn.arch.rbfnet import RBFNet
 from src.model.deeplearn.arch.conv_autoenc_pwise_classif import \
     ConvAutoencPwiseClassif
-import tensorflow as tf
 import numpy as np
 
 
 # ---   CLASS   --- #
 # ----------------- #
-class DLSequencer(tf.keras.utils.Sequence):
+class DLSequencer(DLAbstractSequencer):
     """
     :author: Alberto M. Esmoris Pena
 
@@ -29,7 +30,9 @@ class DLSequencer(tf.keras.utils.Sequence):
         it also enables random shuffle of the indices to unbias the training
         process wrt the initial input order.
 
-    :ivar X: The input structure space.
+    See :class:`.DLAbstractSequencer`.
+
+    :ivar X: The input data.
     :ivar y: The input reference values.
     :ivar arch: The neural network architecture.
     :vartype arch: :class:`.Architecture`
@@ -50,45 +53,18 @@ class DLSequencer(tf.keras.utils.Sequence):
             sequencer.
         """
         # Call parent's init
-        super().__init__()
+        super().__init__(X, y, batch_size, **kwargs)
         # Assign values to member attributes
-        self.X = X
-        self.y = y
-        self.batch_size = batch_size
-        self.arch = kwargs.get('arch', None)
         augmentor_spec = kwargs.get('augmentor', None)
         self.augmentor = None
         if augmentor_spec is not None:
             self.augmentor = SimpleDataAugmentor(**augmentor_spec)
-        self.random_shuffle_indices = kwargs.get(
-            'random_shuffle_indices', False
-        )
-        # Cache attributes
-        self.Irandom = None
-        self.shuffled = False
 
     # ---   SEQUENCE METHODS   --- #
     # ---------------------------- #
-    def __len__(self):
+    def getitem_training(self, idx):
         """
-        Obtain the number of input batches.
-
-        :return: Number of input batches.
-        :rtype: int
-        """
-        if isinstance(self.X, list):
-            return int(np.ceil(len(self.X[0]) / self.batch_size))
-        else:
-            return int(np.ceil(len(self.X) / self.batch_size))
-
-    def __getitem__(self, idx):
-        """
-        Obtain the batch corresponding to the given index.
-
-        :param idx: The index identifying the batch that must be obtained.
-        :type idx: int
-        :return: The batch corresponding to the given index as a tuple (X, y).
-        :rtype: tuple
+        See :meth:`.DLAbstractSequencer.getitem_training`
         """
         # Apply random shuffle, if necessary
         if (
@@ -97,10 +73,7 @@ class DLSequencer(tf.keras.utils.Sequence):
             not self.shuffled
         ):
             if isinstance(self.X, list):
-                tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
-                for i in range(tensors_per_pcloud):
-                    self.X[i] = self.X[i][self.Irandom]
-                self.y = self.y[self.Irandom]
+                self.apply_random_indices()
             else:
                 self.X, self.y = self.X[self.Irandom], self.y[self.Irandom]
             self.shuffled = True
@@ -126,63 +99,35 @@ class DLSequencer(tf.keras.utils.Sequence):
         # Return batch
         return batch_X, batch_y
 
-    def on_epoch_end(self):
+    def getitem_predict(self, idx):
         """
-        Logic to handle the dataset between epochs. For example, it can be used
-        to random shuffle the indices of the input data, so they are given
-        in a different order at each epoch.
+        See :meth:`.DLAbstractSequencer.getitem_predict`.
+        """
+        # Obtain start and end points for the indexing interval
+        max_idx = len(self.X[0]) if isinstance(self.X, list) else len(self.X)
+        start_idx = idx * self.batch_size
+        end_idx = min(start_idx + self.batch_size, max_idx)
+        # Extract batch
+        batch_X = self.extract_input_batch(start_idx, end_idx)
+        # Return batch
+        return batch_X
 
-        :return: Nothing at all, but the internal state of the sequencer is
-            updated.
+
+    def on_epoch_end_training(self):
+        """
+        See :meth:`.DLAbstractSequencer.on_epoch_end_training`.
         """
         # Random index shuffling
         if self.random_shuffle_indices:
-            if isinstance(self.X, list):
-                tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
-                if self.Irandom is None:  # First random shuffle of indices
-                    self.init_random_indices()
-                else:  # After the first random shuffle of indices
-                    # Undo previous shuffle
-                    for i in range(tensors_per_pcloud):
-                        self.X[i][self.Irandom] = np.array(self.X[i])
-                    self.y[self.Irandom] = np.array(self.y)
-            else:
-                if self.Irandom is None:  # First random shuffle of indices
-                    self.init_random_indices()
-                else:  # After the first random shuffle of indices
-                    # Undo previous shuffle
-                    self.X[self.Irandom] = np.array(self.X)
-                    self.y[self.Irandom] = np.array(self.y)
+            if self.Irandom is None:  # First random shuffle of indices
+                self.init_random_indices()
+            else:  # After the first random shuffle of indices
+                self.apply_random_indices()
             np.random.shuffle(self.Irandom)  # Shuffle indices
             self.shuffled = False  # Flag to shuffle on first __getitem__ call
 
     # ---  BATCH EXTRACTION METHODS  --- #
     # ---------------------------------- #
-    def extract_input_batch(self, start_idx, end_idx):
-        """
-        Extract the input batch inside the given indexing interval.
-
-        :param start_idx: Start point of the indexing interval (inclusive).
-        :param end_idx: End point of the indexing interval (exclusive).
-        :return: The extracted input batch inside the indexing interval.
-        :rtype: list or :class:`np.ndarray`
-        """
-        if isinstance(self.X, list):
-            return [np.array(Xi[start_idx:end_idx]) for Xi in self.X]
-        else:
-            return np.array(self.X[start_idx:end_idx])
-
-    def extract_reference_batch(self, start_idx, end_idx):
-        """
-        Extract the reference batch inside the given indexing interval.
-
-        :param start_idx: Start point of the indexing interval (inclusive).
-        :param end_idx: End point of the indexing interval (exclusive).
-        :return: The extracted reference batch inside the indexing interval.
-        :rtype: :class:`np.ndarray`
-        """
-        return np.array(self.y[start_idx:end_idx])
-
     def find_augmentation_elements(self, batch_X):
         """
         Find the indices of the elements in the batch that must be considered
@@ -210,6 +155,9 @@ class DLSequencer(tf.keras.utils.Sequence):
     # ---  RANDOM INDEXING METHODS  --- #
     # --------------------------------- #
     def init_random_indices(self):
+        """
+        See :meth:`.DLAbstractSequencer.init_random_indices`.
+        """
         # Number of input point clouds
         m = self.X[0].shape[0] if isinstance(self.X, list) else self.X.shape[0]
         # Determine int type
@@ -224,3 +172,17 @@ class DLSequencer(tf.keras.utils.Sequence):
         self.Irandom = np.arange(  # Index for each input pcloud
             m, dtype=int_type
         )
+
+    def apply_random_indices(self):
+        """
+        See :meth:`.DLAbstractSequencer.apply_random_indices`.
+        """
+        if isinstance(self.X, list):
+            tensors_per_pcloud = len(self.X)  # Tensors per input pcloud
+            for i in range(tensors_per_pcloud):
+                self.X[i] = self.X[i][self.Irandom]
+            self.y = self.y[self.Irandom]
+        else:
+            # Undo previous shuffle
+            self.X[self.Irandom] = np.array(self.X)
+            self.y[self.Irandom] = np.array(self.y)

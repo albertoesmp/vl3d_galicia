@@ -26,6 +26,12 @@ with open(jsonf_path, 'r') as jsonf:  # READ Json file
     train['pretrained_model'] = oldmodel
     train['pretrained_nn_path'] = oldkeras
     train['model_args']['pre_processing']['support_strategy_fast'] = 4
+    train['model_args']['pre_processing']['receptive_field_oversampling'] = {
+        "min_points": 2,
+        "strategy": "nearest",
+        "k": 3,
+        "radius": 2.5
+    }
     train['model_args']['model_handling']['training_epochs'] = 0
     # Update predictive pipeline wirter
     newdir = outpipe.replace('pipe/', 'prep_pipe/')

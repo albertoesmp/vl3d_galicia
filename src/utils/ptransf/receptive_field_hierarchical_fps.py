@@ -101,7 +101,7 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
     # ---------------- #
     def __init__(self, **kwargs):
         r"""
-        Initialize/instantiate a hierarchical receptive field object.
+        Initialize/instantiate a hierarchical FPS receptive field object.
 
         :param kwargs: The key-word specification to instantiate the
             ReceptiveFieldHierarchicalFPS.
@@ -288,8 +288,8 @@ class ReceptiveFieldHierarchicalFPS(ReceptiveField):
         """
         return ReceptiveFieldFPS.do_reduce_values(self.NDs[0], X, v, reduce_f)
 
-    # ---  HIERARCHICAL RECEPTIVE FIELD METHODS  --- #
-    # ---------------------------------------------- #
+    # ---  HIERARCHICAL FPS RECEPTIVE FIELD METHODS  --- #
+    # -------------------------------------------------- #
     def get_downsampling_matrices(self):
         r"""
         Obtain the downsampling matrices

@@ -92,11 +92,14 @@ DLFPSPreProcessor<
     out.ND.push_back(std::vector<arma::Mat<OutputIndexType>>(bs));
     out.NU.push_back(std::vector<arma::Mat<OutputIndexType>>(bs));
     // Compute receptive fields
+    int const chunkSize = MultithreadingUtils::correctChunkSize(
+        bs, VL3DPP_OMP_CHUNK_SIZE_SMALL, nthreads
+    );
     #pragma omp parallel for default(none) shared( \
             bs, nx, ny, out, supportNeighborhoods, oversampler, R, KD, \
-            Xin, Fin, yin, Xsup, kdt, fps, clean \
+            Xin, Fin, yin, Xsup, kdt, fps, clean, chunkSize \
         ) \
-        schedule(VL3DPP_OMP_SCHEDULE_CHUNKED_SMALL)
+        schedule(VL3DPP_OMP_SCHEDULE, chunkSize)
     for(arma::uword i = 0 ; i  < bs ; ++i){ // Iterate over receptive fields
         fit(i, nx, Xin, Xsup, Fin, yin, kdt, fps, clean, out);
     }

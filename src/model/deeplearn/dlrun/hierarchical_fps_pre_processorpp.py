@@ -62,27 +62,18 @@ class HierarchicalFPSPreProcessorPP(HierarchicalFPSPreProcessor):
         # Prepare C++ call
         F = np.array([]) if F is None else F
         y = np.array([]) if y is None else y
-        training_class_distribution = self.training_class_distribution
-        if training_class_distribution is None:
-            training_class_distribution = np.array([], dtype=np.int32)
-        else:
-            training_class_distribution = np.array(
+        training_class_distribution = FurthestPointSubsamplingPreProcessorPP\
+            .prepare_training_class_distribution(
                 self.training_class_distribution
             )
-        if (
-            self.neighborhood_spec['type'].lower() == 'rectangular3d' or
-            self.neighborhood_spec['type'].lower() == 'rectangular2d'
-        ):
-            radii = np.array([
-                self.neighborhood_spec['radius'] for i in range(3)
-            ])
-        elif self.neighborhood_spec['type'].lower() == 'bounded_cylinder':
-            radii = np.array([
-                self.neighborhood_spec['radius'] for i in range(3)
-            ])
-            radii[1] *= -1
-        else:
-            radii = np.array([self.neighborhood_spec['radius']]),
+        radii = FurthestPointSubsamplingPreProcessorPP.prepare_radii(
+            self.neighborhood_spec
+        )
+        oversamplingArgs = FurthestPointSubsamplingPreProcessorPP\
+            .prepare_oversampling(
+                self.receptive_field_oversampling,
+                self.num_points_per_depth[0]
+            )
         Xdtype = X.dtype
         if Xdtype == np.float32:  # 32 bits for input structure space
             if structure_space_bits == 32:  # 32 bits for output structure
@@ -94,24 +85,6 @@ class HierarchicalFPSPreProcessorPP(HierarchicalFPSPreProcessor):
                 cpp_f = vl3dpp.rf_dl_hfps_preproc_Xdf_Ff_Iu32u32_ys32
             else:  # 64 bits for output structure
                 cpp_f = vl3dpp.rf_dl_hfps_preproc_Xdd_Ff_Iu32u32_ys32
-        oversamplingArgs = []
-        if self.receptive_field_oversampling is not None:
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('min_points', 0)
-            )
-            oversamplingArgs.append(self.num_points_per_depth[0])
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('strategy', 'nearest')
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('k', 16)
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('radius', 1.0)
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('nthreads', 1)
-            )
         # Call C++ to generate the receptive fields
         out = cpp_f(
             X,
@@ -166,7 +139,7 @@ class HierarchicalFPSPreProcessorPP(HierarchicalFPSPreProcessor):
         self.last_call_neighborhoods = Iout
         self.last_call_receptive_fields = []
         for i in range(Xout[0].shape[0]):
-            # Create receptive field
+            # Create i-th receptive field
             rf = ReceptiveFieldHierarchicalFPSPP(
                 num_points_per_depth=self.num_points_per_depth,
                 num_downsampling_neighbors=self.num_downsampling_neighbors,
@@ -195,22 +168,7 @@ class HierarchicalFPSPreProcessorPP(HierarchicalFPSPreProcessor):
             sup_X = np.vstack([
                 rfi.x for rfi in self.last_call_receptive_fields
             ])
-            if(
-                inputs.get('training_support_points', False) and
-                self.training_support_points_report_path is not None
-            ):
-                GridSubsamplingPreProcessor.support_points_to_file(
-                    sup_X,
-                    self.training_support_points_report_path
-                )
-            if(
-                inputs.get('support_points', False) and
-                self.support_points_report_path is not None
-            ):
-                GridSubsamplingPreProcessor.support_points_to_file(
-                    sup_X,
-                    self.support_points_report_path
-                )
+            self.export_support_points(inputs, sup_X)
         # Prepare return
         pyout = [Xout[0], Fout] + Xout[1:] + NDout[1:] + Nout + NUout[1:]
         # Return with labels

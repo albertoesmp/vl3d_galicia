@@ -2,9 +2,11 @@
 # ------------------- #
 import src.main.main_logger as LOGGING
 from src.main.main_mine import MainMine
+from src.model.deeplearn.spconv3d_pwise_classif_model import SpConv3DPwiseClassifModel
 from src.pcloud.point_cloud_factory_facade import PointCloudFactoryFacade
 from src.inout.model_io import ModelIO
 from src.inout.io_utils import IOUtils
+import src.model.deeplearn.arch.architecture as architecture
 from src.model.random_forest_classification_model import \
     RandomForestClassificationModel
 from src.model.deeplearn.point_net_pwise_classif_model import \
@@ -13,6 +15,8 @@ from src.model.deeplearn.rbf_net_pwise_classif_model import \
     RBFNetPwiseClassifModel
 from src.model.deeplearn.conv_autoenc_pwise_classif_model import \
     ConvAutoencPwiseClassifModel
+from src.model.deeplearn.spconv3d_pwise_classif_model import \
+    SpConv3DPwiseClassif
 import os
 import time
 
@@ -121,17 +125,27 @@ class MainTrain:
             model_low == 'hierarchicalautoencoderpwiseclassifier'
         ):
             return ConvAutoencPwiseClassifModel
+        elif (
+            model_low == 'sparseconvolutional3dpwiseclassifier' or
+            model_low == 'spconv3dpwiseclassifier'
+        ):
+            return SpConv3DPwiseClassifModel
+
         # An unknown model was specified
         raise ValueError(f'There is no known model "{model}"')
 
     @staticmethod
-    def extract_pretrained_model(spec, expected_class=None):
+    def extract_pretrained_model(spec, expected_class=None, new_nn_path=None):
         """
         Extract the path to the pretrained model and load it.
 
         :param spec: The key-word specification.
         :param expected_class: The expected model class. It can be None, but
             then no model class check will be computed.
+        :param new_nn_path: When given (i.e., not None) it will replace the
+            nn_path that was serialized with the :class:`.Architecture` and
+            instead use this new path.
+        :type new_nn_path: str or None
         :return: The pretrained model or None if there is no pretrained model
             specification.
         :rtype: :class:`.Model` or None
@@ -140,6 +154,7 @@ class MainTrain:
         if model_path is None:  # No pretrained model
             return None
         # Load pretrained model
+        architecture.new_nn_path = new_nn_path
         model = ModelIO.read(model_path)
         if model is None:  # Failed to load pretrained model
             raise IOError(

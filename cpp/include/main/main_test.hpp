@@ -9,6 +9,8 @@
 #include <test/OctreeTest.hpp>
 #include <test/KDTreeTest.hpp>
 #include <test/LazySupportGridTest.hpp>
+#include <test/SparseGridTest.hpp>
+#include <test/HierarchicalSparseGridTest.hpp>
 
 // Algorithm tests
 #include <test/GridMesherTest.hpp>
@@ -48,6 +50,8 @@ int run_adt_tests(){
     ts.addTest(std::make_shared<OctreeTest>());
     ts.addTest(std::make_shared<KDTreeTest>());
     ts.addTest(std::make_shared<LazySupportGridTest>());
+    ts.addTest(std::make_shared<SparseGridTest>());
+    ts.addTest(std::make_shared<HierarchicalSparseGridTest>());
 
     // Run test suite
     ts(std::cout, TEST_COLOR);

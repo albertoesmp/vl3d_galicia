@@ -1,34 +1,29 @@
 # ---   IMPORTS   --- #
 # ------------------- #
+from src.model.deeplearn.arch.spconv3d_pwise_classif import SpConv3DPwiseClassif
+from src.model.deeplearn.handle.dl_label_formatter import DLLabelFormatter
 from src.model.deeplearn.handle.dl_model_handler import DLModelHandler
-from src.model.deeplearn.loss.class_weighted_binary_crossentropy import \
-    vl3d_class_weighted_binary_crossentropy
-from src.model.deeplearn.loss.class_weighted_categorical_crossentropy import \
-    vl3d_class_weighted_categorical_crossentropy
 from src.model.deeplearn.sequencer.dl_sequencer import DLSequencer
-from src.report.deep_learning_model_summary_report import \
-    DeepLearningModelSummaryReport
-from src.report.receptive_fields_report import ReceptiveFieldsReport
-from src.report.receptive_fields_distribution_report import \
-    ReceptiveFieldsDistributionReport
-from src.plot.receptive_fields_distribution_plot import \
-    ReceptiveFieldsDistributionPlot
-from src.report.training_history_report import TrainingHistoryReport
-from src.plot.training_history_plot import TrainingHistoryPlot
+from src.model.deeplearn.sequencer.dl_sparse_shadow_sequencer import \
+    DLSparseShadowSequencer
 from src.utils.preds.prediction_reducer import PredictionReducer
 from src.utils.preds.prediction_reducer_factory import PredictionReducerFactory
 from src.utils.dict_utils import DictUtils
 from src.inout.io_utils import IOUtils
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
+from src.model.deeplearn.handle.dl_model_compiler import DLModelCompiler
+from src.model.deeplearn.handle.dl_path_manager import DLPathManager
+from src.model.deeplearn.handle.dl_callback_builder import DLCallbackBuilder
+from src.model.deeplearn.handle.dl_model_reporter import DLModelReporter
+from src.model.deeplearn.sequencer.dl_abstract_sequencer import \
+    DLAbstractSequencer
 from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 import tensorflow as tf
 from tensorflow.python.framework.errors_impl import ResourceExhaustedError as \
     TFResourceExhaustedError, InternalError as TFInternalError
-from sklearn.preprocessing import LabelBinarizer
 import numpy as np
 import copy
-import os
 import time
 
 
@@ -39,14 +34,6 @@ class SimpleDLModelHandler(DLModelHandler):
     Class to handle deep learning models in a simple way. It can be seen as the
     baseline deep learning model handler. See :class:`.DLModelHandler`.
 
-    :ivar summary_report_path: Path to the file where the summary report
-        will be written, i.e., the report that summarizes the model's
-        architecture.
-    :vartype summary_report_path: str
-    :ivar training_history_dir: Path to the directory where the training
-        history plots and reports will be exported, i.e., information related
-        to the  training along many epochs.
-    :vartype training_history_dir: path
     :ivar out_prefix: The output prefix for path expansions, when necessary.
     :vartype out_prefix: str
     :ivar training_epochs: The number of training epochs for fitting the model.
@@ -56,10 +43,6 @@ class SimpleDLModelHandler(DLModelHandler):
     :ivar history: By default None. It will be updated to contain the training
         history when calling fit.
     :vartype history: None or :class:`tf.keras.callbacks.History`
-    :ivar checkpoint_path: The path where the model's checkpoint will be
-        exported. It is used to keep the best model when using the checkpoint
-        callback strategy during training.
-    :vartype checkpoint_path: str
     :ivar checkpoint_monitor: The name of the metric to choose the best
         model. By default, it is "loss", which represents the loss function.
     :vartype checkpoint_monitor: str
@@ -69,15 +52,10 @@ class SimpleDLModelHandler(DLModelHandler):
     :ivar early_stopping: The key-word arguments governing the instantiation
         of the early stopping callback.
     :vartype early_stopping: dict
-    :ivar compilation_args: The specification on how to compile the model.
-        See
-        :meth:`simple_dl_model_handler.SimpleDLModelHandler.build_compilation_args`
-        .
-    :vartype compilation_args: dict
-    :ivar training_sequencer": The specification on how to build the sequencer
+    :ivar sequencer_spec: The specification on how to build the sequencer
         for the input data during model training. See
         :meth:`SimpleDLModelHandler.build_sequencer`.
-    :vartype training_sequencer: dict
+    :vartype sequencer_spec: dict
     :ivar fit_verbose: Whether to use silent mode (0), show a progress bar (1),
         or print one line per epoch (2). Alternatively, "auto" can be used
         which typically means (1).
@@ -100,42 +78,20 @@ class SimpleDLModelHandler(DLModelHandler):
             VL3DCFG['MODEL']['SimpleDLModelHandler']
         )
         # Assign member attributes
-        self.summary_report_path = kwargs.get('summary_report_path', None)
-        self.training_history_dir = kwargs.get('training_history_dir', None)
-        # TODO Rethink : RBF and FSL dirs should belong to the model? externalize them somehow?
-        self.feat_struct_repr_dir = kwargs.get(
-            'features_structuring_representation_dir', None
-        )
-        self.rbf_feat_extract_repr_dir = kwargs.get(
-            'rbf_feature_extraction_representation_dir', None
-        )
-        self.rbf_feat_processing_repr_dir = kwargs.get(
-            'rbf_feature_processing_representation_dir', None
-        )
-        self.kpconv_representation_dir = kwargs.get(
-            'kpconv_representation_dir', None
-        )
-        self.skpconv_representation_dir = kwargs.get(
-            'skpconv_representation_dir', None
-        )
-        self.lkpconv_representation_dir = kwargs.get(
-            'lkpconv_representation_dir', None
-        )
-        self.slkpconv_representation_dir = kwargs.get(
-            'slkpconv_representation_dir', None
-        )
+        self.path_manager = DLPathManager(model_handling=kwargs)
         self.out_prefix = kwargs.get('out_prefix', None)
         self.training_epochs = kwargs.get('training_epochs', 100)
         self.batch_size = kwargs.get('batch_size', 16)
         self.history = kwargs.get('history', None)
-        self.checkpoint_path = kwargs.get('checkpoint_path', None)
         self.checkpoint_monitor = kwargs.get('checkpoint_monitor', 'loss')
         self.learning_rate_on_plateau = kwargs.get(
             'learning_rate_on_plateau',
             None
         )
         self.early_stopping = kwargs.get('early_stopping', None)
-        self.training_sequencer = kwargs.get('training_sequencer', None)
+        self.sequencer_spec = kwargs.get(
+            'sequencer_spec', kwargs.get('training_sequencer', None)
+        )
         self.fit_verbose = kwargs.get('fit_verbose', "auto")
         self.predict_verbose = kwargs.get('predict_verbose', "auto")
         self.prediction_reducer = kwargs.get(
@@ -147,6 +103,9 @@ class SimpleDLModelHandler(DLModelHandler):
                 PredictionReducerFactory.make_from_dict(
                     self.prediction_reducer
                 )
+        self.skip_fit_on_zero_epochs = VL3DCFG['MODEL'][
+            'SimpleDLModelHandler'
+        ].get('skip_fit_on_zero_epochs', False)
 
     # ---   MODEL HANDLER   --- #
     # ------------------------- #
@@ -156,17 +115,11 @@ class SimpleDLModelHandler(DLModelHandler):
         :meth:`dl_model_handler.DLModelHandler._fit`.
         """
         # Report the model
-        summary = DeepLearningModelSummaryReport(self.compiled)
-        LOGGING.LOGGER.info(summary.to_string())
-        if self.summary_report_path is not None:
-            summary.to_file(
-                self.summary_report_path,
-                out_prefix=self.out_prefix
-            )
-            LOGGING.LOGGER.info(
-                'Deep learning model summary written to "'
-                f'{self.summary_report_path}"'
-            )
+        dl_model_reporter = DLModelReporter()
+        dl_model_reporter.handle_model_summary_report(self)
+        # Check whether skip fit on zero epochs is requested
+        if self.skip_fit_on_zero_epochs and self.training_epochs < 1:
+            return self
         # Handle training callbacks
         callbacks = self.build_callbacks()
         # Fit the model
@@ -177,7 +130,9 @@ class SimpleDLModelHandler(DLModelHandler):
             'training_support_points': True
         })
         self.compile(y_rf=y_rf)  # Recompile with y_rf for class weights
-        y_rf = self.handle_labels_format(y_rf)  # Label format depends on loss
+        y_rf = DLLabelFormatter().handle_labels_format(  # Depends on loss
+            self, y_rf
+        )
         self.fit_logic(X, y_rf, callbacks)
         end = time.perf_counter()
         LOGGING.LOGGER.info(
@@ -185,80 +140,28 @@ class SimpleDLModelHandler(DLModelHandler):
             f'{self.training_epochs} epochs in {end-start:.3f} seconds.'
         )
         # Take best model from checkpoint
-        if self.checkpoint_path is not None:
+        if self.path_manager.checkpoint_path is not None:
             try:
                 IOUtils.validate_path_to_file(
-                    self.checkpoint_path,
+                    self.path_manager.checkpoint_path,
                     msg='Cannot find DL model checkpoint at:'
                 )
-                self.compiled.load_weights(self.checkpoint_path)
+                self.compiled.load_weights(self.path_manager.checkpoint_path)
                 LOGGING.LOGGER.debug(
                     'SimpleDLModelHandler restored weights from '
-                    f'"{self.checkpoint_path}".'
+                    f'"{self.path_manager.checkpoint_path}".'
                 )
             except FileNotFoundError as fnferr:
                 LOGGING.LOGGER.warning(
                     'SimpleDLModelHandler failed to restore DL model weights '
-                    f'from "{self.checkpoint_path}".'
+                    f'from "{self.path_manager.checkpoint_path}".'
                 )
         # Report and plot history
-        if self.training_history_dir is not None:
-            report_path = os.path.join(
-                self.training_history_dir, 'training_history.csv'
-            )
-            TrainingHistoryReport(
-                self.history
-            ).to_file(report_path, out_prefix=self.out_prefix)
-            LOGGING.LOGGER.info(
-                'Deep learning training history report written to '
-                f'"{report_path}"'
-            )
-            TrainingHistoryPlot(
-                self.history,
-                path=self.training_history_dir
-            ).plot(
-                out_prefix=self.out_prefix
-            )
-            LOGGING.LOGGER.info(
-                'Deep learning training history plots exported to '
-                f'"{self.training_history_dir}"'
-            )
+        dl_model_reporter.handle_history_plots_and_reports(self)
         # Predictions on the training receptive fields for plots and reports
-        if getattr(self.arch.pre_runnable, 'pre_processor', None) is not None:
-            if getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_dir',
-                None
-            ) is not None or getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_distribution_report_path',
-                None
-            ) is not None or getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_distribution_plot_path',
-                None
-            ):
-                try:
-                    zhat = self.compiled.predict(X, batch_size=self.batch_size)
-                except (TFResourceExhaustedError, TFInternalError) as tferr:
-                    LOGGING.LOGGER.debug(
-                        'SimpleDLModelHandler could not compute predictions '
-                        f'on {len(X)} receptive fields using the GPU.\n '
-                        'Trying CPU instead ...'
-                    )
-                    with tf.device("cpu:0"):
-                        zhat = self.compiled.predict(
-                            X, batch_size=self.batch_size
-                        )
-                X_rf = X[0] if isinstance(X, list) else X
-                F_rf = X[1] if isinstance(X, list) else None
-                self.handle_receptive_fields_plots_and_reports(
-                    X_rf=X_rf,
-                    F_rf=F_rf,
-                    zhat_rf=zhat,
-                    y=y,
-                    training=True
-                )
+        dl_model_reporter.handle_receptive_fields_plots_and_reports(
+            self, X, y=y,
+        )
         # Return
         return self
 
@@ -273,13 +176,18 @@ class SimpleDLModelHandler(DLModelHandler):
         """
         # Map for caching stuff during fit logic
         fit_cache_map = {
-            'fsl_dir_path': self.feat_struct_repr_dir,
-            'rbf_dir_path': self.rbf_feat_extract_repr_dir,
-            'rbf_feat_processing_dir_path': self.rbf_feat_processing_repr_dir,
-            'kpconv_representation_dir': self.kpconv_representation_dir,
-            'skpconv_representation_dir': self.skpconv_representation_dir,
-            'lkpconv_representation_dir': self.lkpconv_representation_dir,
-            'slkpconv_representation_dir': self.slkpconv_representation_dir,
+            'fsl_dir_path': self.path_manager.feat_struct_repr_dir,
+            'rbf_dir_path': self.path_manager.rbf_feat_extract_repr_dir,
+            'rbf_feat_processing_dir_path':
+                self.path_manager.rbf_feat_processing_repr_dir,
+            'kpconv_representation_dir':
+                self.path_manager.kpconv_representation_dir,
+            'skpconv_representation_dir':
+                self.path_manager.skpconv_representation_dir,
+            'lkpconv_representation_dir':
+                self.path_manager.lkpconv_representation_dir,
+            'slkpconv_representation_dir':
+                self.path_manager.slkpconv_representation_dir,
             'out_prefix': self.out_prefix,
             'X': X,
             'y_rf': y_rf,
@@ -292,9 +200,7 @@ class SimpleDLModelHandler(DLModelHandler):
         if hasattr(self.arch, 'prefit_logic_callback'):
             self.arch.prefit_logic_callback(fit_cache_map)
         # Fit logic
-        input_X, input_y = X, y_rf
-        if self.training_sequencer is not None:
-            input_X, input_y = self.build_sequencer(X, y_rf), None
+        input_X, input_y = self.build_sequencer(X, y_rf, True)
         self.history = self.compiled.fit(
             input_X, input_y,
             epochs=self.training_epochs,
@@ -317,18 +223,17 @@ class SimpleDLModelHandler(DLModelHandler):
         See :class:`.DLModelHandler` and
         :meth:`dl_model_handler.DLModelHandler._predict`.
         """
-        # Softmax scores
+        # Obtain receptive fields
         X_rf = self.arch.run_pre({
             'X': X,
             'support_points': True,
             'plots_and_reports': plots_and_reports
         })
+        # Compute predictions on receptive fields
         try:
-             zhat_rf = self.compiled.predict(
-                X_rf,
-                batch_size=self.batch_size,
-                verbose=self.predict_verbose
-            )
+            predict_rf_start = time.perf_counter()
+            zhat_rf = self.predict_rf(X_rf)
+            predict_rf_end = time.perf_counter()
         except (TFResourceExhaustedError, TFInternalError) as tferr:
             m = len(X_rf[0]) if isinstance(X_rf, list) else len(X_rf)
             LOGGING.LOGGER.debug(
@@ -337,9 +242,14 @@ class SimpleDLModelHandler(DLModelHandler):
                 'Trying CPU instead ...'
             )
             with tf.device("cpu:0"):
-                zhat_rf = self.compiled.predict(
-                    X_rf, batch_size=self.batch_size
-                )
+                predict_rf_start = time.perf_counter()
+                zhat_rf = self.predict_rf(X_rf)
+                predict_rf_end = time.perf_counter()
+        LOGGING.LOGGER.info(
+            f'Predictions computed on {len(zhat_rf)} receptive fields '
+            f'in {predict_rf_end-predict_rf_start:.3f} seconds.'
+        )
+        # Bring predictions from receptive fields back to the original input
         zhat = self.arch.run_post(
             {'X': X, 'z': zhat_rf},
             reducer=self.prediction_reducer
@@ -351,139 +261,85 @@ class SimpleDLModelHandler(DLModelHandler):
         yhat, zhat = self.prediction_reducer.select(zhat), None
         # Do plots and reports
         if plots_and_reports:
-            _X_rf = X_rf[0] if isinstance(X_rf, list) else X_rf
-            _F_rf = X_rf[1] if isinstance(X_rf, list) else None
-            self.handle_receptive_fields_plots_and_reports(
+            if isinstance(self.arch, SpConv3DPwiseClassif):
+                _X_rf = [
+                    rfi.compute_active_centroids(0)
+                    for rfi in self.arch.pre_runnable.last_call_receptive_fields
+                ]
+                _F_rf = X_rf[0]
+            else:
+                _X_rf = X_rf[0] if isinstance(X_rf, list) else X_rf
+                _F_rf = X_rf[1] if isinstance(X_rf, list) else None
+            DLModelReporter().do_receptive_fields_plots_and_reports(
+                mh=self,
                 X_rf=_X_rf,
-                F_rf=_F_rf,
                 zhat_rf=zhat_rf,
                 y=y,
+                F_rf=_F_rf,
                 training=False
             )
         # Return
         return yhat
 
+    def predict_rf(self, X_rf):
+        """
+        Compute the predictions on the given receptive fields.
+
+        :param X_rf: The receptive fields that must be predicted. It can be
+            a list with the different inputs (e.g., for hierarchical models
+            that use a hierarchical pre-processor like
+            :class:`.HierarchicalFPSPreProcessorPP` or
+            :class:`.HierarchicalSGPreProcessorPP`) or
+            directly an input :class:`np.ndarray` (e.g., input structure space).
+        :type X_rf: list or :class:`np.ndarray`
+        :return: The predictions as directly computed by the model (e.g.,
+            the softmax probabilities from a point-wise classifier).
+        :rtype: :class:`np.ndarray`
+        """
+        # Build sequencer
+        input_X, input_y = self.build_sequencer(X_rf, None, False)
+        # Predict through sequencer
+        if isinstance(input_X, DLAbstractSequencer):
+            # TODO Rethink : X_rf mem. can be duplicated (especially for SpConv)
+            LOGGING.LOGGER.info(
+                f'Predicting through sequencer in {len(input_X)} batches ...'
+            )
+            zhat_rf = []
+            for x in input_X:
+                zhat_rf.append(self.compiled.predict_on_batch(x))
+            zhat_rf = np.vstack(zhat_rf)
+            # TODO Rethink : Handle shadow receptive fields ---
+            # TODO Rethink : Move to sequencer logic?
+            # Handle shadow receptive fields (i.e., remove padding from output)
+            if isinstance(self.arch, SpConv3DPwiseClassif):
+                start = input_X.X[-input_X.max_depth]
+                zhat_rf = [
+                    zhat_rfi[1 + start[i]:]
+                    for i, zhat_rfi in enumerate(zhat_rf)
+                ]
+            # --- TODO Rethink : Handle shadow receptive fields
+        # Predict without sequencer (raw data)
+        else:
+            LOGGING.LOGGER.info(
+                f'Predicting without sequencer ...'
+            )
+            zhat_rf = self.compiled.predict(
+                input_X,
+                batch_size=self.batch_size,
+                verbose=self.predict_verbose
+            )
+        return zhat_rf
+
     def compile(self, X=None, y=None, y_rf=None, **kwargs):
         """
-        See :class:`.DLModelHandler` and
-        :meth:`dl_model_handler.DLModelHandler.compile`.
-
-        :param y_rf: The expected values for each receptive field. Can be
-            used to derive class weights.
+        See :class:`.DLModelHandler`,
+        :meth:`dl_model_handler.DLModelHandler.compile`,
+        :class:`.DLModelCompiler`, and
+        :meth:`dl_model_compiler.DLModelCompiler.compile`.
         """
-        # Build architecture
-        if not self.arch.is_built():
-            self.arch.build()
-        elif kwargs.get('arch_plot', False):  # If not,
-            # at least plot the built architecture if requested
-            self.arch.plot()
-        self.compiled = self.arch.nn
-        # Determine class weights if possible
-        class_weight = None
-        if y_rf is not None:
-            class_weight = self.handle_class_weight(y_rf)
-        # Build compilation args
-        comp_args = SimpleDLModelHandler.build_compilation_args(
-            self.compilation_args
-        )
-        if class_weight is not None:  # Recompile for custom class weight loss
-            comp_args['loss'] = comp_args['loss'](
-                np.array(list(class_weight.values()), dtype=np.float32)
-            )
-        # Compile
-        self.compiled.compile(
-            run_eagerly=VL3DCFG['MODEL']['SimpleDLModelHandler']['run_eagerly'],
-            **comp_args
-        )
-        return self
-
-    def overwrite_pretrained_model(self, spec):
-        """
-        See :meth:`dl_model_handler.DLModelHandler.overwrite_pretrained_model`.
-        """
-        # Call parent's method
-        super().overwrite_pretrained_model(spec)
-        # Overwrite attributes of simple deep learning model handler
-        spec_keys = spec.keys()
-        if 'model_handling' in spec_keys:
-            spec_handling = spec['model_handling']
-            spec_handling_keys = spec_handling.keys()
-            if 'summary_report_path' in spec_handling_keys:
-                self.summary_report_path = spec_handling['summary_report_path']
-            if 'training_history_dir' in spec_handling_keys:
-                self.training_history_dir = spec_handling['training_history_dir']
-            if 'checkpoint_path' in spec_handling_keys:
-                self.checkpoint_path = spec_handling['checkpoint_path']
-            if 'checkpoint_monitor' in spec_handling_keys:
-                self.checkpoint_monitor = spec_handling['checkpoint_monitor']
-            if 'batch_size' in spec_handling_keys:
-                self.batch_size = spec_handling['batch_size']
-            if 'training_epochs' in spec_handling_keys:
-                self.training_epochs = spec_handling['training_epochs']
-            if 'learning_rate_on_plateau' in spec_handling_keys:
-                self.learning_rate_on_plateau = \
-                    spec_handling['learning_rate_on_plateau']
-            if 'early_stopping' in spec_handling_keys:
-                self.early_stopping = spec_handling['early_stopping']
-            if 'training_sequencer' in spec_handling_keys:
-                self.training_sequencer = spec_handling['training_sequencer']
-            if 'prediction_reducer' in spec_handling_keys:
-                self.prediction_reducer = PredictionReducerFactory.make_from_dict(
-                    spec_handling['prediction_reducer']
-                )
-
-    def update_paths(self, model_args):
-        """
-        Consider the current specification of model handling arguments to
-        update the paths.
-        """
-        # Nothing to do if no specification is given
-        if model_args is None:
-            return
-        # Update model paths
-        model_handling = model_args.get('model_handling', None)
-        if model_handling is not None:
-            self.summary_report_path = model_handling['summary_report_path']
-            self.training_history_dir = model_handling['training_history_dir']
-            self.checkpoint_path = model_handling['checkpoint_path']
-            self.feat_struct_repr_dir = model_handling.get(
-                'features_structuring_representation_dir',
-                self.feat_struct_repr_dir
-            )
-            self.rbf_feat_extract_repr_dir = model_handling.get(
-                'rbf_feat_extract_repr_dir',
-                self.rbf_feat_extract_repr_dir
-            )
-            self.rbf_feat_processing_repr_dir = model_handling.get(
-                'rbf_feat_processing_repr_dir',
-                self.rbf_feat_processing_repr_dir
-            )
-            self.kpconv_representation_dir = model_handling.get(
-                'kpconv_representation_dir', self.kpconv_representation_dir
-            )
-            self.skpconv_representation_dir = model_handling.get(
-                'skpconv_representation_dir', self.skpconv_representation_dir
-            )
-            self.lkpconv_representation_dir = model_handling.get(
-                'lkpconv_representation_dir', self.lkpconv_representation_dir
-            )
-            self.slkpconv_representation_dir = model_handling.get(
-                'slkpconv_representation_dir', self.slkpconv_representation_dir
-            )
-        # Update architecture paths
-        if self.arch is not None:
-            self.arch.architecture_graph_path = \
-                model_args['architecture_graph_path']
-            # Update pre-procesor paths
-            pre_processor = None
-            if self.arch.pre_runnable is not None:
-                if hasattr(self.arch.pre_runnable, "pre_processor"):
-                    pre_processor = \
-                        self.arch.pre_runnable.pre_processor
-            if pre_processor is not None:
-                pre_processor.update_paths(model_args.get(
-                    'pre_processing', None
-                ))
+        if self.compiler is None:
+            self.compiler = DLModelCompiler(self.compilation_args)
+        return self.compiler.compile(self, X=X, y=y, y_rf=y_rf, **kwargs)
 
     # ---  MODEL HANDLING TASKS  --- #
     # ------------------------------ #
@@ -491,354 +347,37 @@ class SimpleDLModelHandler(DLModelHandler):
         """
         See :meth:`dl_model_handler.DLModelHandler.build_callbacks`.
         """
-        callbacks = []
-        if self.checkpoint_path is not None:
-            callbacks.append(tf.keras.callbacks.ModelCheckpoint(
-                self.checkpoint_path,
-                monitor=self.checkpoint_monitor,
-                save_best_only=True,
-                save_weights_only=True
-            ))
-        if self.learning_rate_on_plateau is not None:
-            callbacks.append(tf.keras.callbacks.ReduceLROnPlateau(
-                **self.learning_rate_on_plateau
-            ))
-        if self.early_stopping is not None:
-            callbacks.append(tf.keras.callbacks.EarlyStopping(
-                **self.early_stopping
-            ))
-        return callbacks
+        return DLCallbackBuilder().build(self)
+
+    def update_paths(self, model_args):
+        """
+        Consider the current specification of model handling arguments to
+        update the paths.
+        """
+        if self.path_manager is None:
+            self.path_manager = DLPathManager()
+        self.path_manager.update_paths(model_args, self.arch)
 
     # ---  UTIL METHODS  --- #
     # ---------------------- #
-    @staticmethod
-    def build_compilation_args(comp_args):
-        """
-        Build the compilation arguments from given spec.
-
-        :param comp_args: The specification to build the compilation arguments.
-        :return: The dictionary of compilation arguments.
-        :rtype: dict
-        """
-        # Build optimizer : Extract args
-        opt_args = comp_args['optimizer']
-        opt_alg = opt_args['algorithm'].lower()
-        opt_lr = opt_args.get('learning_rate', None)
-        # Build optimizer : Determine class (algorithm)
-        optimizer = None
-        if opt_alg == 'sgd':
-            optimizer = tf.keras.optimizers.SGD
-        if opt_alg == 'adam':
-            optimizer = tf.keras.optimizers.Adam
-        if optimizer is None:
-            raise DeepLearningException(
-                'SimpleDLModelHandler cannot compile a model without an '
-                'optimizer. None was given.'
-            )
-        # Build optimizer : Handle learning rate
-        if isinstance(opt_lr, dict):  # Learning schedule
-            lr_sched_type = opt_lr['schedule']
-            if lr_sched_type == 'exponential_decay':
-                opt_lr = tf.keras.optimizers.schedules.ExponentialDecay(
-                    **opt_lr['schedule_args']
-                )
-            else:
-                raise DeepLearningException(
-                    'SimpleDLModelHandler received an unexpected learning '
-                    f'rate schedule: "{lr_sched_type}".'
-                )
-        # Build optimizer
-        optimizer = optimizer(**DictUtils.delete_by_val({
-            'learning_rate': opt_lr,
-        }, None))
-        # Build loss : Extract args
-        loss_args = comp_args['loss']
-        loss_fun = loss_args['function'].lower()
-        # Build loss : Determine class (function)
-        instantiate_loss = True
-        loss = None
-        if loss_fun == 'sparse_categorical_crossentropy':
-            loss = tf.keras.losses.SparseCategoricalCrossentropy
-        if loss_fun == 'binary_crossentropy':
-            loss = tf.keras.losses.BinaryCrossentropy
-        if loss_fun == 'class_weighted_binary_crossentropy':
-            loss = vl3d_class_weighted_binary_crossentropy
-            instantiate_loss = False  # Instantiate later with class weights
-        if loss_fun == 'categorical_crossentropy':
-            loss = tf.keras.losses.CategoricalCrossentropy
-        if loss_fun == 'class_weighted_categorical_crossentropy':
-            loss = vl3d_class_weighted_categorical_crossentropy
-            instantiate_loss = False  # Instantiate later with class weights
-        if loss is None:
-            raise DeepLearningException(
-                'SimpleDLModelHandler cannot compile a model without a loss '
-                'function. None was given.'
-            )
-        # Build loss
-        if instantiate_loss:
-            loss = loss()
-        # Build metrics : Extract args
-        metrics_args = comp_args['metrics']
-        # Build metrics : Determine metrics (list of classes)
-        metrics = []
-        for metric_name in metrics_args:
-            metric_class = None
-            if metric_name == 'sparse_categorical_accuracy':
-                metric_class = tf.keras.metrics.sparse_categorical_accuracy
-            if metric_name == 'categorical_accuracy':
-                metric_class = tf.keras.metrics.categorical_accuracy
-            if metric_name == 'binary_accuracy':
-                metric_class = tf.keras.metrics.binary_accuracy
-            if metric_name == 'precision':
-                metric_class = tf.keras.metrics.Precision(name='precision')
-            if metric_name == 'recall':
-                metric_class = tf.keras.metrics.Recall(name='recall')
-            if metric_class is None:
-                raise DeepLearningException(
-                    'SimpleDLModelHandler cannot compile a model because a '
-                    f'given metric cannot be interpreted ("{metric_name}").'
-                )
-            metrics.append(metric_class)
-        if len(metrics) < 1:
-            LOGGING.LOGGER.debug(
-                'SimpleDLModelHandler detected a model compilation with no '
-                'metrics. While this is supported, recall an arbitrary number '
-                'of evaluation metrics can be used to evaluate the training '
-                'performance. These metrics can be more easy to interpret or '
-                'bring further insights into the model than the loss function '
-                'alone.'
-            )
-        # Return dictionary of built compilation args
-        return {
-            'optimizer': optimizer,
-            'loss': loss,
-            'metrics': metrics
-        }
-
-    def handle_class_weight(self, y):
-        r"""
-        Handle the class weight parameter.
-
-        If no class weight is requested, then class weight will be None.
-
-        If automatic class weight is requested (i.e., "auto"), then the
-        class weight is automatically determined from the distribution of
-        expected classes to give a greater weight to less frequent classes
-        and a smaller weight to more frequent classes. More concretely, let
-        :math:`m` be the number of samples, :math:`m_i` be the number of
-        samples corresponding to class :math:`i`, and :math:`n` be the number
-        of classes. Thus, each class weight will be :math:`w_i = m/(n m_i)`.
-
-        If class weight is a list, tuple or array of weights it will be
-        translated to a dictionary such that the first element is the weight
-        for the first class, and so on.
-
-
-        :param y: The vector of expected point-wise classes.
-        :type y: :class:`np.ndarray`
-        :return: Class weight prepared for the model.
-        """
-        # No class weight specification
-        if self.class_weight is None:
-            return None
-        # Handle class weight specification
-        class_weight_low = self.class_weight.lower() \
-            if isinstance(self.class_weight, str) else self.class_weight
-        if class_weight_low == "auto":  # Automatic
-            num_classes = getattr(self.arch, "num_classes", None)
-            if num_classes is None:
-                raise DeepLearningException(
-                    'SimpleDLModelHandler does not support automatic class '
-                    'weight for current architecture: '
-                    f'"{self.arch.__class__.__name__}"'
-                )
-            keys = [class_id for class_id in range(num_classes)]
-            num_samples = np.prod(y.shape)
-            num_samples_per_class = np.array([
-                np.count_nonzero(y == class_id) for class_id in keys
-            ], dtype=int)
-            vals = num_samples/num_samples_per_class/num_classes
-            class_weight_dict = dict(zip(keys, vals))
-            LOGGING.LOGGER.debug(
-                'Simple DL model handler automatically generated the '
-                f'following dictionary of class weights:\n{class_weight_dict}'
-            )
-            return class_weight_dict
-        else:  # User-given
-            return dict(zip(  # List to dict with serial int key
-                np.arange(len(self.class_weight), dtype=int),
-                self.class_weight
-            ))
-
-    def handle_labels_format(self, y):
-        """
-        Handles the format in which labels must be given to the model.
-
-        For instance, if categorical cross entropy is used, labels must be
-        given using one-hot-encoding. However, if sparse categorical cross
-        entropy is used, labels must be given as an integer.
-
-        :return: The labels prepared for the model.
-        """
-        # Extract loss function name
-        loss_low = self.compilation_args['loss']['function'].lower()
-        # Handle loss functions that demand one-hot labels
-        if (
-            loss_low == 'categorical_crossentropy' or
-            loss_low == 'class_weighted_categorical_crossentropy'
-        ):  # Handle one hot encoding for labels
-            num_classes = getattr(self.arch, "num_classes", None)
-            if num_classes is None:
-                raise DeepLearningException(
-                    'SimpleDLModelHandler does not support categorical or '
-                    'binary crossentropy without a priori specifying the '
-                    'number of classes.'
-                )
-            label_binarizer = LabelBinarizer().fit([
-                class_id for class_id in range(num_classes)
-            ])
-            new_y = []
-            for i in range(len(y)):
-                new_y.append(label_binarizer.transform(y[i].flatten()))
-            y = np.array(new_y, dtype=y.dtype)
-        if (
-            loss_low == 'sparse_categorical_crossentropy' and
-            self.class_weight is not None
-        ):
-            raise DeepLearningException(
-                'SimpleDLModelHandler detected that class weight is requested '
-                'for a sparse categorical crossentropy loss. Currently, this '
-                'is not supported.'
-            )
-        if(
-            loss_low == 'binary_crossentropy' and
-            self.class_weight is not None
-        ):
-            raise DeepLearningException(
-                'SimpleDLModelHandler detected that class weight is requested '
-                'for a binary crossentropy loss. This is not supported. '
-                'Please, use "class_weighted_binary_crossentropy" loss '
-                'function instead.'
-            )
-        # By default, labels can be used straight forward
-        return y
-
-    def handle_receptive_fields_plots_and_reports(
-        self, X_rf, zhat_rf, y=None, F_rf=None, training=False
-    ):
-        """
-        Handle any plot and reports related to the receptive fields.
-
-        :param X_rf: The receptive fields such that X_rf[i] is the matrix
-            of coordinates representing the points in the i-th receptive field.
-        :type X_rf: :class:`np.ndarray`
-        :param zhat_rf: The output from the neural network for each receptive
-            field.
-        :type zhat_rf: :class:`np.ndarray`
-        :param y: The expected class for each point (considering original
-            points, i.e., not the receptive fields).
-        :type y: :class:`np.ndarray`
-        :param F_rf: The features for each receptive field such that F_rf[i] is
-            the matrix of features of the i-th receptive field. It can be None.
-        :type F_rf: :class:`np.ndarray` or None
-        :param training: Whether the considered receptive fields are those
-            used for training (True) or not (False).
-        :type training: bool
-        :return: Nothing at all but the plots and reports are exported to
-            the corresponding files.
-        """
-        # Extract output paths (either pointing to files or directories)
-        rf_dir, rf_dist_report_path, rf_dist_plot_path = None, None, None
-        if getattr(self.arch.pre_runnable, 'pre_processor', None) is not None:
-            rf_dir = getattr(
-                self.arch.pre_runnable.pre_processor,
-                'receptive_fields_dir',
-                None
-            ) if not training else getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_dir',
-                None
-            )
-            rf_dist_report_path = getattr(
-                self.arch.pre_runnable.pre_processor,
-                'receptive_fields_distribution_report_path',
-                None
-            ) if not training else getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_distribution_report_path',
-                None
-            )
-            rf_dist_plot_path = getattr(
-                self.arch.pre_runnable.pre_processor,
-                'receptive_fields_distribution_plot_path',
-                None
-            ) if not training else getattr(
-                self.arch.pre_runnable.pre_processor,
-                'training_receptive_fields_distribution_plot_path',
-                None
-            )
-        # Check at least one plot or report is requested
-        if (
-            rf_dir is None and
-            rf_dist_report_path is None and
-            rf_dist_plot_path is None
-        ):
-            return
-        # Compute the predicted and expected classes for each receptive field
-        if self.prediction_reducer is not None:  # Use prediction reducer
-            yhat_rf = np.array([  # Predictions (for each receptive field)
-                self.prediction_reducer.select(zhat_rf_i)
-                for zhat_rf_i in zhat_rf
-            ])
-        else:  # Use default approach
-            yhat_rf = np.array([  # Predictions (for each receptive field)
-                np.argmax(zhat_rf_i, axis=1)
-                if len(zhat_rf_i.shape) > 1 and zhat_rf_i.shape[-1] != 1
-                else np.round(np.squeeze(zhat_rf_i))
-                for zhat_rf_i in zhat_rf
-            ])
-        y_rf = self.arch.pre_runnable.pre_processor.reduce_labels(
-            # Reduced expected classes (for each receptive field)
-            X_rf, y
-        ) if y is not None else None
-        # Report receptive fields, if requested
-        if rf_dir is not None:
-            ReceptiveFieldsReport(
-                X_rf=X_rf,  # X (for each receptive field)
-                F_rf=F_rf,  # F (for each receptive field
-                zhat_rf=zhat_rf,  # Softmax scores (for each receptive field)
-                yhat_rf=yhat_rf,  # Predictions (for each receptive field)
-                y_rf=y_rf,  # Expected (for each receptive field, can be None)
-                class_names=self.class_names,
-                fnames=self.arch.fnames
-            ).to_file(rf_dir, self.out_prefix)
-        # Report receptive fields distribution, if requested
-        if rf_dist_report_path:
-            ReceptiveFieldsDistributionReport(
-                yhat_rf=yhat_rf,  # Predictions (for each receptive field)
-                y_rf=y_rf,  # Expected (for each receptive field, can be None)
-                class_names=self.class_names
-            ).to_file(rf_dist_report_path, self.out_prefix)
-        # Plot receptive fields distribution, if requested
-        if rf_dist_plot_path:
-            ReceptiveFieldsDistributionPlot(
-                yhat_rf=yhat_rf,  # Predictions (for each receptive field)
-                y_rf=y_rf,  # Expected (for each receptive field, can be None)
-                class_names=self.class_names,
-                path=rf_dist_plot_path
-            ).plot(out_prefix=self.out_prefix, logging=True)
-
-    def build_sequencer(self, X, y_rf):
+    def build_sequencer(self, X, y_rf, training):
         """
         Build/instantiate a sequencer from the given input data and
         specification.
 
         :param X: The input data.
         :param y_rf: The input reference values.
+        :param training: Whether the sequencer must be built for a training
+            context (True) or a predictive context (False).
         :return: The built sequencer.
         :rtype: :class:`.DLSequencer`
         """
-        seq_type = self.training_sequencer['type']
+        # TODO Rethink : Move implementation to DLSequencerBuilder
+        # Handle case where no sequencer is required
+        if self.sequencer_spec is None:
+            return X, y_rf
+        # Build sequencer
+        seq_type = self.sequencer_spec['type']
         seq_type_low = seq_type.lower()
         if seq_type_low == 'dlsequencer':
             return DLSequencer(
@@ -846,11 +385,23 @@ class SimpleDLModelHandler(DLModelHandler):
                 y_rf,
                 self.batch_size,
                 arch=self.arch,
-                augmentor=self.training_sequencer.get('augmentor', None),
-                random_shuffle_indices=self.training_sequencer.get(
+                augmentor=self.sequencer_spec.get('augmentor', None),
+                random_shuffle_indices=self.sequencer_spec.get(
                     'random_shuffle_indices', False
-                )
-            )
+                ),
+                training=training
+            ), None
+        elif seq_type_low == 'dlsparseshadowsequencer':
+            return DLSparseShadowSequencer(
+                X,
+                y_rf,
+                self.batch_size,
+                arch=self.arch,
+                random_shuffle_indices=self.sequencer_spec.get(
+                    'random_shuffle_indices', False
+                ),
+                training=training
+            ), None
         else:
             raise DeepLearningException(
                 'SimpleDLModelHandler did not expect the sequencer '
@@ -870,27 +421,17 @@ class SimpleDLModelHandler(DLModelHandler):
         # Obtain from parent
         state = super().__getstate__()
         # Update
-        state['summary_report_path'] = self.summary_report_path
-        state['training_history_dir'] = self.training_history_dir
-        state['feat_struct_repr_dir'] = self.feat_struct_repr_dir
-        state['rbf_feat_extract_repr_dir'] = self.rbf_feat_extract_repr_dir
-        state['rbf_feat_processing_repr_dir'] = \
-            self.rbf_feat_processing_repr_dir
-        state['kpconv_representation_dir'] = self.kpconv_representation_dir
-        state['skpconv_representation_dir'] = self.skpconv_representation_dir
-        state['lkpconv_representation_dir'] = self.lkpconv_representation_dir
-        state['slkpconv_representation_dir'] = self.slkpconv_representation_dir
+        self.path_manager.add_to_state(state)
         state['out_prefix'] = self.out_prefix
         state['training_epochs'] = self.training_epochs
         state['batch_size'] = self.batch_size
         state['history'] = copy.copy(self.history)
         state['history'].model = None  # Do not serialize keras/tf model
-        state['checkpoint_path'] = self.checkpoint_path
         state['checkpoint_monitor'] = self.checkpoint_monitor
         state['learning_rate_on_plateau'] = self.learning_rate_on_plateau
         state['early_stopping'] = self.early_stopping
         state['compilation_args'] = self.compilation_args
-        state['training_sequencer'] = self.training_sequencer
+        state['sequencer_spec'] = self.sequencer_spec
         state['fit_verbose'] = self.fit_verbose
         state['predict_verbose'] = self.predict_verbose
         state['prediction_reducer'] = self.prediction_reducer
@@ -909,40 +450,24 @@ class SimpleDLModelHandler(DLModelHandler):
         # Call parent
         super().__setstate__(state)
         # Assign member attributes from state dictionary
-        self.summary_report_path = state['summary_report_path']
-        self.training_history_dir = state['training_history_dir']
-        self.feat_struct_repr_dir = state.get('feat_struct_repr_dir', None)
-        self.rbf_feat_extract_repr_dir = state.get(
-            'rbf_feat_extract_repr_dir', None
-        )
-        self.rbf_feat_processing_repr_dir = state.get(
-            'rbf_feat_processing_repr_dir', None
-        )
-        self.kpconv_representation_dir = state.get(
-            'kpconv_representation_dir', None
-        )
-        self.skpconv_representation_dir = state.get(
-            'skpconv_representation_dir', None
-        )
-        self.lkpconv_representation_dir = state.get(
-            'lkpconv_representation_dir', None
-        )
-        self.slkpconv_representation_dir = state.get(
-            'slkpconv_representation_dir', None
-        )
         self.out_prefix = state['out_prefix']
         self.training_epochs = state['training_epochs']
         self.batch_size = state['batch_size']
         self.history = state['history']
-        self.checkpoint_path = state['checkpoint_path']
         self.checkpoint_monitor = state['checkpoint_monitor']
         self.learning_rate_on_plateau = state['learning_rate_on_plateau']
         self.early_stopping = state['early_stopping']
         self.compilation_args = state['compilation_args']
-        self.training_sequencer = state.get('training_sequencer', None)
+        self.sequencer_spec = state.get(
+            'sequencer_spec', state.get('training_sequencer', None)
+        )
         self.fit_verbose = state['fit_verbose']
         self.predict_verbose = state['predict_verbose']
         self.prediction_reducer = state.get(
-            'prediction_reducer',
-            PredictionReducer()
+            'prediction_reducer', PredictionReducer()
         )
+        self.skip_fit_on_zero_epochs = VL3DCFG['MODEL'][
+            'SimpleDLModelHandler'
+        ].get('skip_fit_on_zero_epochs', False)
+        self.path_manager = DLPathManager()
+        self.path_manager.get_from_state(state)

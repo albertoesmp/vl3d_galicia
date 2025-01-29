@@ -114,12 +114,27 @@ class ReceptiveFieldsReport(Report):
             path,
             'Cannot find the directory to write the receptive fields:'
         )
-        # Write each receptive field
+        # Determine whether there the first row of F is a shadow feature
+        # TODO Rethink : Better remove shadow feature before entering here?
+        no_shadow = True
+        if self.F_rf is not None and self.include_features:
+            mf = self.F_rf[0].shape[0]
+            m = mf
+            if self.zhat_rf is not None and self.include_likelihoods:
+                m = self.zhat_rf[0].shape[0]
+            elif self.yhat_rf is not None and self.include_predictions:
+                m = self.yhat_rf[0].shape[0]
+            elif self.y_rf is not None and self.include_references:
+                m = self.y_rf[0].shape[0]
+            no_shadow = mf == m
+        # Prepare receptive field writing
         fnames = []
         if self.F_rf is not None and self.include_features:
             fnames.extend(self.fnames)
         if self.zhat_rf is not None and self.include_likelihoods:
-            if self.zhat_rf.shape[-1] == 1:  # Assume binary classification
+            ny = self.zhat_rf.shape[-1] if isinstance(self.zhat_rf, np.ndarray)\
+                else self.zhat_rf[0].shape[-1]
+            if ny == 1:  # Assume binary classification
                 fnames.extend([
                     f'{self.class_names[0]}_to_{self.class_names[1]}'
                 ])
@@ -136,11 +151,14 @@ class ReceptiveFieldsReport(Report):
             fnames.append('Success')
         if self.zhat_rf is not None and self.include_entropies:
             fnames.append('PointWiseEntropy')
+        # Write each receptive field
         for i in range(len(self.X_rf)):
+            # Prepare output path for i-th receptive field
             path_rf = os.path.join(path, f'receptive_field_{i}.laz')
+            # Prepare data for i-th receptive field
             F_rfi = []
             if self.F_rf is not None and self.include_features:
-                F_rfi.append(self.F_rf[i])
+                F_rfi.append(self.F_rf[i] if no_shadow else self.F_rf[i][1:])
             if self.zhat_rf is not None and self.include_likelihoods:
                 F_rfi.append(self.zhat_rf[i])
             if self.yhat_rf is not None and self.include_predictions:
@@ -149,8 +167,12 @@ class ReceptiveFieldsReport(Report):
                 self.y_rf is not None and self.yhat_rf is not None and
                 self.include_success
             ):
+                if len(self.yhat_rf[i].shape) < len(self.y_rf[i].shape):
+                    success = np.squeeze(self.y_rf[i]) == self.yhat_rf[i]
+                else:
+                    success = self.y_rf[i] == self.yhat_rf[i]
                 F_rfi.append(np.expand_dims(
-                    (self.y_rf[i] == self.yhat_rf[i]).astype(self.y_rf[i].dtype),
+                    success.astype(self.y_rf[i].dtype),
                     -1
                 ))
             if self.zhat_rf is not None and self.include_entropies:
@@ -158,6 +180,7 @@ class ReceptiveFieldsReport(Report):
                 if len(pwe_i.shape) > 1:
                     pwe_i = np.sum(pwe_i, axis=1)
                 F_rfi.append(np.expand_dims(pwe_i, -1))
+            # Write the i-th receptive field
             PointCloudIO.write(
                 PointCloudFactoryFacade.make_from_arrays(
                     self.X_rf[i],

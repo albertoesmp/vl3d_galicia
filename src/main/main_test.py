@@ -22,6 +22,18 @@ from src.tests.light_kpconv_layer_test import LightKPConvLayerTest
 from src.tests.strided_light_kpconv_layer_test import \
     StridedLightKPConvLayerTest
 from src.tests.hourglass_layer_test import HourglassLayerTest
+from src.tests.submanifold_spconv3d_layer_test import \
+    SubmanifoldSpConv3DLayerTest
+from src.tests.downsampling_spconv3d_layer_test import \
+    DownsamplingSpConv3DLayerTest
+from src.tests.upsampling_spconv3d_layer_test import \
+    UpsamplingSpConv3DLayerTest
+from src.tests.shadow_dense_layer_test import ShadowDenseLayerTest
+from src.tests.shadow_conv1d_layer_test import ShadowConv1DLayerTest
+from src.tests.shadow_batch_normalization_layer_test import \
+    ShadowBatchNormalizationLayerTest
+from src.tests.shadow_activation_layer_test import ShadowActivationLayerTest
+from src.tests.ragged_losses_test import RaggedLossesTest
 from src.tests.model_serialization_test import ModelSerializationTest
 from src.tests.las_inout_test import LASInoutTest
 from src.tests.vl3dpp_binding_test import VL3DPPBindingTest
@@ -34,6 +46,12 @@ from src.tests.vl3dpp_dl_hierarchical_fps_pre_proc_test import \
     VL3DPPDLHierarchicalFPSPreProcTest
 from src.tests.vl3dpp_dl_label_reduction_test import VL3DPPDLLabelReductionTest
 from src.tests.vl3dpp_dl_post_proc_test import VL3DPPDLPostProcTest
+from src.tests.vl3dpp_hierarchical_sparse_grid_test import \
+    VL3DPPHierarchicalSparseGridTest
+from src.tests.vl3dpp_dl_hierarchical_sg_pre_proc_test import \
+    VL3DPPDLHierarchicalSGPreProcTest
+from src.tests.vl3dpp_dl_hierarchical_sg_post_proc_test import \
+    VL3DPPDLHierarchicalSGPostProcTest
 from src.main.main_config import VL3DCFG
 import src.main.main_logger as LOGGING
 import numpy as np

@@ -103,11 +103,14 @@ DLHierarchicalFPSPreProcessor<
     }
     out.Fout.resize(bs);
     // Compute receptive fields
+    int const chunkSize = MultithreadingUtils::correctChunkSize(
+        bs, VL3DPP_OMP_CHUNK_SIZE_SMALL, nthreads
+    );
     #pragma omp parallel for default(none) shared( \
             bs, nx, ny, out, supportNeighborhoods, oversampler, maxDepth, R, \
-            KD, KU, KN, Xin, Fin, yin, Xsup, kdt, hfps, clean \
+            KD, KU, KN, Xin, Fin, yin, Xsup, kdt, hfps, clean, chunkSize \
         ) \
-        schedule(VL3DPP_OMP_SCHEDULE_CHUNKED_SMALL)
+        schedule(VL3DPP_OMP_SCHEDULE, chunkSize)
     for(arma::uword i = 0 ; i  < bs ; ++i){ // Iterate over receptive fields
         fit(i, maxDepth, nx, Xin, Xsup, Fin, yin, kdt, hfps, clean, out);
     }

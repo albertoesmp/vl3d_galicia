@@ -61,7 +61,7 @@ class ConvAutoencPwiseClassif(Architecture):
         self.num_classes = kwargs.get('num_classes', None)
         pre_kwargs = kwargs.get('pre_processing')
         pre_kwargs['num_classes'] = self.num_classes
-        self.pre_runnable = HierarchicalPreProcessor(**kwargs['pre_processing'])
+        self.pre_runnable = HierarchicalPreProcessor(**pre_kwargs)
         self.post_runnable = HierarchicalPostProcessor(self.pre_runnable)
         self.feature_extraction = kwargs.get('feature_extraction', None)
         pre_processor = self.pre_runnable.pre_processor
@@ -156,8 +156,8 @@ class ConvAutoencPwiseClassif(Architecture):
             \pmb{N}^U_2 \in \mathbb{Z}^{R_2 \times K^U_2}, \ldots,
             \pmb{N}^U_{d^*} \in \mathbb{Z}^{R_{d^*} \times K^U_{d^*}}
 
-        :return: Built layer.
-        :rtype: :class:`tf.Tensor`
+        :return: Built layers.
+        :rtype: list of :class:`tf.Tensor`
         """
         # Handle coordinates as input (i.e., structure spaces)
         self.Xs = [
@@ -231,6 +231,7 @@ class ConvAutoencPwiseClassif(Architecture):
                 )
             )
         # Return list of inputs
+        # TODO Rethink : Do Xs[1:], NDs, Ns, and NUs need to be unrolled?
         return [self.Xs[0], self.F, self.Xs[1:], self.NDs, self.Ns, self.NUs]
 
     def build_hidden(self, x, **kwargs):

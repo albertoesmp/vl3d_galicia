@@ -19,6 +19,14 @@ ErrorTestSuites:
     - LightKPConvLayerTest
     - StridedLightKPConvLayerTest
     - HourglassLayerTest
+    - SubmanifoldSpConv3DLayerTest
+    - DownsamplingSpConv3DLayerTest
+    - UpsamplingSpConv3DLayerTest
+    - ShadowDenseLayerTest
+    - ShadowConv1DLayerTest
+    - ShadowBatchNormalizationLayerTest
+    - ShadowActivationLayerTest
+    - RaggedLossesTest
   C++:
     - VL3DPPBindingTest
     - VL3DPPBackendTest
@@ -28,6 +36,9 @@ ErrorTestSuites:
     - VL3DPPDLHierarchicalFPSPreProcTest
     - VL3DPPDLLabelReductionTest
     - VL3DPPDLPostProcTest
+    - VL3DPPHierarchicalSparseGridTest
+    - VL3DPPDLHierarchicalSGPreProcTest
+    - VL3DPPDLHierarchicalSGPostProcTest
 
 WarningTestSuites:
   Deep learning:

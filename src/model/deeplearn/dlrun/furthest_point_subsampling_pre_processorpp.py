@@ -55,27 +55,19 @@ class FurthestPointSubsamplingPreProcessorPP(
         # Prepare C++ call
         F = np.array([]) if F is None else F
         y = np.array([]) if y is None else y
-        training_class_distribution = self.training_class_distribution
-        if training_class_distribution is None:
-            training_class_distribution = np.array([], dtype=np.int32)
-        else:
-            training_class_distribution = np.array(
+        training_class_distribution = \
+            FurthestPointSubsamplingPreProcessorPP \
+            .prepare_training_class_distribution(
                 self.training_class_distribution
             )
-        if (
-            self.neighborhood_spec['type'].lower() == 'rectangular3d' or
-            self.neighborhood_spec['type'].lower() == 'rectangular2d'
-        ):
-            radii = np.array([
-                self.neighborhood_spec['radius'] for i in range(3)
-            ])
-        elif self.neighborhood_spec['type'].lower() == 'bounded_cylinder':
-            radii = np.array([
-                self.neighborhood_spec['radius'] for i in range(3)
-            ])
-            radii[1] *= -1
-        else:
-            radii = np.array([self.neighborhood_spec['radius']]),
+        radii = FurthestPointSubsamplingPreProcessorPP.prepare_radii(
+            self.neighborhood_spec
+        )
+        oversamplingArgs = FurthestPointSubsamplingPreProcessorPP \
+            .prepare_oversampling(
+            self.receptive_field_oversampling,
+            self.num_points
+        )
         Xdtype = X.dtype
         if Xdtype == np.float32:  # 32 bits for input structure space
             if structure_space_bits == 32:  # 32 bits for output structure
@@ -87,24 +79,6 @@ class FurthestPointSubsamplingPreProcessorPP(
                 cpp_f = vl3dpp.rf_dl_fps_preproc_Xdf_Ff_Iu32u32_ys32
             else:  # 64 bits for output structure
                 cpp_f = vl3dpp.rf_dl_fps_preproc_Xdd_Ff_Iu32u32_ys32
-        oversamplingArgs = []
-        if self.receptive_field_oversampling is not None:
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('min_points', 0)
-            )
-            oversamplingArgs.append(self.num_points)
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('strategy', 'nearest')
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('k', 16)
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('radius', 1.0)
-            )
-            oversamplingArgs.append(
-                self.receptive_field_oversampling.get('nthreads', 1)
-            )
         # Call C++ to generate the receptive fields
         out = cpp_f(
             X,
@@ -161,6 +135,12 @@ class FurthestPointSubsamplingPreProcessorPP(
             f'{Xout.shape[0]} receptive fields of {self.num_points} points '
             f'each from {X.shape[0]} points in {end-start:.3f} seconds.'
         )
+        # Export support points if requested
+        if inputs.get('plots_and_reports', True):
+            sup_X = np.vstack([
+                rfi.x for rfi in self.last_call_receptive_fields
+            ])
+            self.export_support_points(inputs, sup_X)
         # Return with labels
         if yout is not None:
             if Fout is not None:  # Structure, features, and labels
@@ -251,6 +231,7 @@ class FurthestPointSubsamplingPreProcessorPP(
         :param N: The first downsampling neighborhood of a given i-th receptive
             field.
         :type N: :class:`np.ndarray`
+        :return: The C++ function for label reduction.
         """
         ydtype = y.dtype
         Ndtype = N.dtype
@@ -289,3 +270,83 @@ class FurthestPointSubsamplingPreProcessorPP(
         elif Ndtype == np.uint64:
             r = 'u64'
         return getattr(vl3dpp, f'rf_reduce_label_mode_{p}{q}{r}', None)
+
+    @staticmethod
+    def prepare_training_class_distribution(training_class_distribution):
+        """
+        Prepare the training class distribution to be used for a C++ deep
+        learning pre-processing call.
+
+        :param training_class_distribution: The training class distribution
+            that must be prepared (typically, it comes from
+            self.training_class_distribution)
+        :return: Prepared training classs distribution.
+        """
+        if training_class_distribution is None:
+            training_class_distribution = np.array([], dtype=np.int32)
+        else:
+            training_class_distribution = np.array(training_class_distribution)
+        return training_class_distribution
+
+    @staticmethod
+    def prepare_radii(neighborhood_spec):
+        """
+        Prepare the radii argument to be used for a C++ deep learning
+        pre-processing call.
+
+        :param neighborhood_spec: The neighborhood specification that contains
+            the information that is needed to prepare the radii argument.
+        :type neighborhood_spec: dict
+        :return: Prepared radii argument.
+        :rtype: :class:`np.ndarray`
+        """
+        if (
+            neighborhood_spec['type'].lower() == 'rectangular3d' or
+            neighborhood_spec['type'].lower() == 'rectangular2d'
+        ):
+            radii = np.array([
+                neighborhood_spec['radius'] for i in range(3)
+            ])
+        elif neighborhood_spec['type'].lower() == 'bounded_cylinder':
+            radii = np.array([
+                neighborhood_spec['radius'] for i in range(3)
+            ])
+            radii[1] *= -1
+        else:
+            radii = np.array([neighborhood_spec['radius']])
+        return radii
+
+    @staticmethod
+    def prepare_oversampling(oversampling_spec, num_points):
+        """
+        Prepare the oversampling argument to be used for a C++ deep learning
+        pre-processing call.
+
+        :param oversampling_spec: The oversampling specification that contains
+            the data that is needed to prepare the oversampling arguments.
+        :type oversampling_spec: dict
+        :param num_points: How many points are requested for the FPS subsampling
+            strategy.
+        :type num_points: int
+        :return: Prepared oversampling arguments.
+        :rtype: list
+        """
+        oversamplingArgs = []
+        if oversampling_spec is not None:
+            oversamplingArgs.append(
+                oversampling_spec.get('min_points', 0)
+            )
+            oversamplingArgs.append(num_points)
+            oversamplingArgs.append(
+                oversampling_spec.get('strategy', 'nearest')
+            )
+            oversamplingArgs.append(
+                oversampling_spec.get('k', 16)
+            )
+            oversamplingArgs.append(
+                oversampling_spec.get('radius', 1.0)
+            )
+            oversamplingArgs.append(
+                oversampling_spec.get('nthreads', 1)
+            )
+        return oversamplingArgs

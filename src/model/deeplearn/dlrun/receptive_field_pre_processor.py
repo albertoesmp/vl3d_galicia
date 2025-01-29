@@ -57,6 +57,18 @@ class ReceptiveFieldPreProcessor:
         points. When False, support points do not necessarily match points
         from the point cloud.
     :vartype center_on_pcloud: bool
+    :ivar neighborhood_spec: The neighborhood specification. See the example
+        below.
+
+        .. code-block:: JSON
+
+            {
+                "type": "sphere",
+                "radius": 5.0,
+                "separation_factor": 1.0
+            }
+
+    :vartype neighborhood_spec: dict
     :ivar num_classes: The number of different classes that the pre-processor
         is expected to support when dealing with point-wise labels representing
         classes.
@@ -107,6 +119,7 @@ class ReceptiveFieldPreProcessor:
             'training_class_distribution', None
         )
         self.center_on_pcloud = kwargs.get('center_on_pcloud', False)
+        self.neighborhood_spec = kwargs.get('neighborhood', None)  # Support
         self.num_classes = kwargs.get('num_classes', None)
         self.nthreads = kwargs.get('nthreads', 1)
         self.receptive_fields_distribution_report_path = kwargs.get(
@@ -134,6 +147,12 @@ class ReceptiveFieldPreProcessor:
         # Initialize last call cache
         self.last_call_receptive_fields = None
         self.last_call_neighborhoods = None
+        # Validate attributes
+        if self.neighborhood_spec is None:
+            raise DeepLearningException(
+                f'The {self.__class__.__name__} did not receive any '
+                'neighborhood specification.'
+            )
 
     # ---   RUN / CALL   --- #
     # ---------------------- #
@@ -217,14 +236,22 @@ class ReceptiveFieldPreProcessor:
             self.support_strategy_num_points = spec[
                 'support_strategy_num_points'
             ]
+        if 'support_strategy_fast' in spec_keys:
+            self.support_strategy_fast = spec['support_strategy_fast']
         if 'support_chunk_size' in spec_keys:
             self.support_chunk_size = spec['support_chunk_size']
+        if 'to_unit_sphere' in spec_keys:
+            self.to_unit_sphere = spec['to_unit_sphere']
         if 'training_class_distribution' in spec_keys:
             self.training_class_distribution = spec[
                 'training_class_distribution'
             ]
         if 'center_on_pcloud' in spec_keys:
             self.center_on_pcloud = spec['center_on_pcloud']
+        if 'neighborhood_spec' in spec_keys:
+            self.neighborhood_spec = spec['neighborhood_spec']
+        if 'num_classes' in spec_keys:
+            self.num_classes = spec['num_classes']
         if 'nthreads' in spec_keys:
             self.nthreads = spec['nthreads']
         if 'receptive_fields_dir' in spec_keys:
@@ -453,22 +480,23 @@ class ReceptiveFieldPreProcessor:
         Function to clean all the receptive fields stored in the pre-processor.
         """
         # Check if cleaning is needed
-        needs_cleaning = (
-            self.last_call_neighborhoods is not None or
-            self.last_call_receptive_fields is not None
-        )
+        has_neighborhoods = self.last_call_neighborhoods is not None
+        has_receptive_fields = self.last_call_receptive_fields is not None
+        needs_cleaning = has_neighborhoods or has_receptive_fields
         if not needs_cleaning:
             return
         # Clean neighborhoods
-        for Ii in self.last_call_neighborhoods:
-            del Ii
-        del self.last_call_neighborhoods
-        self.last_call_neighborhoods = None
+        if has_neighborhoods:
+            for Ii in self.last_call_neighborhoods:
+                del Ii
+            del self.last_call_neighborhoods
+            self.last_call_neighborhoods = None
         # Clean receptive fields
-        for rfi in self.last_call_receptive_fields:
-            del rfi
-        del self.last_call_receptive_fields
-        self.last_call_receptive_fields =None
+        if has_receptive_fields:
+            for rfi in self.last_call_receptive_fields:
+                del rfi
+            del self.last_call_receptive_fields
+            self.last_call_receptive_fields =None
         # Call garbage collector
         gc.collect()
 
@@ -492,6 +520,7 @@ class ReceptiveFieldPreProcessor:
             'to_unit_sphere': self.to_unit_sphere,
             'training_class_distribution': self.training_class_distribution,
             'center_on_pcloud': self.center_on_pcloud,
+            'neighborhood_spec': self.neighborhood_spec,
             'num_classes': self.num_classes,
             'nthreads': self.nthreads,
             'receptive_fields_dir': None,
@@ -527,6 +556,7 @@ class ReceptiveFieldPreProcessor:
         self.to_unit_sphere = state.get('to_unit_sphere', False)
         self.training_class_distribution = state['training_class_distribution']
         self.center_on_pcloud = state['center_on_pcloud']
+        self.neighborhood_spec = state['neighborhood_spec']
         self.num_classes = state.get('num_classes', 0)
         self.nthreads = state['nthreads']
         self.receptive_fields_dir = None

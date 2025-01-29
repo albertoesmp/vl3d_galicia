@@ -87,7 +87,6 @@ arma::Mat<XDecimalType> FurthestPointSubsampler<XDecimalType>::sample2D(
     arma::Col<XDecimalType> minSqDist( // Vector of min/closest distances^2
         m, arma::fill::value(std::numeric_limits<XDecimalType>::max())
     );
-
     // Iteratively find all points for FPS
     arma::uword fp = 0; // Index of furthest point for each iteration
     selected[0] = 0;  // Select first point
@@ -188,14 +187,17 @@ FurthestPointSubsampler<XDecimalType>::parallelSample(
     selected[0] = 0;  // Select first point
     minSqDist[0] = 0; // First point will be considered, so distance zero
     VL3DPP_OMP_Opt<XDecimalType, arma::uword> fp = {0, 0};
+    int const chunkSize = util::MultithreadingUtils::computeFullStaticChunkSize(
+        m-1, nthreads
+    );
+    #pragma omp parallel default(none) \
+        shared(targetPoints, selected, fp, m, X, minSqDist, chunkSize)
+    { // OMP parallel begin ---
     for(arma::uword R=1 ; R < targetPoints ; ++R){ // R is num. points in FPS
         // Find furthest point wrt to current selection
         fp.x = 0;
         arma::Row<XDecimalType> const &fpx = X.row(fp.i); // Coords. of furth.
-        #pragma omp parallel for default(none) \
-            shared(m, X, fpx, minSqDist) \
-            reduction(argmax:fp) \
-            schedule(VL3DPP_OMP_SCHEDULE_CHUNKED)
+        #pragma omp for reduction(argmax:fp) schedule(static, chunkSize)
         for(arma::uword i = 1 ; i < m ; ++i){ // Iterate over points
             XDecimalType sqDist = 0;
             for(arma::uword j = 0 ; j < nx ; ++j){
@@ -214,6 +216,7 @@ FurthestPointSubsampler<XDecimalType>::parallelSample(
         // Register furthest point
         selected[R] = fp.i;
     }
+    } // --- OMP parallel end
 
     // Return FPS
     return X.rows(selected);
@@ -243,14 +246,20 @@ arma::Mat<XDecimalType> FurthestPointSubsampler<XDecimalType>::parallelSample2D(
     selected[0] = 0;  // Select first point
     minSqDist[0] = 0; // First point will be considered, so distance zero
     VL3DPP_OMP_Opt<XDecimalType, arma::uword> fp = {0, 0};
+    int const chunkSize = util::MultithreadingUtils::computeFullStaticChunkSize(
+        m-1, nthreads
+    );
+    #pragma omp parallel default(none) \
+        shared(targetPoints, selected, fp, m, X, minSqDist, chunkSize)
+    { // OMP parallel begin ---
     for(arma::uword R=1 ; R < targetPoints ; ++R){ // R is num. points in FPS
+        #pragma omp single
+        { // OMP single begin ---
         // Find furthest point wrt to current selection
         fp.x = 0;
+        } // --- OMP single end
         arma::Row<XDecimalType> const &fpx = X.row(fp.i); // Coords. of furth. pt.
-        #pragma omp parallel for default(none) \
-            shared(m, X, fpx, minSqDist) \
-            reduction(argmax:fp) \
-            schedule(VL3DPP_OMP_SCHEDULE_CHUNKED)
+        #pragma omp for reduction(argmax:fp) schedule(static, chunkSize)
         for(arma::uword i = 1 ; i < m ; ++i){
             // Iterate over points
             XDecimalType const dx = X.at(i, 0)-fpx[0];
@@ -261,10 +270,13 @@ arma::Mat<XDecimalType> FurthestPointSubsampler<XDecimalType>::parallelSample2D(
                 fp.i = i;
             }
         }
+        #pragma omp single
+        { // OMP single begin ---
         // Register furthest point
         selected[R] = fp.i;
+        } // --- OMP single end
     }
-
+    } // --- OMP parallel end
     // Return FPS
     return X.rows(selected);
 }
@@ -293,14 +305,20 @@ arma::Mat<XDecimalType> FurthestPointSubsampler<XDecimalType>::parallelSample3D(
     selected[0] = 0;  // Select first point
     minSqDist[0] = 0; // First point will be considered, so distance zero
     VL3DPP_OMP_Opt<XDecimalType, arma::uword> fp = {0, 0};
+    int const chunkSize = util::MultithreadingUtils::computeFullStaticChunkSize(
+        m-1, nthreads
+    );
+    #pragma omp parallel default(none) \
+        shared(targetPoints, selected, fp, m, X, minSqDist, chunkSize)
+    { // OMP parallel begin ---
     for(arma::uword R=1 ; R < targetPoints ; ++R){ // R is num. points in FPS
+        #pragma omp single
+        { // OMP single begin ---
         // Find furthest point wrt to current selection
         fp.x = 0;
+        } // --- OMP single end
         arma::Row<XDecimalType> const &fpx = X.row(fp.i); // Coords. of furth. pt.
-        #pragma omp parallel for default(none) \
-            shared(m, X, fpx, minSqDist) \
-            reduction(argmax:fp) \
-            schedule(VL3DPP_OMP_SCHEDULE_CHUNKED)
+        #pragma omp for reduction(argmax:fp) schedule(static, chunkSize)
         for(arma::uword i = 1 ; i < m ; ++i){
             // Iterate over points
             XDecimalType const dx = X.at(i, 0)-fpx[0];
@@ -312,9 +330,13 @@ arma::Mat<XDecimalType> FurthestPointSubsampler<XDecimalType>::parallelSample3D(
                 fp.i = i;
             }
         }
+        #pragma omp single
+        { // OMP single begin ---
         // Register furthest point
         selected[R] = fp.i;
+        } // --- OMP single end
     }
+    } // --- OMP parallel end
 
     // Return FPS
     return X.rows(selected);

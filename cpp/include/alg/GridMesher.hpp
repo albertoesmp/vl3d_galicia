@@ -29,7 +29,7 @@ protected:
      * @brief The axis-wise length of each cell
      *  \f$\pmb{l} \in \mathbb{R}^{n_x}\f$.
      *
-     * More concretely, \f$f_k\f$ gives the separation between nodes along the
+     * More concretely, \f$l_k\f$ gives the separation between nodes along the
      *  \f$k\f$-axis.
      */
     arma::Col<XDecimalType> cellSize;

@@ -74,10 +74,18 @@ class ReceptiveFieldsDistributionReport(Report):
                 '   TRUE RF COUNT, TRUE RF FREQ (%)'
         s += '\n'  # End of header line
         # ---  Table: body  --- #
-        num_yhat = np.prod(self.yhat_rf.shape) if self.yhat_rf is not None \
-            else 0
+        if isinstance(self.yhat_rf, list):
+            num_yhat = np.sum([len(yhat_rfi) for yhat_rfi in self.yhat_rf]) \
+                if self.yhat_rf is not None else 0
+        else:
+            num_yhat = np.prod(self.yhat_rf.shape) if self.yhat_rf is not None \
+                else 0
         num_yhat_rf = len(self.yhat_rf) if self.yhat_rf is not None else 0
-        num_y = np.prod(self.y_rf.shape) if self.y_rf is not None else 0
+        if isinstance(self.y_rf, list):
+            num_y = np.sum([len(y_rfi) for y_rfi in self.y_rf]) \
+                if self.y_rf is not None else 0
+        else:
+            num_y = np.prod(self.y_rf.shape) if self.y_rf is not None else 0
         num_y_rf = len(self.y_rf) if self.y_rf is not None else 0
         yhat_count_sum, yhat_freq_sum, yhat_rf_count_sum, yhat_rf_freq_sum, \
         y_count_sum, y_freq_sum, y_rf_count_sum, y_rf_freq_sum = [0]*8
@@ -117,7 +125,7 @@ class ReceptiveFieldsDistributionReport(Report):
         # ---  Table: foot  --- #
         s += '\nSUM                     :'
         if self.yhat_rf is not None:
-            s += f'  {yhat_count_sum:16d}, {100*yhat_freq_sum:16.4f}, '\
+            s += f' {yhat_count_sum:16d}, {100*yhat_freq_sum:16.4f}, '\
                 f'{yhat_rf_count_sum:16d}, {100*yhat_rf_freq_sum:16.4f}'
         if self.y_rf is not None:
             if self.yhat_rf is not None:
@@ -147,7 +155,10 @@ class ReceptiveFieldsDistributionReport(Report):
             of current class, and the corresponding relative frequency.
         """
         # Count how many cases of current class
-        count = np.count_nonzero(rf == cidx)
+        if isinstance(rf, list):
+            count = np.count_nonzero(np.concatenate(rf) == cidx)
+        else:
+            count = np.count_nonzero(rf == cidx)
         freq = count/num_cases
         # Count how many receptive fields contain the current class
         rf_count = np.count_nonzero([np.any(rf_i == cidx) for rf_i in rf])

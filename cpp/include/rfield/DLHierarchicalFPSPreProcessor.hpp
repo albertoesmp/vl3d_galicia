@@ -10,6 +10,7 @@
 #include <alg/Oversampler.hpp>
 #include <util/VL3DPPException.hpp>
 #include <util/VL3DPPMacros.hpp>
+#include <util/MultithreadingUtils.hpp>
 
 #include <armadillo>
 #include <omp.h>
@@ -23,6 +24,7 @@ using vl3dpp::alg::Oversampler;
 using vl3dpp::alg::SupportNeighborhoods;
 using vl3dpp::alg::FurthestPointSubsampler;
 using vl3dpp::util::VL3DPPException;
+using vl3dpp::util::MultithreadingUtils;
 
 namespace vl3dpp::rfield{
 
@@ -67,7 +69,7 @@ protected:
         &supportNeighborhoods;
     /**
      * @brief The number of different classes that must be supported by the
-     *  FPS pre-processor.
+     *  hierarchical FPS pre-processor.
      */
     LabelType ny;
     /**

@@ -12,6 +12,8 @@ from src.model.deeplearn.rbf_net_pwise_classif_model import \
     RBFNetPwiseClassifModel
 from src.model.deeplearn.conv_autoenc_pwise_classif_model import \
     ConvAutoencPwiseClassifModel
+from src.model.deeplearn.spconv3d_pwise_classif_model import \
+    SpConv3DPwiseClassifModel
 import src.main.main_logger as LOGGING
 from src.utils.dict_utils import DictUtils
 from src.main.main_config import VL3DCFG
@@ -299,7 +301,8 @@ class ClassificationUncertaintyEvaluator(Evaluator):
             (
                 PointNetPwiseClassifModel,
                 RBFNetPwiseClassifModel,
-                ConvAutoencPwiseClassifModel
+                ConvAutoencPwiseClassifModel,
+                SpConv3DPwiseClassifModel
             )
         ):
             X = model.get_input_from_pcloud(pcloud)

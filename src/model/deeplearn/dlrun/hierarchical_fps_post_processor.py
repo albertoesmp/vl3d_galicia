@@ -13,14 +13,14 @@ class HierarchicalFPSPostProcessor:
     """
     :author: Alberto M. Esmoris Pena
 
-    Postprocess an input in the first level of the FPS hierarchy back to the
+    Postprocess the data from the first level of the FPS hierarchy back to the
     original space.
 
     See :class:`.HierarchicalFPSPreProcessor` and
     :class:`.FurthestPointSubsamplingPostProcessor`.
 
-    :ivar hfps_preproc: The preprocessor that generated the furthest point
-        subsampling that must be reverted by the post-processor.
+    :ivar hfps_preproc: The preprocessor that generated the hierarchical
+        furthest point subsampling that must be reverted by the post-processor.
     :vartype hfps_preproc: :class:`.HierarchicalFPSPreProcessor`.
     """
     # ---   INIT   --- #
@@ -57,6 +57,7 @@ class HierarchicalFPSPostProcessor:
         :type reducer: :class:`.PredictionReducer`
         :return: The :math:`m` point-wise predictions derived from the
             :math:`R` input predictions on the receptive field.
+        :rtype: :class:`np.ndarray`
         """
         start = time.perf_counter()
         _inputs = inputs

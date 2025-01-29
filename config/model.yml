@@ -29,6 +29,7 @@ SimpleDLModelHandler:
   checkpoint_monitor: "loss"
   fit_verbose: "auto"
   predict_verbose: "auto"
+  skip_fit_on_zero_epochs: true
 
 # Default configuration of deep learning architectures
 Architecture:
@@ -95,8 +96,92 @@ ConvAutoencPwiseClassif:
   conv1d_kernel_initializer: "glorot_normal"
   output_kernel_initializer: "glorot_normal"
 
+# Default configuration of sparse 3D convolutional point-wise classfication
+SpConv3DPwiseClassif:
+  initial_shared_mlp: false
+  initial_shared_mlp_initializer: "glorot_normal"
+  initial_shared_mlp_regularizer: null
+  initial_shared_mlp_constraint: null
+  initial_shared_mlp_activation: "relu"
+  initial_unactivated_spconv: true
+  output_kernel_initializer: "glorot_normal"
+  output_kernel_regularizer: null
+  output_kernel_constraint: null
+  submanifold_filters:
+    - 64
+    - 128
+    - 256
+    - 512
+    - 1024
+  submanifold_features:
+    - 64
+    - 128
+    - 256
+    - 512
+    - 1024
+  submanifold_initializer:
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+  submanifold_regularizer:
+    - null
+    - null
+    - null
+    - null
+    - null
+  submanifold_constraint:
+    - null
+    - null
+    - null
+    - null
+    - null
+  submanifold_bn_momentum:
+    - 0.9
+    - 0.9
+    - 0.9
+    - 0.9
+    - 0.9
+  downsampling_initializer:
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+  downsampling_regularizer:
+    - null
+    - null
+    - null
+    - null
+    - null
+  downsampling_constraint:
+    - null
+    - null
+    - null
+    - null
+    - null
+  upsampling_initializer:
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+  upsampling_regularizer:
+    - null
+    - null
+    - null
+    - null
+    - null
+  upsampling_constraint:
+    - null
+    - null
+    - null
+    - null
+    - null
 # Default configuration of receptive fields
 ReceptiveField:
   structure_space_bits: 32
   max_classes_per_reduction: 16
+
 ...

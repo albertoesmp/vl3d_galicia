@@ -17,7 +17,7 @@ namespace vl3dpp::rfield{
  * @version 1.0
  * @brief Class representing the output of a deep learning pre-processor.
  *
- * @tparam InputXDecimalType the data type for the decimal numbers representing
+ * @tparam InputXDecimalType The data type for the decimal numbers representing
  *  the input structure spaces (typically used to store the centers of each
  *  receptive field with the same decimal precision than the original input).
  * @tparam OutputXDecimalType The data type for the decimal numbers representing
@@ -29,6 +29,7 @@ namespace vl3dpp::rfield{
  * @tparam IndexType The index type used to encode the neighborhoods.
  *
  * @see vl3dpp::rfield::DLFPSPreProcessor
+ * @see vl3dpp::rfield::DLHierarchicalFPSPreProcessor
  */
 template <
     typename InputXDecimalType,
@@ -95,13 +96,14 @@ public:
      *
      * \f[
      *  \forall 1 < i < \text{bs},\;
-     *  \pmb{I_i} \in \mathbb{Z}^{m \times R}
+     *  \pmb{I_i} \in \mathbb{Z}^{m_i}
      * \f]
      *
-     * Where \f$m \in \mathbb{Z}_{>0}\f$ is the number of points in the original
-     *  point cloud and \f$(\pmb{I_i})_{pq}\f$ can be read as the \f$q\f$-th
-     *  neighbor in the original point cloud of the p-th point in the \f$i\f$-th
-     *  receptive field.
+     * Where \f$m_i \in \mathbb{Z}_{>0}\f$ is the number of points in the
+     * original point cloud that belong to the neighborhood represented by the
+     * \f$i\f$-th receptive field and \f$(\pmb{I_i})_{p}\f$ can be read as the
+     * index representing the \f$p\f$-th neighbor from the original point cloud
+     * in the \f$i\f$-th receptive field.
      */
     std::vector<arma::Col<IndexType>> I;
     /**

@@ -264,7 +264,7 @@ public:
      * @brief Wrapper to call SupportNeighborhoods::neighborhoodMethod
      * @see SupportNeighborhoods::neighborhoodMethod
      */
-    void computeNeighborhood(
+    inline void computeNeighborhood(
         arma::Mat<XDecimalType> const &X,
         arma::Col<XDecimalType> const &xsupi,
         KDTree<IndexType, XDecimalType> &kdt,

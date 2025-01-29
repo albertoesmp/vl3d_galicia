@@ -34,5 +34,7 @@ class DLUtils:
         fun_name = loss_args.get('function', '').lower()
         return (
             fun_name == 'binary_crossentropy' or
-            fun_name == 'class_weighted_binary_crossentropy'
+            fun_name == 'class_weighted_binary_crossentropy' or
+            fun_name == 'ragged_binary_crossentropy' or
+            fun_name == 'ragged_class_weighted_binary_crossentropy'
         )

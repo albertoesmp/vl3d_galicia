@@ -6,6 +6,7 @@
 #include <util/VL3DPPCustomOpenMP.hpp>
 #include <util/VL3DPPException.hpp>
 #include <util/VL3DPPMacros.hpp>
+#include <util/MultithreadingUtils.hpp>
 
 #include <armadillo>
 

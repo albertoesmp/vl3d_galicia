@@ -1,6 +1,6 @@
 #include <rfield/DLFPSPostProcessor.hpp>
 
-using rfield::DLFPSPostProcessor;
+using vl3dpp::rfield::DLFPSPostProcessor;
 
 
 // ***  CONSTRUCTION / DESTRUCTION  *** //
@@ -40,7 +40,7 @@ DLFPSPostProcessor<
     }
     else{
         std::stringstream ss;
-        ss  << "DLFPostProcessor cannot be instantiated for requested "
+        ss  << "DLFPSPostProcessor cannot be instantiated for requested "
             << "entropic reduction strategy: \""
             << reductionType << "\"";
         throw util::VL3DPPException(ss.str());
@@ -74,9 +74,12 @@ DLFPSPostProcessor<
     std::vector<arma::Mat<FDecimalType>> encoded(bs);
 
     // Propagate/encode probabilities
+    int const chunkSize = util::MultithreadingUtils::correctChunkSize(
+        bs, VL3DPP_OMP_CHUNK_SIZE_SMALL, nthreads
+    );
     #pragma omp parallel for default(none) \
-        schedule(VL3DPP_OMP_SCHEDULE_CHUNKED) \
-        shared(MBatch, zBatch, encoded, bs)
+        schedule(VL3DPP_OMP_SCHEDULE, chunkSize) \
+        shared(MBatch, zBatch, encoded, bs, chunkSize)
     for(size_t i = 0 ; i < bs ; ++i){
         arma::Mat<FDecimalType> const &zBatchi = zBatch.row(i);
         encoded[i] = rfield::propagateMean<FDecimalType, EncodingIndexType>(

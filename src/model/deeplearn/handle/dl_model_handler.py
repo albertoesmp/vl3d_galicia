@@ -2,6 +2,7 @@
 # ------------------- #
 from abc import abstractmethod
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
+from src.model.deeplearn.handle.dl_pretrained_handler import DLPretrainedHandler
 
 
 # ---   CLASS   --- #
@@ -20,6 +21,7 @@ class DLModelHandler:
     :ivar class_names: The name for each class involved in the classification
         problem, if any (it can be ignored by regression models).
     :vartype class_names: list
+    :ivar compiler: See :class:`.DLModelCompiler`.
     :ivar compiled: It is None by default, but it will be assigned the compiled
         model after calling the fit or predict methods.
     """
@@ -39,7 +41,9 @@ class DLModelHandler:
         self.compilation_args = kwargs.get('compilation_args', None)
         self.class_weight = kwargs.get('class_weight', None)
         self.class_names = kwargs.get('class_names', None)
+        self.compiler = None
         self.compiled = None
+        self.path_manager = None
 
     # ---   MODEL HANDLER   --- #
     # ------------------------- #
@@ -76,9 +80,11 @@ class DLModelHandler:
         """
         Compute predictions for the given input data.
 
-        :param X: The structure space matrix, typically the matrix with the
-            x, y, z coordinates as columns.
-        :type X: :class:`np.ndarray`
+        :param X: The input data for the deep learning model, typically the
+            structure space (e.g., the x, y, z, coordinates for a 3D point
+            cloud) and potentially the feature space (e.g., the matrix whose
+            rows give the point-wise features).
+        :type x: list of :class:`np.ndarray`
         :param y: The vector of expected labels, the ground-truth from the
             supervised training perspective. While it is not necessary to
             compute predictions, when available it can be given because some
@@ -118,7 +124,7 @@ class DLModelHandler:
         pass
 
     @abstractmethod
-    def compile(self, X=None, y=None, **kwargs):
+    def compile(self, X=None, y=None, y_rf=None, **kwargs):
         """
         The method that provides the logic to compile a model.
 
@@ -128,6 +134,8 @@ class DLModelHandler:
             belong to).
         :param y: Optionally, the labels might be used for a better
             initialization (e.g., automatically derive the number of classes).
+        :param y_rf: The expected values for each receptive field. Can be
+            used to derive class weights.
         :return: The model handler itself after compiling the architecture,
             which implies modifying its internal state.
         :rtype: :class:`.DLModelHandler`
@@ -149,25 +157,13 @@ class DLModelHandler:
         Assist the :meth:`model.Model.overwrite_pretrained_model` method for
         deep learning models.
 
+        See :class:`.DLPretrainedHandler`.
+
         :param spec: The key-word specification containing the model's
             arguments.
         :type spec: dict
         """
-        spec_keys = spec.keys()
-        # Overwrite baseline attributes of the deep learning model handler
-        if 'model_handling' in spec_keys:
-            spec_handling = spec['model_handling']
-            spec_handling_keys = spec_handling.keys()
-            if 'class_weight' in spec_handling_keys:
-                self.class_weight = spec_handling['class_weight']
-            if 'class_names' in spec_handling_keys:
-                self.class_names = spec_handling['class_names']
-        # Overwrite compilation arguments
-        if 'compilation_args' in spec_keys:
-            self.compilation_args = spec['compilation_args']
-        # Overwrite the attributes of the model's architecture
-        if self.arch is not None:
-            self.arch.overwrite_pretrained_model(spec)
+        DLPretrainedHandler().overwrite_pretrained_model(self, spec)
 
     # ---  MODEL HANDLING TASKS  --- #
     # ------------------------------ #
@@ -203,7 +199,9 @@ class DLModelHandler:
             'compilation_args': self.compilation_args,
             'class_weight': self.class_weight,
             'class_names': self.class_names,
-            'compiled': None  # Compiled model is not serialized
+            'compiler': None,  # Model compiler is not serialized
+            'compiled': None,  # Compiled model is not serialized
+            'path_manager': None  # Path manager is not serialized
         }
 
     def __setstate__(self, state):
@@ -220,4 +218,6 @@ class DLModelHandler:
         self.compilation_args = state['compilation_args']
         self.class_weight = state['class_weight']
         self.class_names = state['class_names']
+        self.compiler = None
         self.compiled = None
+        self.path_manager = None

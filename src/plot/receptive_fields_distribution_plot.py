@@ -136,6 +136,8 @@ class ReceptiveFieldsDistributionPlot(MplPlot):
             dtype=int
         )
         # Count class distribution
+        if isinstance(y, list):
+            y = np.concatenate(y)
         count, bins = np.histogram(
             y, bins=len(class_nums), range=(0, len(class_nums))
         )

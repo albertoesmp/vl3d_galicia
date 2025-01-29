@@ -56,15 +56,15 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         sampling computation (slower).
     :vartype fast_flag_per_depth: list
     """
-    # ---   INIT  --- #
-    # --------------- #
+    # ---   INIT   --- #
+    # ---------------- #
     def __init__(self, **kwargs):
         """
         Initialization/instantiation of a Hierarchical Furthest Point
         Subsampling pre-processor.
 
         :param kwargs: The key-word arguments for the
-            HierarchicalFurthestPointSubsamplingPreProcessor.
+            Hierarchical Furthest Point Subsampling pre-processor.
         """
         # Call parent's init
         super().__init__(**kwargs)
@@ -81,7 +81,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         self.fast_flag_per_depth = kwargs.get(
             'fast_flag_per_depth', [False for i in range(self.depth)]
         )
-        self.neighborhood_spec = kwargs.get('neighborhood', None)  # Support
         self.receptive_field_oversampling = kwargs.get(
             'receptive_field_oversampling', None
         )
@@ -144,11 +143,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
                 f'{len(self.num_upsampling_neighbors)} upsampling '
                 f'neighborhoods but depth is {self.depth} '
                 '(they MUST be equal).'
-            )
-        if self.neighborhood_spec is None:
-            raise DeepLearningException(
-                'The HierarchicalFPSPreProcessor did not receive any '
-                'neighborhood specification.'
             )
 
     # ---   RUN/CALL   --- #
@@ -394,6 +388,16 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
             nthreads=self.nthreads
         ).compute(X, y=y)
 
+    # ---   SUPPORT POINTS EXPORT   --- #
+    # --------------------------------- #
+    def _export_support_points(self, sup_X, path):
+        """
+        See :class:`.ReceptiveFieldPreProcessor`,
+        :meth:`receptive_field_pre_processor.ReceptiveFieldPreProcessor._export_support_points`, and
+        :meth:`GridSubsamplingPreProcessor.support_points_to_file`.
+        """
+        return GridSubsamplingPreProcessor.support_points_to_file(sup_X, path)
+
     # ---   OTHER METHODS   --- #
     # ------------------------- #
     def overwrite_pretrained_model(self, spec):
@@ -419,8 +423,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
             self.depth = spec['depth']
         if 'fast_flag_per_depth' in spec_keys:
             self.fast_flag_per_depth = spec['fast_flag_per_depth']
-        if 'neighborhood_spec' in spec_keys:
-            self.neighborhood_spec = spec['neighborhood_spec']
         if 'receptive_field_oversampling' in spec_keys:
             self.receptive_field_oversampling = spec[
                 'receptive_field_oversampling'
@@ -432,6 +434,8 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         """
         Method to be called when saving the serialized hierarchical furthest
         point sampling receptive field pre-processor.
+
+        See :meth:`.ReceptiveFieldPreProcessor.__getstate__`.
 
         :return: The state's dictionary of the object.
         :rtype: dict
@@ -445,7 +449,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         state['num_points_per_depth'] = self.num_points_per_depth
         state['depth'] = self.depth
         state['fast_flag_per_depth'] = self.fast_flag_per_depth
-        state['neighborhood_spec'] = self.neighborhood_spec
         state['receptive_field_oversampling'] = \
             self.receptive_field_oversampling
         # Return
@@ -472,7 +475,6 @@ class HierarchicalFPSPreProcessor(ReceptiveFieldPreProcessor):
         self.num_points_per_depth = state['num_points_per_depth']
         self.depth = state['depth']
         self.fast_flag_per_depth = state['fast_flag_per_depth']
-        self.neighborhood_spec = state['neighborhood_spec']
         self.receptive_field_oversampling = state.get(
             'receptive_field_oversampling', None
         )

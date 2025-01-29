@@ -150,7 +150,7 @@ class ConvAutoencPwiseClassifModel(ClassificationModel):
         :type X: :class:`np.ndarray`
         :param F: The input matrix of features (OPTIONAL). If not given, it
             will be retrieved from the point cloud if there are feature names
-            (fnames= available.
+            (fnames) available.
         :type F: :class:`np.ndarray`
         """
         P = self.get_input_from_pcloud(pcloud)
@@ -266,8 +266,8 @@ class ConvAutoencPwiseClassifModel(ClassificationModel):
             P, y=y, zout=zout, plots_and_reports=plots_and_reports
         )
 
-    # ---  RBFNET PWISE CLASSIF METHODS  --- #
-    # -------------------------------------- #
+    # ---  CONV AUTOENC PWISE CLASSIF METHODS  --- #
+    # -------------------------------------------- #
     def compute_pwise_activations(self, X, reducer=None):
         """
         Compute the point-wise activations of the last layer before the output

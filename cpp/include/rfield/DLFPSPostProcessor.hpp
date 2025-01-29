@@ -6,6 +6,7 @@
 #include <rfield/ReceptiveFieldCommon.hpp>
 #include <util/VL3DPPException.hpp>
 #include <util/VL3DPPMacros.hpp>
+#include <util/MultithreadingUtils.hpp>
 
 #include <thread>
 #include <armadillo>
@@ -119,7 +120,7 @@ public:
      * @param I The indices representing the decoding neighborhoods.
      * @param zBatch The batch representing the probabilities in the receptive
      *  fields.
-     * @return The point-ise probabilities in the original space, i.e., outside
+     * @return The point-wise probabilities in the original space, i.e., outside
      *  the receptive fields.
      *
      * @see ReceptiveFieldCommon::decodingReduceMean

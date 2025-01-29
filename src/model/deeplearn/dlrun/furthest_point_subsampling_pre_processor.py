@@ -36,18 +36,6 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
     :ivar fast: Flag to control whether to use random methods to speed up the
         computation of the furthest point subsampling.
     :vartype fast: bool
-    :ivar neighborhood_spec: The neighborhood specification. See the example
-        below.
-
-        .. code-block:: JSON
-
-            {
-                "type": "sphere",
-                "radius": 5.0,
-                "separation_factor": 1.0
-            }
-
-    :vartype neighborhood_spec: dict
     """
     # ---   INIT   --- #
     # ---------------- #
@@ -65,15 +53,9 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         self.num_points = kwargs.get('num_points', 8000)
         self.num_encoding_neighbors = kwargs.get('num_encoding_neighbors', 3)
         self.fast = kwargs.get('fast', False)
-        self.neighborhood_spec = kwargs.get('neighborhood', None)  # Support
         self.receptive_field_oversampling = kwargs.get(
             'receptive_field_oversampling', None
         )
-        if self.neighborhood_spec is None:
-            raise DeepLearningException(
-                'The FurthestPointSubsamplingPreProcessor did not receive '
-                'any neighborhood specification.'
-            )
 
     # ---   RUN/CALL   --- #
     # -------------------- #
@@ -222,6 +204,7 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             that corresponds to the point in the receptive field.
         :type I: list
         :return: The reduced labels for each receptive field.
+        :rtype: :class:`np.ndarray`
         """
         # Handle automatic neighborhoods from cache
         if I is None:
@@ -302,8 +285,6 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
             self.num_encoding_neighbors = spec['num_encoding_neighbors']
         if 'fast' in spec_keys:
             self.fast = spec['fast']
-        if 'neighborhood_spec' in spec_keys:
-            self.neighborhood_spec = spec['neighborhood_spec']
         if 'receptive_field_oversampling' in spec_keys:
             self.receptive_field_oversampling = spec[
                 'receptive_field_oversampling'
@@ -327,7 +308,6 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         state['num_points'] = self.num_points
         state['num_encoding_neighbors'] = self.num_encoding_neighbors
         state['fast'] = self.fast
-        state['neighborhood_spec'] = self.neighborhood_spec
         state['receptive_field_oversampling'] = \
             self.receptive_field_oversampling
         # Return state
@@ -351,7 +331,6 @@ class FurthestPointSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         self.num_points = state['num_points']
         self.num_encoding_neighbors = state['num_encoding_neighbors']
         self.fast = state['fast']
-        self.neighborhood_spec = state['neighborhood_spec']
         self.receptive_field_oversampling = state.get(
             'receptive_field_oversampling', None
         )
