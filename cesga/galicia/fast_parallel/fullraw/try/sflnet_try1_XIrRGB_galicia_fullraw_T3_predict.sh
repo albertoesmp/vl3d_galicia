@@ -3,7 +3,7 @@
 #SBATCH -n 1
 #SBATCH -c 32
 #SBATCH --gres=gpu:a100
-#SBATCH -t 48:00:00
+#SBATCH -t 12:00:00
 #SBATCH --mem 123GB
 #SBATCH --mail-type=begin
 #SBATCH --mail-type=end

@@ -150,7 +150,7 @@
 				"lkpconv_representation_dir": null,
 				"slkpconv_representation_dir": null,
                 "class_weight": [1, 1, 1, 1, 1, 1, 0],
-                "training_epochs": 200,
+                "training_epochs": 300,
                 "batch_size": 64,
 				"training_sequencer": {
 	                "type": "DLSequencer",
