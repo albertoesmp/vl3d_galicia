@@ -22,6 +22,20 @@ from src.model.deeplearn.layer.light_kpconv_layer import LightKPConvLayer
 from src.model.deeplearn.layer.strided_light_kpconv_layer \
     import StridedLightKPConvLayer
 from src.model.deeplearn.layer.hourglass_layer import HourglassLayer
+from src.model.deeplearn.layer.shadow_conv1d_layer import ShadowConv1DLayer
+from src.model.deeplearn.layer.shadow_dense_layer import ShadowDenseLayer
+from src.model.deeplearn.layer.shadow_activation_layer import \
+    ShadowActivationLayer
+from src.model.deeplearn.layer.shadow_batch_normalization_layer import \
+    ShadowBatchNormalizationLayer
+from src.model.deeplearn.layer.submanifold_spconv3d_layer import \
+    SubmanifoldSpConv3DLayer
+from src.model.deeplearn.layer.downsampling_spconv3d_layer import \
+    DownsamplingSpConv3DLayer
+from src.model.deeplearn.layer.upsampling_spconv3d_layer import \
+    UpsamplingSpConv3DLayer
+from src.model.deeplearn.layer.sparse_indexing_map_layer import \
+    SparseIndexingMapLayer
 from src.inout.io_utils import IOUtils
 import src.main.main_logger as LOGGING
 from src.utils.dict_utils import DictUtils
@@ -33,6 +47,7 @@ import os
 # ------------------- #
 # Dictionary with custom objects used by DL models
 DL_CUSTOM_OBJECTS = {
+    'Activation': tf.keras.layers.Activation,
     'FeaturesOrthogonalRegularizer': FeaturesOrthogonalRegularizer,
     'FeaturesStructuringLayer': FeaturesStructuringLayer,
     "RBFFeatExtractLayer": RBFFeatExtractLayer,
@@ -44,7 +59,15 @@ DL_CUSTOM_OBJECTS = {
     'StridedKPConvLayer': StridedKPConvLayer,
     'LightKPConvLayer': LightKPConvLayer,
     'StridedLightKPConvLayer': StridedLightKPConvLayer,
-    'HourglassLayer': HourglassLayer
+    'HourglassLayer': HourglassLayer,
+    'SparseIndexingMapLayer': SparseIndexingMapLayer,
+    'ShadowConv1DLayer': ShadowConv1DLayer,
+    'ShadowDenseLayer': ShadowDenseLayer,
+    'ShadowActivationLayer': ShadowActivationLayer,
+    'ShadowBatchNormalizationLayer': ShadowBatchNormalizationLayer,
+    'SubmanifoldSpConv3DLayer': SubmanifoldSpConv3DLayer,
+    'DownsamplingSpConv3DLayer': DownsamplingSpConv3DLayer,
+    'UpsamplingSpConv3DLayer': UpsamplingSpConv3DLayer
 }
 
 # ---  GLOBALS  --- #

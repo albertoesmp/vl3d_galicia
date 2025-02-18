@@ -36,6 +36,9 @@ from src.tests.shadow_activation_layer_test import ShadowActivationLayerTest
 from src.tests.ragged_losses_test import RaggedLossesTest
 from src.tests.model_serialization_test import ModelSerializationTest
 from src.tests.las_inout_test import LASInoutTest
+from src.tests.dl_sparse_shadow_sequencer_test import \
+    DLSparseShadowSequencerTest
+from src.tests.spconv3d_encoding_layer_test import SpConv3DEncodingLayerTest
 from src.tests.vl3dpp_binding_test import VL3DPPBindingTest
 from src.tests.vl3dpp_backend_test import VL3DPPBackendTest
 from src.tests.vl3dpp_support_neighborhoods_test import \

@@ -2,7 +2,7 @@
 # ------------------- #
 from src.tests.vl3d_test import VL3DTest
 from src.inout.point_cloud_io import PointCloudIO
-from src.model.deeplearn.dlrun.hierarchical_sg_pre_procesorpp import \
+from src.model.deeplearn.dlrun.hierarchical_sg_pre_processorpp import \
     HierarchicalSGPreProcessorPP
 from src.model.deeplearn.dlrun.hierarchical_sg_post_processorpp import \
     HierarchicalSGPostProcessorPP

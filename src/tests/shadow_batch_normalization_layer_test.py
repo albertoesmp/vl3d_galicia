@@ -84,9 +84,11 @@ class ShadowBatchNormalizationLayerTest(VL3DTest):
         }
         # Reference batch normalization layer
         bnl1 = tf.keras.layers.BatchNormalization(**bn_spec)
-        bnl1(X1)
+        for X1k in X1:
+            bnl1(X1k, training=True)
         bnl2 = tf.keras.layers.BatchNormalization(**bn_spec)
-        bnl2(X2)
+        for X2k in X2:
+            bnl2(X2k, training=True)
         # Shadow batch normalization layer to be tested
         rbnl1 = ShadowBatchNormalizationLayer(**bn_spec)
         rbnl1([tf.constant(X1), tf.constant([0 for k in range(X1.shape[0])])])
@@ -96,7 +98,7 @@ class ShadowBatchNormalizationLayerTest(VL3DTest):
         valid = True
         with tf.device("cpu:0"):
             # Validate with test batch (1)
-            y_ref = bnl1(X1).numpy()
+            y_ref = np.array([bnl1(X1k, training=True) for X1k in X1])
             y = rbnl1([
                 tf.constant(X1),
                 tf.constant([0 for k in range(X1.shape[0])])
@@ -104,7 +106,7 @@ class ShadowBatchNormalizationLayerTest(VL3DTest):
             if np.any(np.abs(y - y_ref) > self.eps):
                 valid = False
             # Validate with test batch (2)
-            y_ref = bnl2(X2).numpy()
+            y_ref = np.array([bnl2(X2k, training=True) for X2k in X2])
             y = rbnl2([
                 tf.constant(X2),
                 tf.constant([0 for k in range(X2.shape[0])])
@@ -112,7 +114,7 @@ class ShadowBatchNormalizationLayerTest(VL3DTest):
             if np.any(np.abs(y - y_ref) > self.eps):
                 valid = False
             # Validate with irregular batch (1)
-            rag_y_ref = [bnl1(rag_Xi[np.newaxis, :]) for rag_Xi in rag_X1_nopad]
+            rag_y_ref = [bnl1(rag_Xi, training=True) for rag_Xi in rag_X1_nopad]
             rag_y = rbnl1([tf.constant(rag_X1), tf.constant(start1)])
             for k in range(len(rag_X1)):
                 if np.any(
@@ -122,7 +124,7 @@ class ShadowBatchNormalizationLayerTest(VL3DTest):
                 ):
                     valid = False
             # Validate with irregular batch (2)
-            rag_y_ref = [bnl2(rag_Xi[np.newaxis, :]) for rag_Xi in rag_X2_nopad]
+            rag_y_ref = [bnl2(rag_Xi, training=True) for rag_Xi in rag_X2_nopad]
             rag_y = rbnl2([tf.constant(rag_X2), tf.constant(start2)])
             for k in range(len(rag_X2)):
                 if np.any(

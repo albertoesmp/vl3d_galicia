@@ -3,7 +3,7 @@
 # -------------------- #
 # Default configuration for all models
 structure_space_bits: 64
-feature_space_bits: 64
+feature_space_bits: 32
 classification_space_bits: 8
 
 
@@ -30,6 +30,14 @@ SimpleDLModelHandler:
   fit_verbose: "auto"
   predict_verbose: "auto"
   skip_fit_on_zero_epochs: true
+  tensorboard_log_dir: null
+  _tensorboard_log_dir: "./tf_logdir/"
+  tensorboard_histogram_frequency: 0
+  _tensorboard_histogram_frequency: 1
+  tensorboard_profile_batch: null
+  _tensorboard_profile_batch:
+    - 1
+    - 5
 
 # Default configuration of deep learning architectures
 Architecture:
@@ -148,9 +156,7 @@ SpConv3DPwiseClassif:
     - "glorot_normal"
     - "glorot_normal"
     - "glorot_normal"
-    - "glorot_normal"
   downsampling_regularizer:
-    - null
     - null
     - null
     - null
@@ -160,9 +166,12 @@ SpConv3DPwiseClassif:
     - null
     - null
     - null
-    - null
+  downsampling_bn_momentum:
+    - 0.9
+    - 0.9
+    - 0.9
+    - 0.9
   upsampling_initializer:
-    - "glorot_normal"
     - "glorot_normal"
     - "glorot_normal"
     - "glorot_normal"
@@ -172,13 +181,54 @@ SpConv3DPwiseClassif:
     - null
     - null
     - null
-    - null
   upsampling_constraint:
     - null
     - null
     - null
     - null
+  upsampling_bn_momentum:
+    - 0.9
+    - 0.9
+    - 0.9
+    - 0.9
+  upsampling_shared_mlp_initializer:
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+    - "glorot_normal"
+  upsampling_shared_mlp_regularizer:
     - null
+    - null
+    - null
+    - null
+  upsampling_shared_mlp_constraint:
+    - null
+    - null
+    - null
+    - null
+  upsampling_shared_mlp_activation:
+    - "relu"
+    - "relu"
+    - "relu"
+    - "relu"
+  upsampling_shared_mlp_bn_momentum:
+    - 0.9
+    - 0.9
+    - 0.9
+    - 0.9
+  faeture_dim_divisor: 2
+  dim_transform_kernel_initializer: "glorot_normal"
+  dim_transform_kernel_regularizer: null
+  dim_transform_kernel_constraint: null
+  dim_transform_activation: "relu"
+  dim_transform_bn_momentum: 0.9
+  residual_strategy: null
+  residual_shared_mlp_after_ssc3d: false
+  residual_shared_mlp_kernel_initializer: "glorot_normal"
+  residual_shared_mlp_kernel_regularizer: null
+  residual_shared_mlp_kernel_constraint: null
+  residual_shared_mlp_activation: "relu"
+
 # Default configuration of receptive fields
 ReceptiveField:
   structure_space_bits: 32

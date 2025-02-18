@@ -1,16 +1,14 @@
 # ---   IMPORTS   --- #
 # ------------------- #
-from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.layer.layer import Layer
-import src.main.main_logger as LOGGING
 import tensorflow as tf
-import numpy as np
+import time  # TODO Remove : Debug only
 
 
 # ---   CLASS   --- #
 # ----------------- #
 class ShadowBatchNormalizationLayer(Layer):
-    """
+    r"""
     Shadow version of a batch normalization layer, i.e., it works with tensors
     with padding, where the padding is used to represent shadow
     values/points/cells/elements, i.e., those that must not have an impact
@@ -18,6 +16,40 @@ class ShadowBatchNormalizationLayer(Layer):
 
     See :class:`tf.Tensor` and
     :class:`tf.keras.layers.BatchNormalization`.
+
+    A classical batch normalization uses the following four variables
+    :math:`\mu_b` (mean of batch), :math:`\sigma^2_b` (variance of batch),
+    :math:`\mu_m` (mean for moving average), and :math:`\sigma^2_m` (variance
+    for moving average) such that whether :math:`x=\mu` or :math:`x=\sigma^2`
+    they can be updated as follows:
+
+    .. math::
+        x'_m = (x_m - x_b) M + x_b
+
+    Where :math:`M \in \mathbb{R}` is the momentum for the moving average and
+    :math:`x'_m` is the updated value for the variable governing the moving
+    average.
+
+    Note that contrary to classical batch normalization where during training
+    the :math:`\mu_b, \sigma^2_b` variables are used while for predictions
+    the :math:`\mu_m, \sigma^2_m` variables are used, the shadow batch
+    normalization layer always considers the batch, i.e., it uses
+    :math:`\mu_b` and :math:`\sigma^2_b` during training and for predictions.
+    Thus, the final normalization is always computed like:
+
+    .. math::
+
+       \hat{b} = \dfrac{
+            \gamma (b - \mu_b)
+        }{
+            \sqrt{\sigma^2_b + \epsilon}
+        }
+        + \beta
+
+    Where, :math:`\beta`, :math:`\gamma`, and :math:`\epsilon` are the
+    ``beta``, ``gamma``, and ``epsilon`` parameters of the layer. Note that
+    :math:`b` represents the values from the batch and :math:`\hat{b}` its
+    normalized version.
     """
     # ---   INIT   --- #
     # ---------------- #
@@ -31,7 +63,7 @@ class ShadowBatchNormalizationLayer(Layer):
         scale=True,
         beta_initializer='zeros',
         gamma_initializer='ones',
-        moving_mean_initializer='ones',
+        moving_mean_initializer='zeros',
         moving_variance_initializer='ones',
         beta_regularizer=None,
         gamma_regularizer=None,
@@ -93,14 +125,14 @@ class ShadowBatchNormalizationLayer(Layer):
             start = tf.squeeze(start)
             if len(tf.shape(x)) == 1:
                 return tf.pad(
-                    self.bn(x[start+self.offset:], training=training),
+                    self.bn(x[start+self.offset:], training=True),
                     [[start + self.offset, 0]],
                     "CONSTANT",
                     constant_values=0
                 )
             else:
                 return tf.pad(
-                    self.bn(x[start+self.offset:], training=training),
+                    self.bn(x[start+self.offset:], training=True),
                     [[start+self.offset, 0], [0, 0]],
                     "CONSTANT",
                     constant_values=0
@@ -123,6 +155,7 @@ class ShadowBatchNormalizationLayer(Layer):
         # Update config with custom attributes
         config.update({
             # Base attributes
+            'offset': self.offset,
             'bn': tf.keras.layers.serialize(self.bn)
         })
         # Return updated config

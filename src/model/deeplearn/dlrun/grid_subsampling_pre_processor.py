@@ -526,7 +526,7 @@ class GridSubsamplingPreProcessor(ReceptiveFieldPreProcessor):
         See :meth:`ReceptiveFieldPreProcessor.__setstate__`.
 
         :param state: The state's dictionary of the saved grid subsampling
-            pre-procesor.
+            pre-processor.
         :type state: dict
         :return: Nothing, but modifies the internal state of the object.
         """

@@ -2,7 +2,6 @@
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.layer.layer import Layer
-import src.main.main_logger as LOGGING
 import tensorflow as tf
 import numpy as np
 
@@ -56,6 +55,9 @@ class DownsamplingSpConv3DLayer(Layer):
     :ivar W_initializer: The initializer for the convolutional filters.
     :ivar W_regularizer: The regularizer for the convolutional filters.
     :ivar W_constraint: The constraint for the convolutional filters.
+    :ivar siml: The sparse indexing map layer that is needed to translate
+        sparse indices to sequential indices (i.e., :math:`h(k) = v` map).
+    :vartype siml: :class:`.SparseIndexingMapLayer`.
     :ivar wDsq: :math:`(w^D)^2`
     :vartype wDsq: int
     :ivar nwD: :math:`(w^D)^{n_x} = (w^D)^{3}`
@@ -111,11 +113,11 @@ class DownsamplingSpConv3DLayer(Layer):
         W_initializer = None,
         W_regularizer = None,
         W_constraint = None,
+        siml=None,
         built_p=False,
         built_pon1=False,
         built_ponw=False,
         built_ponw2=False,
-        built_h=False,
         **kwargs
     ):
         # Call parent's init
@@ -128,6 +130,7 @@ class DownsamplingSpConv3DLayer(Layer):
         self.W_initializer = tf.keras.initializers.get(W_initializer)
         self.W_regularizer = tf.keras.regularizers.get(W_regularizer)
         self.W_constraint = tf.keras.constraints.get(W_constraint)
+        self.siml = siml  # Layer handling the h map
         # Validate attributes
         if self.wD is None or self.wD < 1:
             raise DeepLearningException(
@@ -166,8 +169,6 @@ class DownsamplingSpConv3DLayer(Layer):
         self.built_ponw = built_ponw  #  True if built, False otherwise
         self.ponw2 = None  # Cache: p/(w^D)^2 mod w^D
         self.built_ponw2 = built_ponw2  # True if built, False otherwise
-        self.h = None  # Mutable hash table
-        self.built_h = built_h  # True if built, False otherwise
 
     # ---   LAYER METHODS   --- #
     # ------------------------- #
@@ -241,18 +242,6 @@ class DownsamplingSpConv3DLayer(Layer):
             raise DeepLearningException(
                 'DownsamplingSpConv3DLayer failed to build ponw2 cache.'
             )
-        # Build mutable hash table
-        if not self.built_h:
-            self.h = tf.lookup.experimental.MutableHashTable(
-                tf.int32,
-                tf.int32,
-                0
-            )
-        # Validate mutable hash table
-        if self.h is None:
-            raise DeepLearningException(
-                'DownsamplingSpConv3DLayer failed to build mutable hash table.'
-            )
 
     def call(self, inputs, training=False, mask=False):
         r"""
@@ -261,42 +250,35 @@ class DownsamplingSpConv3DLayer(Layer):
         See :class:`.DownsamplingSpConv3DLayer` for the maths.
 
         :param inputs: The feature space matrices as a 3D tensor with padding,
-            the submanifold map :math:`h` for the non-downsampled sparse grid
-            (see :class:`.SubmanifoldSpConv3DLayer`)
-            as a 2D tensor with padding whose rows are vectors of keys
-            and a 2D tensor with padding whose rows are vectors of
-            values, the :math:`h^D` vector of indices that gives the indices
+            the :math:`h^D` vector of indices that gives the indices
             of the active cells in the non-downsampled sparse grid that are
-            the centers for the downsampling convolutional windows, and the
+            the centers for the downsampling convolutional windows, the
             matrix :math:`\pmb{N} \in \mathbb{Z}^{n_x \times K}` of
             axis-wise partitions in the non-downsampled space (where :math:`K`
-            is the batch size).
-            Note that inputs[0] gives the feature spaces, inputs[1] the keys
-            of the map h for the sparse grid before the downsampling,
-            inputs[2] the values for the keys in inputs[1],
-            inputs[3] the vector of active cell indices to center the
+            is the batch size), and the start row indices.
+
+            Note that inputs[0] gives the feature spaces,
+            inputs[1] the vector of active cell indices to center the
             downsampling convolutional window in the non-downsampled sparse
-            grid, inputs[4] the axis-wise partitions, inputs[4] the start
-            row-index for the downsampled space, and inputs[5] the start
-            row-index for the non-downsampled space (source, src).
+            grid, inputs[2] the axis-wise partitions, inputs[3] the start
+            row-index for the downsampled space, and inputs[4] the start
+            row-index for the non-downsampled space (source, src). The start
+            row-index allows to handle the padding.
+
         :return: The output feature space matrices as a tensor with padding.
         :rtype: :class:`tf.Tensor`
         """
         def convolve(input):
             # Extract inputs
-            F, hk, hv, hD, n, start, src_start = input
+            F, hD, n, start, src_start = input
             start = tf.squeeze(start)
             src_start = tf.squeeze(src_start)
             # Gather relevant values for computations
             F = tf.gather(F, tf.range(src_start, tf.shape(F)[0]))
-            hk = tf.gather(hk, tf.range(src_start, tf.shape(hk)[0]))
-            hv = tf.gather(hv, tf.range(src_start, tf.shape(hv)[0]))
             hD = tf.gather(hD, tf.range(start, tf.shape(hD)[0]))
             # Compute convolution
             ny, nz = n[1], n[2]
             nynz = ny*nz
-            self.h.remove(self.h.export()[0])  # TODO Restore / Rethink (ref from common layer)
-            self.h.insert(hk, hv) # TODO Restore / Rethink (ref from common layer)
             omega = tf.transpose(
                 hD + tf.expand_dims(
                     self.pon1 + self.ponw * nz + self.ponw2 * nynz,
@@ -307,7 +289,7 @@ class DownsamplingSpConv3DLayer(Layer):
                 'ijk,lkm->im',
                 tf.gather(
                     F,
-                    tf.ensure_shape(self.h.lookup(omega), omega.shape)
+                    tf.ensure_shape(self.siml.lookup(omega), omega.shape)
                 ),
                 self.W
             )
@@ -319,6 +301,20 @@ class DownsamplingSpConv3DLayer(Layer):
                 constant_values=0
             )
         # Convolve each element in the batch
+        # TODO Remove : Debug section ---
+        """start = time.perf_counter()
+        output = tf.map_fn(
+            convolve,
+            inputs,
+            fn_output_signature=tf.TensorSpec(
+                shape=(None, self.ng),
+                dtype=tf.float32
+            )
+        )
+        end = time.perf_counter()
+        print(f'{self.name} called in {(1000*(end-start)):.3f} ms')
+        return output"""
+        # --- TODO Remove : Debug section
         return tf.map_fn(
             convolve,
             inputs,
@@ -347,7 +343,8 @@ class DownsamplingSpConv3DLayer(Layer):
             'W_regularizer': tf.keras.regularizers.serialize(
                 self.W_regularizer
             ),
-            'W_constraint': tf.keras.constraints.serialize(self.W_constraint)
+            'W_constraint': tf.keras.constraints.serialize(self.W_constraint),
+            'siml': self.siml
         })
         # Return updated config
         return config

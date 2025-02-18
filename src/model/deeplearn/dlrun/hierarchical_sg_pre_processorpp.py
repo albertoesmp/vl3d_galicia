@@ -1,11 +1,14 @@
 # ---   IMPORTS   --- #
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
-from src.model.deeplearn.dlrun.furthest_point_subsampling_pre_processorpp import FurthestPointSubsamplingPreProcessorPP
+from src.model.deeplearn.dlrun.furthest_point_subsampling_pre_processorpp \
+    import FurthestPointSubsamplingPreProcessorPP
 from src.model.deeplearn.dlrun.receptive_field_pre_processor import \
     ReceptiveFieldPreProcessor
 from src.model.deeplearn.dlrun.grid_subsampling_pre_processor import \
     GridSubsamplingPreProcessor
+from src.model.deeplearn.dlrun.hierarchical_fps_pre_processorpp import \
+    HierarchicalFPSPreProcessorPP
 from src.utils.ptransf.receptive_field_hierarchical_sg import \
     ReceptiveFieldHierarchicalSG
 import src.main.main_logger as LOGGING
@@ -242,27 +245,56 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
         h = [
             [
                 [
-                    np.array(list(hkt.keys()), dtype=np.int32),
-                    np.array(list(hkt.values()), dtype=np.int32)+1
+                    HierarchicalFPSPreProcessorPP.optimize_indexing_memory(
+                        np.array(list(hkt.keys()), dtype=np.int32)
+                    ),
+                    HierarchicalFPSPreProcessorPP.optimize_indexing_memory(
+                        np.array(list(hkt.values()), dtype=np.int32)+1
+                    )
                 ]
                 for hkt in hk
             ]
             for hk in h
         ]
         # Transform downsampling and upsampling maps to contain 1d vectors
-        hD = [[hDkt.flatten() for hDkt in hDk] for hDk in hD]
-        hU = [[hUkt.flatten() for hUkt in hUk] for hUk in hU]
+        hD = [
+            [
+                HierarchicalFPSPreProcessorPP.optimize_indexing_memory(
+                    hDkt.flatten()
+                )
+                for hDkt in hDk
+            ]
+            for hDk in hD
+        ]
+        hU = [
+            [
+                HierarchicalFPSPreProcessorPP.optimize_indexing_memory(
+                    hUkt.flatten()
+                )
+                for hUkt in hUk
+            ]
+            for hUk in hU
+        ]
         # Transform Fout so first row is ground vector (all zeroes)
         Fout = [
-            np.vstack([np.ones((1, Fouti.shape[1])), Fouti])
+            np.vstack([np.zeros((1, Fouti.shape[1]), dtype=Fouti.dtype), Fouti])
             for Fouti in Fout
         ]
+        # Optimze the integers representing the number of partitions
+        for i, ni in enumerate(n):
+            n[i] = HierarchicalFPSPreProcessorPP.optimize_indexing_memory(ni)
         # Transform A, yout to contain 1d vectors
         A = [Ai.flatten() for Ai in A]
+        # Handle reference labels, if any
         if yout is None or len(yout) < 1:
             yout = None
         else:
-            yout = [youti.flatten() for youti in yout]
+            yout = [
+                HierarchicalFPSPreProcessorPP.optimize_indexing_memory(
+                    youti.flatten()
+                )
+                for youti in yout
+            ]
         # Create receptive fields
         self.last_call_receptive_fields = []
         for i in range(len(h)):
@@ -307,15 +339,15 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
 
     # ---  UTIL METHODS  --- #
     # ---------------------- #
-    def reduce_labels(self, X_rf, y, I=None):
+    def reduce_labels(self, X, y, I=None):
         r"""
         Reduce the given labels :math:`\pmb{y} in \mathbb{Z}_{\geq 0}^{m}`
         to the receptive field labels
         :math:`\pmb{y}_{k} \in \mathbb{Z}_{\geq 0}^{R_k}`.
 
-        :param X_rf: The matrices of coordinates representing the receptive
-            fields.
-        :type X_rf: list of :class:`np.ndarray`
+        :param X: The matrix representing the structure space of the original
+            input point cloud (i.e., NOT a particular receptive field).
+        :type X: :class:`np.ndarray`
         :param y: The labels of the original point cloud that must be reduced
             to the receptive fields.
         :type y: :class:`np.ndarray`
@@ -338,7 +370,7 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
         size = np.array(size)
         # Determine C++ function
         cpp_f = HierarchicalSGPreProcessorPP.find_cpp_reduce_label_function(
-            X_rf, y
+            X, y
         )
         # Validate C++ function
         if cpp_f is None:
@@ -347,28 +379,25 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
                 'because the C++ function could not be determined.'
             )
         # Compute receptive field-wise labels
-        #return cpp_f(X_rf, y, size, A, n, hk, hv, self.nthreads) # TODO Restore : Final impl.
-        # TODO Remove : Debug impl ---
-        out = cpp_f(X_rf, y, size, A, n, hk, hv, self.nthreads)
+        out = cpp_f(X, y, size, A, n, hk, hv, self.nthreads)
         return out
-        # --- TODO Remove : Debug impl
 
     @staticmethod
-    def find_cpp_reduce_label_function(X_rf, y):
+    def find_cpp_reduce_label_function(X, y):
         """
         Determine the C++ function that must be used to reduce the point-wise
         labels considering the data types of the input.
 
-        :param X_rf: The matrices of coordinates representing the receptive
-            fields.
-        :type X_rf: list of :class:`np.ndarray`
+        :param X: The matrix representing the structure space of the original
+            input point cloud (i.e., NOT a particular receptive field).
+        :type X: :class:`np.ndarray`
         :param y: The labels of the original point cloud that must be reduced
             to the receptive fields.
         :type y: :class:`np.ndarray`
         :return: The C++ function for label reduction.
         """
         # Find types
-        Xdtype = X_rf[0].dtype
+        Xdtype = X.dtype
         ydtype = y.dtype
         # Determine function
         if Xdtype == np.float32:  # 32 bits structure space
@@ -429,15 +458,15 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
         if 'cell_size' in spec_keys:
             self.cell_size = spec['cell_size']
         if 'submanifold_window' in spec_keys:
-            self.submanifold_window = spec['submanifold_window']
+            self.submanifold_window = np.array(spec['submanifold_window'])
         if 'downsampling_window' in spec_keys:
-            self.downsampling_window = spec['downsampling_window']
+            self.downsampling_window = np.array(spec['downsampling_window'])
         if 'downsampling_stride' in spec_keys:
-            self.downsampling_stride = spec['downsampling_stride']
+            self.downsampling_stride = np.array(spec['downsampling_stride'])
         if 'upsampling_window' in spec_keys:
-            self.upsampling_window = spec['upsampling_window']
+            self.upsampling_window = np.array(spec['upsampling_window'])
         if 'upsampling_stride' in spec_keys:
-            self.upsampling_stride = spec['upsampling_stride']
+            self.upsampling_stride = np.array(spec['upsampling_stride'])
 
     # ---   SERIALIZATION   --- #
     # ------------------------- #
@@ -478,7 +507,7 @@ class HierarchicalSGPreProcessorPP(ReceptiveFieldPreProcessor):
         # Call parent
         super().__setstate__(state)
         # Assign member attributes from state
-        self.cell_size = state['num_downsampling_neigbors']
+        self.cell_size = state['cell_size']
         self.submanifold_window = state['submanifold_window']
         self.downsampling_window = state['downsampling_window']
         self.downsampling_stride = state['downsampling_stride']

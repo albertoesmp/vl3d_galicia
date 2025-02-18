@@ -133,7 +133,7 @@ template <
     typename IndexType
 >
 py::list rf_sparse_reduce_label_mode(
-    py::list const &X,
+    py::array const &X,
     py::array const &y,
     py::array const &size,
     py::list const &A,
@@ -143,20 +143,17 @@ py::list rf_sparse_reduce_label_mode(
     int const nthreads
 ){
     // Extract arguments
-    size_t const numReceptiveFields = py::len(X);
+    size_t const numReceptiveFields = py::len(A);
+    arma::Mat<XDecimalType> _X = carma::arr_to_mat_view<XDecimalType>(X);
     arma::Col<LabelType> const &_y = carma::arr_to_col_view<LabelType>(y);
     arma::Col<XDecimalType> const &_size = carma::arr_to_col_view<XDecimalType>(
         size
     );
-    std::vector<arma::Mat<XDecimalType>> _X;
     std::vector<arma::Row<XDecimalType>> _A;
     std::vector<arma::Col<IndexType>> _n;
     std::vector<arma::Col<IndexType>> _hk;
     std::vector<arma::Col<IndexType>> _hv;
     for(size_t i = 0 ; i < numReceptiveFields ; ++i){
-        _X.push_back(
-            carma::arr_to_mat_view<XDecimalType>(X[i].cast<py::array>())
-        );
         _A.push_back(
             carma::arr_to_row_view<XDecimalType>(A[i].cast<py::array>())
         );
@@ -185,20 +182,36 @@ py::list rf_sparse_reduce_label_mode(
         numReceptiveFields, _X, _y, _A, _size, _n, _hk, _hv, chunkSize, out \
     ) schedule(VL3DPP_OMP_SCHEDULE, chunkSize)
     for(size_t i = 0 ; i < numReceptiveFields ; ++i){
-        arma::Mat<XDecimalType> const &Xi = _X[i];
         XDecimalType const sizei = _size[i];
         arma::Row<XDecimalType> const &Ai = _A[i];
         arma::Col<IndexType> const &ni = _n[i];
         arma::Col<IndexType> const &hki = _hk[i];
         arma::Col<IndexType> const &hvi = _hv[i];
         SparseGrid sg(sizei, Ai, ni, hki, hvi);
-        out[i] = sg.template encodeVector<LabelType>(
-            Xi, _y, "mode"
-        );
+        arma::Row<XDecimalType> const Bi = Ai + arma::conv_to<
+            arma::Row<XDecimalType>
+        >::from(ni) * sizei;
+        std::vector<arma::uword> pibb(0); // Points in bounding box
+        pibb.reserve(_X.n_rows);
+        for(arma::uword p = 0 ; p < _X.n_rows ; ++p){
+            arma::Row<XDecimalType> const & xp = _X.row(p);
+            bool inside = true;
+            for(arma::uword j = 0 ; j < xp.n_cols ; ++j){
+                inside &= xp[j] >= Ai[j] && xp[j] <= Bi[j];
+            }
+            if(inside) pibb.push_back(p);
+        }
+        arma::uvec const pointsInBoundingBox =
+            arma::conv_to<arma::uvec>::from(pibb);
+        arma::Mat<XDecimalType> const Xi = _X.rows(pointsInBoundingBox);
+        arma::Col<LabelType> const yi = _y.rows(pointsInBoundingBox);
+        out[i] = sg.template encodeVector<LabelType>(Xi, yi, "mode");
     }
     // Transform output to python list
     py::list pyout;
-    for(arma::Col<LabelType> const & outi : out) pyout.append(outi);
+    for(arma::Col<LabelType> const & outi : out){
+        pyout.append(carma::col_to_arr<LabelType>(outi));
+    };
     // Return encoded labels
     return pyout;
 }

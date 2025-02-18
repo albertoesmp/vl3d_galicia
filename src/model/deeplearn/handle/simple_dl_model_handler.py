@@ -124,7 +124,7 @@ class SimpleDLModelHandler(DLModelHandler):
         callbacks = self.build_callbacks()
         # Fit the model
         start = time.perf_counter()
-        X, y_rf = self.arch.run_pre({
+        X_rf, y_rf = self.arch.run_pre({
             'X': X,
             'y': y,
             'training_support_points': True
@@ -133,7 +133,7 @@ class SimpleDLModelHandler(DLModelHandler):
         y_rf = DLLabelFormatter().handle_labels_format(  # Depends on loss
             self, y_rf
         )
-        self.fit_logic(X, y_rf, callbacks)
+        self.fit_logic(X_rf, y_rf, callbacks)
         end = time.perf_counter()
         LOGGING.LOGGER.info(
             f'Deep learning model trained on {len(y_rf)} cases during '
@@ -160,7 +160,7 @@ class SimpleDLModelHandler(DLModelHandler):
         dl_model_reporter.handle_history_plots_and_reports(self)
         # Predictions on the training receptive fields for plots and reports
         dl_model_reporter.handle_receptive_fields_plots_and_reports(
-            self, X, y=y,
+            self, X_rf, X=X[0] if isinstance(X, list) else X, y=y
         )
         # Return
         return self
@@ -256,7 +256,6 @@ class SimpleDLModelHandler(DLModelHandler):
         )
         if zout is not None:  # When z is not None it must be a list
             zout.append(zhat)  # Append propagated zhat to z list
-
         # Final predictions
         yhat, zhat = self.prediction_reducer.select(zhat), None
         # Do plots and reports
@@ -274,6 +273,7 @@ class SimpleDLModelHandler(DLModelHandler):
                 mh=self,
                 X_rf=_X_rf,
                 zhat_rf=zhat_rf,
+                X=X[0] if isinstance(X, list) else X,
                 y=y,
                 F_rf=_F_rf,
                 training=False
@@ -426,7 +426,8 @@ class SimpleDLModelHandler(DLModelHandler):
         state['training_epochs'] = self.training_epochs
         state['batch_size'] = self.batch_size
         state['history'] = copy.copy(self.history)
-        state['history'].model = None  # Do not serialize keras/tf model
+        if state.get('history', None) is not None:
+            state['history'].model = None  # Do not serialize keras/tf model
         state['checkpoint_monitor'] = self.checkpoint_monitor
         state['learning_rate_on_plateau'] = self.learning_rate_on_plateau
         state['early_stopping'] = self.early_stopping

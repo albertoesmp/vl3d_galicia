@@ -79,6 +79,7 @@ DLSGPostProcessor<
 ) const{
     // Prepare computation
     arma::uword const m = X.n_rows; // Number of points in the original pcloud
+    arma::uword const nx = X.n_cols; // Structure space dimensionality
     size_t const bs = zBatch.size(); // Number of elements in the batch
     size_t const ny = zBatch[0].n_cols; // Number of classes
     omp_set_num_threads(nthreads); // Use nthreads parallel threads at most
@@ -96,13 +97,25 @@ DLSGPostProcessor<
     for(size_t k = 0 ; k < bs ; ++k){
         map<IndexType, IndexType> const &hk = h[k];
         arma::Mat<FDecimalType> const &zk = zBatch[k];
-        SparseGrid<XDecimalType, IndexType> sgk(cellSize, A[k], n[k]);
+        arma::Row<XDecimalType> const &Ak = A[k];
+        SparseGrid<XDecimalType, IndexType> sgk(cellSize, Ak, n[k]);
         sgk.setLogTime(false);
+        arma::Row<XDecimalType> const Bk = Ak + arma::conv_to<
+            arma::Row<XDecimalType>
+        >::from(n[k]) * cellSize;
         #pragma omp parallel for default(none) \
             schedule(VL3DPP_OMP_SCHEDULE, chunkSize) \
-            shared(X, m, sgk, hk, Z, zk, cardinals, chunkSize)
+            shared(X, m, sgk, hk, Z, zk, cardinals, chunkSize, Ak, Bk, nx)
         for(arma::uword i = 0 ; i < m ; ++i){
             // TODO Rethink : Faster if ignoring points outside SG[0] bbox?
+            // TODO Rethink : Alternative to solve out of bbox indexing bug ---
+            // Skip points outside bounding box of first sparse grid
+            bool outside = false;
+            for(arma::uword j = 0 ; j < nx ; ++j){
+                outside |= X.at(i, j) < Ak[j] || X.at(i, j) > Bk[j];
+            }
+            if(outside) continue;
+            // --- TODO Rethink : Alternative to solve out of bbox indexing bug
             // Find sequential active cell index from cell index
             IndexType const idx = sgk.indexFromCoordinates(X.row(i));
             typename map<IndexType, IndexType>::const_iterator hki = hk.find(

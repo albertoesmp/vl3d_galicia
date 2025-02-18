@@ -2,7 +2,6 @@
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.layer.layer import Layer
-import src.main.main_logger as LOGGING
 import tensorflow as tf
 import numpy as np
 
@@ -11,7 +10,7 @@ import numpy as np
 # ----------------- #
 class SubmanifoldSpConv3DLayer(Layer):
     r"""
-    :author: Alberto M: Esmoris Pena
+    :author: Alberto M. Esmoris Pena
 
     A submanifold sparse 3D convolution layer consists of a dense convolution
     that is applied on a 3D sparse grid centering the window only on the active
@@ -102,6 +101,9 @@ class SubmanifoldSpConv3DLayer(Layer):
     :ivar W_initializer: The initializer for the convolutional filters.
     :ivar W_regularizer: The regularizer for the convolutional filters.
     :ivar W_constraint: The constraint for the convolutional filters.
+    :ivar siml: The sparse indexing map layer that is needed to translate
+        sparse indices to sequential indices (i.e., :math:`h(k) = v` map).
+    :vartype siml: :class:`.SparseIndexingMapLayer`.
     :ivar wp: The size (not half size) of the submanifold 3D convolutional
         window in terms of number of cells, i.e., :math:`2w+1`.
     :vartype wp: int
@@ -132,18 +134,18 @@ class SubmanifoldSpConv3DLayer(Layer):
         layer is built.
     :vartype built_pon1: bool
     :ivar ponw: Cache for
-        :math:`\left(\lfloor\dfrac{p}{2w+1}\rfloor \mod (2w+1)\right)`.
+        :math:`\left(\left\lfloor\dfrac{p}{2w+1}\right\rfloor \mod (2w+1)\right)`.
     :vartype ponw: :class:`tf.Tensor` of :class:`tf.int32`
     :ivar built_ponw: Whether the cache for
-        :math:`\left(\lfloor\dfrac{p}{2w+1}\rfloor \mod (2w+1)\right)`
+        :math:`\left(\left\lfloor\dfrac{p}{2w+1}\right\rfloor \mod (2w+1)\right)`
         has been built or not. Initially it is false, but it will be updated
         once the layer is built.
     :vartype built_ponw: bool
     :ivar ponw2: Cache for
-        :math:`\left(\lfloor\dfrac{p}{(2w+1)^2}\rfloor \mod (2w+1)\right)`.
+        :math:`\left(\left\lfloor\dfrac{p}{(2w+1)^2}\right\rfloor \mod (2w+1)\right)`.
     :vartype ponw2: :class:`tf.Tensor` of :class:`tf.int32`
     :ivar built_ponw2: Whether the cache for
-        :math:`\left(\lfloor\dfrac{p}{(2w+1)^2}\rfloor \mod (2w+1)\right)`
+        :math:`\left(\left\lfloor\dfrac{p}{(2w+1)^2}\right\rfloor \mod (2w+1)\right)`
         has been built or not. Initially it is false, but it will be updated
         once the layer is built.
     :vartype built_ponw2: bool
@@ -160,11 +162,11 @@ class SubmanifoldSpConv3DLayer(Layer):
             W_initializer=None,
             W_regularizer=None,
             W_constraint=None,
+            siml=None,
             built_p=False,
             built_pon1=False,
             built_ponw=False,
             built_ponw2=False,
-            built_h=False,
             **kwargs
     ):
         """
@@ -180,6 +182,7 @@ class SubmanifoldSpConv3DLayer(Layer):
         self.W_initializer = tf.keras.initializers.get(W_initializer)
         self.W_regularizer = tf.keras.regularizers.get(W_regularizer)
         self.W_constraint = tf.keras.constraints.get(W_constraint)
+        self.siml = siml  # Layer handling the h map
         # Validate attributes
         if self.w is None or self.w < 1:
             raise DeepLearningException(
@@ -219,8 +222,6 @@ class SubmanifoldSpConv3DLayer(Layer):
         self.built_ponw = built_ponw  #  True if built, False otherwise
         self.ponw2 = None  # Cache: p/(2w+1)^2 mod (2w+1)
         self.built_ponw2 = built_ponw2  # True if built, False otherwise
-        self.h = None  # Mutable hash table
-        self.built_h = built_h  # True if built, False otherwise
 
     # ---   LAYER METHODS   --- #
     # ------------------------- #
@@ -294,18 +295,6 @@ class SubmanifoldSpConv3DLayer(Layer):
             raise DeepLearningException(
                 'SubmanifoldSpConv3DLayer failed to build ponw2 cache.'
             )
-        # Build mutable hash table
-        if not self.built_h:
-            self.h = tf.lookup.experimental.MutableHashTable(
-                tf.int32,
-                tf.int32,
-                0
-            )
-        # Validate mutable hash table
-        if self.h is None:
-            raise DeepLearningException(
-                'SubmanifoldSpConv3DLayer failed to build mutable hash table.'
-            )
 
     def call(self, inputs, training=False, mask=False):
         r"""
@@ -314,14 +303,14 @@ class SubmanifoldSpConv3DLayer(Layer):
         See :class:`.SubmanifoldSpConv3DLayer` for the maths.
 
         :param inputs: The feature space matrices as a 3D tensor with padding,
-            the submanifold map :math:`h` as a 2D tensor with padding whose rows
-            are vectors of keys and a 2D tensor whose rows are vectors of
-            values, and the matrix
-            :math:`\pmb{N} \in \mathbb{Z}^{n_x \times K}` of
-            axis-wise partitions (where :math:`K` is the batch size).
+            the submanifold map :math:`h` as a tensor of keys (k) with padding
+            the matrix :math:`\pmb{N} \in \mathbb{Z}^{n_x \times K}` of
+            axis-wise partitions (where :math:`K` is the batch size), and
+            the start row indices.
+
             Note that inputs[0] gives the feature spaces, inputs[1] the keys
-            of the map h, inputs[2] the values, inputs[3] the axis-wise
-            partitions, and inputs[4] the start row-index for the elements
+            of the map h, inputs[2] the axis-wise
+            partitions, and inputs[3] the start row-index for the elements
             in the batch so the padding can be ignored.
 
         :return: The output feature space matrices as a tensor.
@@ -329,17 +318,14 @@ class SubmanifoldSpConv3DLayer(Layer):
         """
         def convolve(input):
             # Extract inputs
-            F, hk, hv, n, start = input
+            F, hk, n, start = input
             start = tf.squeeze(start)
             # Gather relevant values for computations
             F = tf.gather(F, tf.range(start, tf.shape(F)[0]))
             hk = tf.gather(hk, tf.range(start, tf.shape(hk)[0]))
-            hv = tf.gather(hv, tf.range(start, tf.shape(hv)[0]))
             # Compute convolution
             ny, nz = n[1], n[2]
             nynz = ny*nz
-            self.h.remove(self.h.export()[0])  # TODO Restore / Rethink (ref from common layer)
-            self.h.insert(hk, hv) # TODO Restore / Rethink (ref from common layer)
             ishift = self.w*(1+nz+nynz)
             omega = tf.transpose(
                 hk + tf.expand_dims(
@@ -351,14 +337,10 @@ class SubmanifoldSpConv3DLayer(Layer):
                 'ijk,lkm->im',
                 tf.gather(
                     F,
-                    tf.ensure_shape(self.h.lookup(omega), omega.shape)
+                    tf.ensure_shape(self.siml.lookup(omega), omega.shape)
                 ),
                 self.W
             )
-            # Reorder G to respect hv order
-            # Note this might not be necessary if hv is already ordered
-            # But this is implementation dependent and might change
-            G = tf.gather(G, tf.argsort(hv), axis=0)
             # Add ground vector and padding (zeros) at the beginning of G
             return tf.pad(
                 G,
@@ -382,7 +364,7 @@ class SubmanifoldSpConv3DLayer(Layer):
         """Return necessary data to serialize the layer"""
         # Call parent's config
         config = super().get_config()
-        # update config with custom attributes
+        # Update config with custom attributes
         config.update({
             # Base attributes
             'w': self.w,
@@ -395,7 +377,8 @@ class SubmanifoldSpConv3DLayer(Layer):
             'W_regularizer': tf.keras.regularizers.serialize(
                 self.W_regularizer
             ),
-            'W_constraint': tf.keras.constraints.serialize(self.W_constraint)
+            'W_constraint': tf.keras.constraints.serialize(self.W_constraint),
+            'siml': self.siml
         })
         # Return updated config
         return config

@@ -454,13 +454,13 @@ class BivariateCriticalClusterer(Clusterer):
             number of required bytes will be estimated from the cluster labels.
         :type crit_mask: :class:`np.ndarray` or None
         """
-        required_bytes = np.max(c)+1 if crit_mask is None \
+        required_bits = np.max(c)+1 if crit_mask is None \
             else np.count_nonzero(crit_mask)+1
-        if required_bytes < 128 and c.dtype != np.int8:
+        if required_bits < 128 and c.dtype != np.int8:
             return c.astype(np.int8)
-        elif required_bytes < 32768 and c.dtype != np.int16:
+        elif required_bits < 32768 and c.dtype != np.int16:
             return c.astype(np.int16)
-        elif required_bytes < 2147483648 and c.dtype != np.int32:
+        elif required_bits < 2147483648 and c.dtype != np.int32:
             return c.astype(np.int32)
         return c
 

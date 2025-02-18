@@ -92,7 +92,7 @@ class DLModelReporter:
     # ---  RECEPTIVE FIELD PLOTS AND REPORTS  --- #
     # ------------------------------------------- #
     def handle_receptive_fields_plots_and_reports(
-        self, mh, X, y=None
+        self, mh, X_rf, X=None, y=None
     ):
         """
         Handle the plot and reports related to receptive fields including the
@@ -106,8 +106,10 @@ class DLModelReporter:
         :param mh: The model handler whose receptive fields' plots and reports
             must be done.
         :type mh: :class:`.DLModelHandler`
-        :param X: The input for the model as computed by the model's
+        :param X_rf: The input for the model as computed by the model's
             pre-processor.
+        :param X: The structure space representing the original point cloud
+            (not the receptive fields).
         :param y: The vector of expected labels, the ground-truth from the
             supervised training perspective.
         :type y: :class:`np.ndarray`
@@ -134,32 +136,32 @@ class DLModelReporter:
             return
         # Prepare the receptive fields' plots and reports
         try:
-            zhat = mh.predict_rf(X)
+            zhat = mh.predict_rf(X_rf)
         except (TFResourceExhaustedError, TFInternalError) as tferr:
             LOGGING.LOGGER.debug(
                 'DLModelReporter could not compute predictions '
-                f'on {len(X)} receptive fields using the GPU.\n '
+                f'on {len(X_rf)} receptive fields using the GPU.\n '
                 'Trying CPU instead ...'
             )
             with tf.device("cpu:0"):
-                zhat = mh.compiled.predict(X, batch_size=mh.batch_size)
+                zhat = mh.compiled.predict(X_rf, batch_size=mh.batch_size)
         # TODO Rethink : Below to common logic with _predict plots_and_reports
         if isinstance(mh.arch, SpConv3DPwiseClassif):
-            X_rf = [
+            _X_rf = [
                 rfi.compute_active_centroids(0)
                 for rfi in mh.arch.pre_runnable.last_call_receptive_fields
             ]
-            F_rf = X[0]
+            _F_rf = X_rf[0]
         else:
-            X_rf = X[0] if isinstance(X, list) else X
-            F_rf = X[1] if isinstance(X, list) else None
+            _X_rf = X_rf[0] if isinstance(X_rf, list) else X_rf
+            _F_rf = X_rf[1] if isinstance(X_rf, list) else None
         # Do the receptive fields' plots and reports
         self.do_receptive_fields_plots_and_reports(
-            mh=mh, X_rf=X_rf, zhat_rf=zhat, y=y, F_rf=F_rf, training=True
+            mh=mh, X_rf=_X_rf, zhat_rf=zhat, X=X, y=y, F_rf=_F_rf, training=True
         )
 
     def do_receptive_fields_plots_and_reports(
-        self, mh, X_rf, zhat_rf, y=None, F_rf=None, training=False
+        self, mh, X_rf, zhat_rf, X=None, y=None, F_rf=None, training=False,
     ):
         """
         Do any plot and reports related to the receptive fields when handling
@@ -174,6 +176,11 @@ class DLModelReporter:
         :param zhat_rf: The output from the neural network for each receptive
             field.
         :type zhat_rf: :class:`np.ndarray`
+        :param X: The structure space representing the original input point
+            cloud (i.e., not each receptive field). It is not always used, but
+            sometimes it is necessary, e.g., to reduce labels when using a
+            :class:`.SpConv3DPwiseClassif` architecture.
+        :type X: :class:`np.ndarray` or None
         :param y: The expected class for each point (considering original
             points, i.e., not the receptive fields).
         :type y: :class:`np.ndarray`
@@ -252,9 +259,12 @@ class DLModelReporter:
                 ])
         # Reduced expected classes (for each receptive field)
         # TODO Rethink : Validate for HierarchicalSGPreProcessorPP
-        y_rf = mh.arch.pre_runnable.pre_processor.reduce_labels(
-            X_rf, y
-        ) if y is not None else None
+        if y is None:
+            y_rf = None
+        elif isinstance(mh.arch, SpConv3DPwiseClassif):
+            y_rf = mh.arch.pre_runnable.pre_processor.reduce_labels(X, y)
+        else:
+            y_rf = mh.arch.pre_runnable.pre_processor.reduce_labels(X_rf, y)
         if isinstance(y_rf, list):
             if len(y_rf[0].shape) > 1:
                 y_rf = [np.squeeze(y_rfi) for y_rfi in y_rf]

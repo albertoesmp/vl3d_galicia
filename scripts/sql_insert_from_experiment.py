@@ -83,8 +83,8 @@ def analyze_experiment(experiment_dir):
         'uncertainty': analyze_uncertainties(experiment_dir),
         'class_distribution_plot': load_class_distribution_plot(experiment_dir),
         'confusion_matrix_plot': load_confusion_matrix_plot(experiment_dir),
-        'pwise_entropy_plot': load_pwise_entropy_plot(experiment_dir),
-        'class_ambiguity_plot': load_class_ambiguity_plot(experiment_dir),
+        #'pwise_entropy_plot': load_pwise_entropy_plot(experiment_dir),
+        #'class_ambiguity_plot': load_class_ambiguity_plot(experiment_dir),
         #'weighted_entropy_plot': load_weighted_entropy_plot(experiment_dir),
         #'cwise_entropy_plot': load_cwise_entropy_plot(experiment_dir),
         #'rf_distribution_plot': load_rf_distribution_plot(experiment_dir),
@@ -636,14 +636,14 @@ def print_sql_inserts(analysis, dataset_name):
         analysis['confusion_matrix_plot'],
         'Validation confusion matrix'
     )
-    print_sql_insert_figure(
+    """print_sql_insert_figure(
         analysis['pwise_entropy_plot'],
         'Point-wise entropy'
-    )
-    print_sql_insert_figure(
+    )"""
+    """print_sql_insert_figure(
         analysis['class_ambiguity_plot'],
         'Class ambiguity'
-    )
+    )"""
     """print_sql_insert_figure(  # Not available for SFLNET
         analysis['weighted_entropy_plot'],
         'Weighted entropy'

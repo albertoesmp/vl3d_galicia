@@ -67,11 +67,19 @@ class ShadowConv1DLayer(Layer):
                 activity_regularizer=activity_regularizer,
                 kernel_constraint=kernel_constraint,
                 bias_constraint=bias_constraint,
-                name=f'RAG_{kwargs.get("name", "undConv1D")}'
+                name=f'SHAD_{kwargs.get("name", "undConv1D")}'
             )
         self.offset = offset
         # Warn about unexpected configurations
-        if kernel_size != 1 or strides != 1:
+        unitary_kernel_size = (
+            kernel_size == 1 if isinstance(kernel_size, int) else
+            kernel_size[0] if len(kernel_size) == 1 else False
+        )
+        unitary_stride = (
+            strides == 1 if isinstance(strides, int) else
+            strides[0] if len(strides) == 1 else False
+        )
+        if not unitary_kernel_size or not unitary_stride:
             LOGGING.LOGGER.warning(
                 'ShadowConv1DLayer has been initialized with '
                 f'window size {kernel_size} and stride {strides}.\n'
@@ -101,19 +109,18 @@ class ShadowConv1DLayer(Layer):
 
         See :class:`.Layer` and :meth:`layer.Layer.call`.
         """
-        def convolve(input):
+        def handle_padding(input):
             x, start = input
             start = tf.squeeze(start)
             return tf.pad(
-                self.conv1D(x[start+self.offset:][tf.newaxis, :])[0],
+                x[start+self.offset:],
                 [[start+self.offset, 0], [0, 0]],
                 "CONSTANT",
                 constant_values=0
             )
-        # Convolve each element in the batch
         return tf.map_fn(
-            fn=convolve,
-            elems=inputs,
+            fn=handle_padding,
+            elems=[self.conv1D(inputs[0]), inputs[1]],
             fn_output_signature=tf.TensorSpec(
                 shape=(None, self.conv1D.filters),
                 dtype=tf.dtypes.float32
@@ -129,6 +136,7 @@ class ShadowConv1DLayer(Layer):
         # update config with custom attributes
         config.update({
             # Base attributes
+            'offset': self.offset,
             'conv1D': tf.keras.layers.serialize(self.conv1D)
         })
         # Return updated config

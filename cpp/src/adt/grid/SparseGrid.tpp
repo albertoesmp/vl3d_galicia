@@ -29,7 +29,8 @@ SparseGrid<XDecimalType, IndexType>::SparseGrid(
     paddingCells(0),
     nthreads(1),
     A(A),
-    n(n)
+    n(n),
+    logTime(false)
 {}
 
 template <typename XDecimalType, typename IndexType>
@@ -44,7 +45,8 @@ SparseGrid<XDecimalType, IndexType>::SparseGrid(
     paddingCells(0),
     nthreads(1),
     A(A),
-    n(n)
+    n(n),
+    logTime(false)
 {
     // Build map h
     arma::uword const m = hk.n_rows;
@@ -247,8 +249,8 @@ SparseGrid<XDecimalType, IndexType>::reduceMode(vector<FType> const &f){
 }
 
 
-// ***  INDEXING METHODS  *** //
-// ************************** //
+// ***  UTIL METHODS  *** //
+// ********************** //
 template <typename XDecimalType, typename IndexType>
 IndexType
 SparseGrid<XDecimalType, IndexType>::indexFromCoordinates(
@@ -323,3 +325,46 @@ SparseGrid<XDecimalType, IndexType>::prepareEncoding(
     return I;
 }
 
+
+template <typename XDecimalType, typename IndexType>
+void SparseGrid<XDecimalType, IndexType>::report(std::ostream & out){
+    out << "size: " << size << "\n"
+        << "paddingCells: " << paddingCells << "\n"
+        << "nthreads: " << nthreads << "\n"
+        << "logTime: " << logTime << "\n"
+        << "h:\n"
+        << "\tsize: " << h.size() << "\n"
+    ;
+    if(h.size() > 6){
+        size_t const mh = h.size();
+        std::vector<IndexType> hk(6), hv(6);
+        size_t i = 0, j = 0;
+        for(auto it = h.cbegin() ; it != h.cend() ; ++it){
+            if( i < 3 || i >= (mh-3)){
+                hk[j] = it->first;
+                hv[j] = it->second;
+                ++j;
+            }
+            ++i;
+        }
+        out << "\t(hk1, hk2, hk3, ..., hk-3, hk-2, hk-1) = ("
+            << hk[0] << ", " << hk[1] << ", " << hk[2] << ", ..., "
+            << hk[3] << ", " << hk[4] << ", " << hk[5] << ")\n"
+            << "\t(hv1, hv2, hv3, ..., hv-3, hv-2, hv-1) = ("
+            << hv[0] << ", " << hv[1] << ", " << hv[2] << ", ..., "
+            << hv[3] << ", " << hv[4] << ", " << hv[5] << ")"
+            << std::endl
+        ;
+    }
+    out << "A:\n"
+        << "\tdimensionality: " << A.n_cols << "\n"
+        << "\tvalues: (" << std::fixed
+    ;
+    for(arma::uword i = 0 ; i < A.n_cols ; ++i){
+        out << A[i] << (i==A.n_cols-1 ? ")\n" : ", ");
+    }
+    out << "n:\n"
+        <<  "\tdimensionality: " << n.n_rows << "\n"
+        << "\tvalues: " << n.as_row()
+    ;
+}

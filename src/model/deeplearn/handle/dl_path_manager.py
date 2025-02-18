@@ -146,11 +146,13 @@ class DLPathManager:
             arch.architecture_graph_path = model_args.get(
                 'architecture_graph_path', None
             )
-            # Update pre-procesor paths
+            # Update pre-processor paths
             pre_processor = None
             if arch.pre_runnable is not None:
                 if hasattr(arch.pre_runnable, "pre_processor"):
                     pre_processor = arch.pre_runnable.pre_processor
+                else:
+                    pre_processor = arch.pre_runnable
             if pre_processor is not None:
                 pre_processor.update_paths(model_args.get(
                     'pre_processing', None

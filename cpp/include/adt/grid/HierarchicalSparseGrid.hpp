@@ -439,6 +439,12 @@ public:
         string const &reduceStrategy
     ){return sg.encodeVector(X, F, reduceStrategy);}
 
+    /**
+     * @brief Report the first sparse grid in the hierarchy.
+     * @see SparseGrid::report
+     */
+    inline void report(std::ostream &out)
+    {sg.report(out);}
 
     // ***  GETTERs and SETTERs  *** //
     // ***************************** //

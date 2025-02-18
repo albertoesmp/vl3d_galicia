@@ -176,6 +176,10 @@ class DLModelCompiler:
                 'function. None was given.'
             )
         # Build loss
+        LOGGING.LOGGER.debug(
+            f'Compiling deep learning model with "{loss_args["function"]}" '
+            f'({loss.__name__}) loss function.'
+        )
         if instantiate_loss:
             loss = loss()
         # Build metrics : Extract args

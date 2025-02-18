@@ -204,6 +204,7 @@ public:
      * @tparam FType The numeric type used to represent the features.
      * @param X The structure space representing the points. NOTE that X
      *  must be the same matrix that was used to fit the sparse grid.
+     *  TODO Rethink : Does X really need to be the same as for fit?
      * @param F The point-wise features, the \f$i\f$-th row \f$\pmb{f}_{i*}\f$
      *  gives the features vector representing the \f$i\f$-th point.
      * @param reduceStrategy The strategy to be used to reduce a feature for a
@@ -433,7 +434,13 @@ protected:
         string const &reduceStrategy,
         FType (**reduce) (vector<FType> const &f)
     );
-
+public:
+    /**
+     * @brief Report the configuration of the sparse grid through the given
+     *  output stream.
+     * @param out The output stream where the report must be outputted.
+     */
+    void report(std::ostream & out);
 };
 
 

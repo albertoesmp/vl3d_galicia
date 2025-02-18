@@ -48,7 +48,7 @@ class ArgMaxPredSelectStrategy(PredSelectStrategy):
         if ArgMaxPredSelectStrategy.is_single_value(Z):
             return ArgMaxPredSelectStrategy.round_to_closest_int(Z).astype(
                 self.prediction_data_type
-            )
+            ).squeeze()
         # Otherwise, take the argmax
         return np.argmax(Z, axis=1).astype(self.prediction_data_type)
 
@@ -65,7 +65,7 @@ class ArgMaxPredSelectStrategy(PredSelectStrategy):
             False otherwise.
         :rtype: bool
         """
-        return len(Z.shape) <= 1
+        return len(Z.shape) <= 1 or Z.shape[-1] < 2
 
     @staticmethod
     def round_to_closest_int(Z):

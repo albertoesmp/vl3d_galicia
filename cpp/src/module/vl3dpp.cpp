@@ -9,6 +9,11 @@
 #include <util/logging/BasicLogger.hpp>
 #include <util/logging/GlobalLogger.hpp>
 
+// Explicitly including the .cpp files is necessary to avoid PyBind11 segfault
+#include <module/vl3dpp_algorithm.cpp>
+#include <module/vl3dpp_data_mining.cpp>
+#include <module/vl3dpp_rfield.cpp>
+
 #include <string>
 
 namespace py = pybind11;

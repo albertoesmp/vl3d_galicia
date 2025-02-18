@@ -3,6 +3,8 @@
 from src.tests.vl3d_test import VL3DTest
 from src.model.deeplearn.layer.upsampling_spconv3d_layer import \
     UpsamplingSpConv3DLayer
+from src.model.deeplearn.layer.sparse_indexing_map_layer import \
+    SparseIndexingMapLayer
 from src.utils.ptransf.receptive_field_hierarchical_sg import \
     ReceptiveFieldHierarchicalSG
 import numpy as np
@@ -37,20 +39,20 @@ class UpsamplingSpConv3DLayerTest(VL3DTest):
         # Generate test data
         X = [
             np.vstack([
-                np.random.normal(0, 1, (256, 3)),
-                np.random.normal(-np.pi**2, np.e, (256, 3)),
-                np.random.normal(np.pi**2, np.e, (256, 3)),
+                np.random.normal(0, 0.1, (512, 3)),
+                np.random.normal(-1, 0.1, (512, 3)),
+                np.random.normal(1, 0.1, (512, 3))
             ]),
             np.vstack([
-                np.random.normal(0, 1, (256, 3)),
-                np.random.normal(-np.e**2, np.e, (256, 3)),
-                np.random.normal(np.e**2, np.e, (256, 3)),
+                np.random.normal(0, 1, (512, 3)),
+                np.random.normal(-0.5, 0.1, (512, 3)),
+                np.random.normal(0.5, 0.1, (512, 3))
             ])
         ]
         # Preprocess test data
         rf = [
             ReceptiveFieldHierarchicalSG(
-                cell_size=np.e,
+                cell_size=0.1,
                 submanifold_window=[1, 1],
                 downsampling_window=[2],
                 downsampling_stride=[2],
@@ -68,7 +70,7 @@ class UpsamplingSpConv3DLayerTest(VL3DTest):
         F = [
             np.vstack([
                 np.zeros((1, nf)),
-                np.random.normal(0, 1, (hi[1].shape[0], nf))
+                np.random.normal(0, 1, (hi[1].shape[0], nf))/np.pi
             ]).astype(np.float32)
             for hi in h
         ]
@@ -76,31 +78,44 @@ class UpsamplingSpConv3DLayerTest(VL3DTest):
         max_rows = np.max([hUi.shape[0] for hUi in hU])
         max_src_rows = np.max([Fi.shape[0] for Fi in F])
         start_rows, start_src_rows = [], []
+        k_offset = 0
         for i, Fi in enumerate(F):
             rows = hU[i].shape[0]
             padding = max_rows - rows
             start_rows.append(padding)
             pad_vec = [padding, 0]
-            hU[i] = np.pad(hU[i], pad_vec, "constant", constant_values=-1)
+            # TODO Rethink : Handle k2_offset for hU
+            hU[i] = np.pad(
+                hU[i] + k_offset,
+                pad_vec,
+                "constant",
+                constant_values=-1
+            )
             src_rows = Fi.shape[0]
             src_padding = max_src_rows - src_rows
             start_src_rows.append(src_padding)
             src_pad_vec = [src_padding, 0]
             src_pad_mat = [[src_padding, 0], [0, 0]]
             F[i] = np.pad(Fi, src_pad_mat, "constant", constant_values=0)
-            hk[i] = np.pad(hk[i], src_pad_vec, "constant", constant_values=-1)
+            hk[i] = np.pad(
+                hk[i] + k_offset,
+                src_pad_vec,
+                "constant",
+                constant_values=-1
+            )
+            k_offset = max(k_offset, 1+np.max(hk[i]))
             hv[i] = np.pad(hv[i], src_pad_vec, "constant", constant_values=0)
         # Instantiate DownsamplingSpConv3DLayer
         ng = 5  # Output feature space dimensionality
         f = 7  # Number of convolutional filters
-        dsc3D = UpsamplingSpConv3DLayer(wU, f, nf, ng)
+        usc3D = UpsamplingSpConv3DLayer(wU, f, nf, ng)
         # Compute UpsamplingSpConv3DLayer
         with tf.device("cpu:0"):
             N = [rfi.get_num_partitions()[:, 0] for rfi in rf]
-            G = dsc3D([
+            usc3D.siml = SparseIndexingMapLayer()
+            usc3D.siml([tf.constant(hk), tf.constant(hv), tf.constant(F)])
+            G = usc3D([
                 tf.constant(F),
-                tf.constant(hk),
-                tf.constant(hv),
                 tf.constant(hU),
                 tf.constant(N),
                 tf.constant(start_rows),
@@ -108,7 +123,7 @@ class UpsamplingSpConv3DLayerTest(VL3DTest):
             ])
         # Validate
         valid = True
-        W = dsc3D.W.numpy()
+        W = usc3D.W.numpy()
         K = len(hk)
         wUsq = wU*wU
         wU_to_nx = wUsq*wU

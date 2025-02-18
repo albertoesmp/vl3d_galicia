@@ -2,9 +2,8 @@
 # ------------------- #
 from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.layer.layer import Layer
-import src.main.main_logger as LOGGING
 import tensorflow as tf
-import numpy as np
+import time  # TODO Remove : Debug only
 
 
 # ---   CLASS   --- #
@@ -130,6 +129,20 @@ class ShadowDenseLayer(Layer):
                 "CONSTANT",
                 constant_values=0
             )
+        # TODO Remove : Debug section ---
+        """start = time.perf_counter()
+        output = tf.map_fn(
+            fn=matmul_add,
+            elems=inputs,
+            fn_output_signature=tf.TensorSpec(
+                shape=(None, self.units),
+                dtype=tf.dtypes.float32
+            )
+        )
+        end = time.perf_counter()
+        print(f'{self.name} called in {(1000*(end-start)):.3f} ms')
+        return output"""
+        # --- TODO Remove : Debug section
         return tf.map_fn(
             fn=matmul_add,
             elems=inputs,
@@ -148,6 +161,7 @@ class ShadowDenseLayer(Layer):
         # update config with custom attributes
         config.update({
             # Base attributes
+            'offset': self.offset,
             'units': self.units,
             'activation': tf.keras.activations.serialize(self.activation),
             'use_bias': self.use_bias,

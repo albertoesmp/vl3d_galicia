@@ -1,10 +1,8 @@
 # ---   IMPORTS   --- #
 # ⨪------------------ #
-from src.model.deeplearn.deep_learning_exception import DeepLearningException
 from src.model.deeplearn.layer.layer import Layer
-import src.main.main_logger as LOGGING
 import tensorflow as tf
-import numpy as np
+import time  # TODO Remove : Debug only
 
 
 # ---   CLASS   --- #
@@ -59,6 +57,8 @@ class ShadowActivationLayer(Layer):
             x, start = input
             start = tf.squeeze(start)
             xdim = len(tf.shape(x))
+            # TODO Rethink : Should use offset=1 for SpConv3DPwiseClassif
+            #print(f'{self.name} F[:3]:\n{x[start+self.offset:][:3]}')  # TODO Remove : Debug
             if xdim == 1:
                 return tf.pad(
                     self.act(x[start+self.offset:]),
@@ -83,6 +83,20 @@ class ShadowActivationLayer(Layer):
                 "CONSTANT",
                 constant_values=0
             )
+        # TODO Remove : Debug section ---
+        """start = time.perf_counter()
+        output = tf.map_fn(
+            activate,
+            inputs,
+            fn_output_signature=tf.TensorSpec(
+                shape=[None for k in range(1, len(tf.shape(inputs[0])))],
+                dtype=tf.dtypes.float32
+            )
+        )
+        end = time.perf_counter()
+        print(f'{self.name} called in {(1000*(end-start)):.3f} ms')
+        return output"""
+        # --- TODO Remove : Debug section
         return tf.map_fn(
             activate,
             inputs,
@@ -101,7 +115,8 @@ class ShadowActivationLayer(Layer):
         # Update config with custom attributes
         config.update({
             # Base attributes
-            'act': tf.keras.layers.serialize(self.act)
+            'offset': self.offset,
+            'act': self.act
         })
         # Return updated config
         return config
@@ -110,8 +125,8 @@ class ShadowActivationLayer(Layer):
     def from_config(cls, config):
         """Use given config data to deserialize the layer"""
         # Instantiate layer
-        act = tf.keras.layers.deserialize(config['act'])
-        config['act'] = act
-        act = cls(**config)
+        act = config['act']
+        config['act'] = None
+        act = cls(act, **config)
         # Return deserialized layer
         return act

@@ -53,7 +53,9 @@ class DLLabelFormatter:
             ])
             new_y = []
             for i in range(len(y)):
-                new_y.append(label_binarizer.transform(y[i].flatten()))
+                new_y.append(label_binarizer.transform(y[i].flatten()).astype(
+                    y[i].dtype
+                ))
             if isinstance(mh.arch, SpConv3DPwiseClassif):
                 y = new_y
             else:

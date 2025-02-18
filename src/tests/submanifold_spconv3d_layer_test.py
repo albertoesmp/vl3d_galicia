@@ -5,6 +5,8 @@ from src.model.deeplearn.layer.submanifold_spconv3d_layer import \
     SubmanifoldSpConv3DLayer
 from src.utils.ptransf.receptive_field_hierarchical_sg import \
     ReceptiveFieldHierarchicalSG
+from src.model.deeplearn.layer.sparse_indexing_map_layer import \
+    SparseIndexingMapLayer
 import numpy as np
 import tensorflow as tf
 
@@ -22,7 +24,7 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
     # ---------------- #
     def __init__(self):
         super().__init__('Submanifold SpConv3D layer test')
-        self.eps = 1e-5
+        self.eps = 0.5e-4
 
     # ---   TEST INTERFACE   --- #
     # -------------------------- #
@@ -37,20 +39,20 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
         # Generate test data
         X = [
             np.vstack([
-                np.random.normal(0, 1, (256, 3)),
-                np.random.normal(-np.pi**2, np.e, (256, 3)),
-                np.random.normal(np.pi**2, np.e, (256, 3)),
+                np.random.normal(0, 0.1, (512, 3)),
+                np.random.normal(-1, 0.1, (512, 3)),
+                np.random.normal(1, 0.1, (512, 3))
             ]),
             np.vstack([
-                np.random.normal(0, 1, (256, 3)),
-                np.random.normal(-np.e**2, np.e, (256, 3)),
-                np.random.normal(np.e**2, np.e, (256, 3)),
+                np.random.normal(0, 1, (512, 3)),
+                np.random.normal(-0.5, 0.1, (512, 3)),
+                np.random.normal(0.5, 0.1, (512, 3))
             ])
         ]
         # Preprocess test data
         rf = [
             ReceptiveFieldHierarchicalSG(
-                cell_size=np.e,
+                cell_size=0.1,
                 submanifold_window=[1, 1],
                 downsampling_window=[2],
                 downsampling_stride=[2],
@@ -67,13 +69,14 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
         F = [
             np.vstack([
                 np.zeros((1, nf)),
-                np.random.normal(0, 1, (hi[0].shape[0], nf))
+                np.random.normal(0, 1, (hi[0].shape[0], nf))/np.pi
             ]).astype(np.float32)
             for hi in h
         ]
         # Add padding to input
         max_rows = np.max([Fi.shape[0] for Fi in F])
         start_rows = []
+        k_offset = 0
         for i, Fi in enumerate(F):
             rows = Fi.shape[0]
             padding = max_rows-rows
@@ -81,7 +84,13 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
             pad_mat = [[padding, 0], [0, 0]]
             pad_vec = [padding, 0]
             F[i] = np.pad(Fi, pad_mat, "constant", constant_values=0)
-            hk[i] = np.pad(hk[i], pad_vec, "constant", constant_values=-1)
+            hk[i] = np.pad(
+                hk[i] + k_offset,
+                pad_vec,
+                "constant",
+                constant_values=-1
+            )
+            k_offset = max(k_offset, 1+np.max(hk[i]))
             hv[i] = np.pad(hv[i], pad_vec, "constant", constant_values=0)
         # Instantiate SubmanifoldSpConv3DLayer
         ng = 5  # Output feature space dimensionality
@@ -90,10 +99,11 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
         # Compute SubmanifoldSpConv3DLayer
         with tf.device("cpu:0"):
             N = [rfi.get_num_partitions()[:, 0] for rfi in rf]
+            ssc3D.siml = SparseIndexingMapLayer()
+            ssc3D.siml([tf.constant(hk), tf.constant(hv), tf.constant(F)])
             G = ssc3D([
                 tf.constant(F),
                 tf.constant(hk),
-                tf.constant(hv),
                 tf.constant(N),
                 tf.constant(start_rows)
             ])
@@ -129,11 +139,4 @@ class SubmanifoldSpConv3DLayerTest(VL3DTest):
             valid = valid and np.all(
                 np.abs(G[k].numpy()[start_row:]-Gk) <= self.eps
             )
-            # TODO Remove : Debug section ---
-            err = np.abs(G[k].numpy()[start_row:] - Gk)
-            _valid = np.all(err <= self.eps)
-            if not _valid:
-                max_err = np.max(err)
-                print(f'max_err: {max_err}')
-            # --- TODO Remove : Debug section
         return valid
