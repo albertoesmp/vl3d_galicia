@@ -5,7 +5,7 @@
 VL3D_DIR=$(realpath $(dirname $0)/../../)
 VL3D_SCRIPT_DIR=$VL3D_DIR/vl3d.py
 EXPERIMENT_NAME=vegetation
-MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/sflnet_try1_XIrRGB_vegetation/T5/prep_pipe/SFLNET_T5.pipe
+MODEL=/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/sflnet_try1_XIrRGB_vegetation/T5/prep_pipe
 JSON_DIR=$VL3D_DIR/experiments/spec/$EXPERIMENT_NAME/$(whoami)
 
 case $(whoami) in
@@ -68,7 +68,9 @@ sed -i "s|source .*|source $VL3D_DIR/cesga/vl3d_cesga_env.sh|" $VL3D_DIR/experim
 # Replace paths in json files
 $VL3D_DIR/experiments/scripts/experiment_generation/replace_paths.sh
 
+# Create logs directory
+LOG_DIR=$VL3D_DIR/experiments/scripts/slurm/logs/$(whoami)/$EXPERIMENT_NAME
+mkdir -p $LOG_DIR
 
 # Launch work
-# $VL3D_DIR/scripts/slurm/launch.sh $JSON_DIR
-
+$VL3D_DIR/experiments/scripts/slurm/launch.sh $JSON_DIR $LOG_DIR
