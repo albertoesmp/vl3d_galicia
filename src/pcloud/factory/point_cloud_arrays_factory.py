@@ -1,0 +1,142 @@
+# ---   IMPORTS   --- #
+# ------------------- #
+from src.pcloud.factory.point_cloud_factory import PointCloudFactory, \
+    PointCloudFactoryException
+from src.pcloud.point_cloud import PointCloud
+import src.main.main_logger as LOGGING
+from src.main.main_config import VL3DCFG
+import laspy
+import numpy as np
+import copy
+
+
+# ---   CLASS   --- #
+# ----------------- #
+class PointCloudArraysFactory(PointCloudFactory):
+    """
+    :author: Alberto M. Esmoris Pena
+
+    Class to instantiate PointCloud objects from arrays.
+    See :class:`.PointCloud` and also :class:`.PointCloudFactory`.
+
+    :ivar X: The matrix representing the coordinates of the points.
+    :vartype X: :class:`np.ndarray`
+    :ivar F: The matrix representing the point-wise features.
+    :vartype F: :class:`np.ndarray`
+    :ivar y: The vector representing the point-wise classes.
+    :vartype y: :class:`np.ndarray`
+    :ivar header: The LAS header.
+    :ivar fnames: The name for each feature.
+    :vartype fnames: list or tuple
+    """
+
+    # ---   INIT   --- #
+    # ---------------- #
+    def __init__(self, X, F, y=None, header=None, fnames=None, **kwargs):
+        """
+        Initialize an instance of PointCloudArraysFactory.
+
+        :param X: The matrix of point coordinates.
+        :param F: The matrix of point-wise features.
+        :param y: The vector of classes (OPTIONAL).
+        :param header: The LAS header (OPTIONAL).
+        :param fnames: The name for each feature (OPTIONAL).
+        """
+        # Call parent's init
+        super().__init__(**kwargs)
+        # Assign attributes
+        self.X = X
+        self.F = F
+        self.y = y
+        self.header = header
+        self.fnames = fnames
+        # Validate
+        if self.F is not None and self.X.shape[0] != self.F.shape[0]:
+            raise PointCloudFactoryException(
+                'PointCloudArraysFactory cannot deal with coordinates for '
+                f'{self.X.shape[0]} points and features for {self.F.shape[0]} '
+                'points.'
+            )
+        # Load defaults when necessary
+        if self.F is not None and self.fnames is None:
+            self.fnames = [f'f{i}' for i in range(1, self.F.shape[1]+1)]
+        # Load defaults from config
+        self.las_version = VL3DCFG['IO']['PointCloudArraysFactory'][
+            'las_version'
+        ]
+        self.las_point_format = VL3DCFG['IO']['PointCloudArraysFactory'][
+            'las_point_format'
+        ]
+
+    # ---  FACTORY METHODS  --- #
+    # ------------------------- #
+    def make(self, scale=0.001, logging=True):
+        """
+        Make a point cloud from arrays.
+        See :meth:`point_cloud_factory.PointCloudFactory.make`
+        """
+        # Initialize LAS
+        if self.header is None:  # Initialize from scratch
+            las = laspy.create(
+                file_version=self.las_version,
+                point_format=self.las_point_format
+            )
+            las.header.offsets = np.min(self.X, axis=0)
+            las.header.scales = [scale]*3
+            if self.F is not None:
+                extra_bytes = [
+                    laspy.ExtraBytesParams(name=fname, type=self.F.dtype)
+                    for fname in self.fnames if fname not in [
+                        # Exclude default features like intensity
+                        'intensity'
+                    ]
+                ]
+                las.add_extra_dims(extra_bytes)
+        else:  # Initialize from previous header
+            header = copy.deepcopy(self.header)
+            header.point_count = self.X.shape[0]
+            las = laspy.LasData(header)
+        # Assign coordinates
+        if self.X.dtype != las.x.dtype:
+            if logging:
+                LOGGING.LOGGER.warning(
+                    'PointCloudArraysFactory changed coordinate type from '
+                    f'{self.X.dtype} (internal) to {las.x.dtype} (LAS/LAZ).'
+                )
+            las.x = self.X[:, 0].astype(las.x.dtype)
+            las.y = self.X[:, 1].astype(las.y.dtype)
+            las.z = self.X[:, 2].astype(las.z.dtype)
+        else:
+            las.x = self.X[:, 0]
+            las.y = self.X[:, 1]
+            las.z = self.X[:, 2]
+        # Assign features
+        if self.F is not None:
+            for i, fname in enumerate(self.fnames):
+                if las[fname].dtype != self.F.dtype:
+                    if logging:
+                        LOGGING.LOGGER.warning(
+                            'PointCloudArraysFactory changed feature '
+                            f'"{fname}" type from {self.F.dtype} (internal) '
+                            f'to {las[fname].dtype} (LAS/LAZ).'
+                        )
+                    las[fname] = self.F[:, i].astype(las[fname].dtype)
+                else:
+                    las[fname] = self.F[:, i]
+        # Assign classification
+        if self.y is not None:
+            if las.classification.dtype != self.y.dtype:
+                if logging:
+                    LOGGING.LOGGER.warning(
+                        'PointCloudArraysFactory changed classification type '
+                        f'from {self.y.dtype} (internal) to '
+                        f'{las.classification.dtype} (LAS/LAZ).'
+                    )
+                las.classification = self.y.astype(las.classification.dtype)
+            else:
+                las.classification = self.y
+        # Return point cloud
+        return PointCloud(
+            las,
+            mem_check_threshold=None if logging else 1.0
+        )

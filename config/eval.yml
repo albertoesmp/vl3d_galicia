@@ -1,0 +1,54 @@
+---
+# Default configuration of raster-grid evaluator
+RasterGridEvaluator:
+  grid_iter_step: 1024
+  reverse_rows: true
+  radius_expr: "sqrt(2)*l/2"
+  nthreads: 1
+  
+# Default configuration for random forest evaluator
+RandForestEvaluator:
+  num_decision_trees: 0
+  compute_permutation_importance: true
+  max_tree_depth: 5
+
+# Default configuration for k-fold evaluator
+KFoldEvaluator:
+  quantile_cuts:
+    - 0.25
+    - 0.5
+    - 0.75
+
+# Default configuration for classification evaluator
+ClassificationEvaluator:
+  # Default format for confusion matrices
+  confusion_matrix_format:
+    cmap: "Greens"
+    values_format: ".3f"
+    fontsize: 10
+    fontweight: "bold"
+    fontcolor: "black"
+    stroke_width: 2
+    stroke_foreground: "white"
+    colorbar_labelsize: 11
+    tick_labelsize: 11
+    tick_length: 3.0
+    tick_width: 1.0
+    xlabel_rotation: 70
+    xlabel_size: 11
+    ylabel_rotation: 20
+    ylabel_size: 11
+    border_size: 2
+
+# Default configuration for classification uncertainty evaluator
+ClassificationUncertaintyEvaluator:
+  include_probabilities: true
+  include_weighted_entropy: true
+  include_clusters: false
+  weight_by_predictions: false
+  num_clusters: 8
+  clustering_max_iters: 128
+  clustering_batch_size: 4096
+  clustering_reduce_function: "max"
+  gaussian_kernel_points: 256
+...

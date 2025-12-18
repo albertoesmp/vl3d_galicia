@@ -1,0 +1,159 @@
+{
+  "in_pcloud": [
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_195_minmaxnorm.laz",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_212_minmaxnorm.laz",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_108_minmaxnorm.laz",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/mined/RGBIr_MERGE_13_minmaxnorm.laz"
+  ],
+  "out_pcloud": [
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_195_*",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_212_*",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_108_*",
+    "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_13_*"
+  ],
+  "sequential_pipeline": [
+    {
+        "miner": "GeometricFeatures",
+        "radius": 10,
+        "fnames": ["linearity", "planarity", "surface_variation", "verticality", "anisotropy"],
+        "frenames": ["linearity_r10", "planarity_r10", "surface_variation_r10", "verticality_r10", "anisotropy_r10"],
+        "nthreads": -1
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/3",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1
+        },
+        "decorated_miner": {
+            "miner": "GeometricFeatures",
+            "radius": 30,
+            "fnames": ["linearity", "planarity", "surface_variation", "verticality", "anisotropy"],
+            "frenames": ["linearity_r30", "planarity_r30", "surface_variation_r30", "verticality_r30", "anisotropy_r30"],
+            "nthreads": -1
+        }
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/5",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1
+        },
+        "decorated_miner": {
+            "miner": "GeometricFeatures",
+            "radius": 60,
+            "fnames": ["linearity", "planarity", "surface_variation", "verticality", "anisotropy"],
+            "frenames": ["linearity_r60", "planarity_r60", "surface_variation_r60", "verticality_r60", "anisotropy_r60"],
+            "nthreads": -1
+        }
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/3",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1,
+            "representation_report_path": null
+        },
+        "decorated_miner": {
+            "miner": "SmoothFeaturesPP",
+            "nan_policy": "replace",
+            "neighborhood": {
+                "type": "sphere",
+                "radius": 30
+            },
+            "input_fnames": ["norm_red", "norm_green", "norm_blue", "norm_ir"],
+            "fnames": ["mean"],
+            "frenames": ["red_mean_r30", "green_mean_r30", "blue_mean_r30", "ir_mean_r30"],
+            "nthreads": -1
+        }
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/5",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1,
+            "representation_report_path": null
+        },
+        "decorated_miner": {
+            "miner": "SmoothFeaturesPP",
+            "nan_policy": "replace",
+            "neighborhood": {
+                "type": "sphere",
+                "radius": 90
+            },
+            "input_fnames": ["norm_red", "norm_green", "norm_blue", "norm_ir"],
+            "fnames": ["mean"],
+            "frenames": ["red_mean_r90", "green_mean_r90", "blue_mean_r90", "ir_mean_r90"],
+            "nthreads": -1
+        }
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/3",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1,
+            "representation_report_path": null
+        },
+        "decorated_miner": {
+            "miner": "HeightFeaturesPP",
+            "nthreads": -1,
+            "neighborhood": {
+                "type": "Cylinder",
+                "radius": 50.0,
+                "separation_factor": 0
+            },
+            "outlier_filter": "IQR",
+            "fnames": ["floor_distance", "ceil_distance"],
+            "frenames": ["floor_dist_r50", "ceil_distance_r50"]
+        }
+    },
+    {
+        "miner": "FPSDecorated",
+        "fps_decorator": {
+            "num_points": "m/7",
+            "fast": true,
+            "num_encoding_neighbors": 1,
+            "num_decoding_neighbors": 1,
+            "release_encoding_neighborhoods": false,
+            "threads": -1,
+            "representation_report_path": null
+        },
+        "decorated_miner": {
+            "miner": "HeightFeaturesPP",
+            "nthreads": -1,
+            "neighborhood": {
+                "type": "Cylinder",
+                "radius": 100.0,
+                "separation_factor": 0
+            },
+            "outlier_filter": "IQR",
+            "fnames": ["floor_distance", "ceil_distance"],
+            "frenames": ["floor_dist_r100", "ceil_distance_r100"]
+        }
+    },
+    {
+        "writer": "Writer",
+        "out_pcloud": "*feats.las"
+    }
+  ]
+}

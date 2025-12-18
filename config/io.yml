@@ -1,0 +1,9 @@
+---
+# Default configuration for memory-to-file proxies
+MemToFileProxy:
+  mem_check_threshold: 0.34
+PointCloudArraysFactory:
+  las_version: "1.4"
+  las_point_format: 6
+
+...

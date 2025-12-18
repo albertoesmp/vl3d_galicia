@@ -1,0 +1,39 @@
+---
+ErrorTestSuites:
+  Data mining:
+    - HSVFromRGBTest
+  Input/Output:
+    - LASInoutTest
+  Utils:
+    - PredictionReducerTest
+    - FPSDecoratorTest
+  Deep learning:
+    - ReceptiveFieldTest
+    - FPSPreProcessingTest
+    - HierarchicalReceptiveFieldTest
+    - FeaturesDownsamplingLayerTest
+    - FeaturesUpsamplingLayerTest
+    - GroupingPointNetLayerTest
+    - KPConvLayerTest
+    - StridedKPConvLayerTest
+    - LightKPConvLayerTest
+    - StridedLightKPConvLayerTest
+    - HourglassLayerTest
+  C++:
+    - VL3DPPBindingTest
+    - VL3DPPBackendTest
+    - VL3DPPSupportNeighborhoodsTest
+    - VL3DPPOversamplerTest
+    - VL3DPPDLFPSPreProcTest
+    - VL3DPPDLHierarchicalFPSPreProcTest
+    - VL3DPPDLLabelReductionTest
+    - VL3DPPDLPostProcTest
+
+WarningTestSuites:
+  Deep learning:
+    - KerasTest
+    - RBFFeatExtractLayerTest
+    - RBFFeatProcessingLayerTest
+    - FeaturesStructuringLayerTest
+    - ModelSerializationTest
+...

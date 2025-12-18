@@ -1,0 +1,174 @@
+{
+    "in_pcloud_concat": [
+        {
+            "in_pcloud": "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_195_feats.laz",
+            "fnames": [
+                "linearity_r10", "planarity_r10", "surface_variation_r10", "verticality_r10", "anisotropy_r10",
+                "linearity_r30", "planarity_r30", "surface_variation_r30", "verticality_r30", "anisotropy_r30",
+                "linearity_r60", "planarity_r60", "surface_variation_r60", "verticality_r60", "anisotropy_r60",
+                "floor_dist_r50", "ceil_distance_r50",
+                "floor_dist_r100", "ceil_distance_r100",
+                "ir_mean_r30",
+                "ir_mean_r90"
+            ],
+            "fps_transformer": {
+                "num_points": 25000000,
+                "fast": true,
+                "num_encoding_neighbors": 1,
+                "num_decoding_neighbors": 1,
+                "release_encoding_neighbors": true,
+                "threads": -1
+            },
+            "conditions": [
+                {
+                    "value_name": "classification",
+                    "condition_type": "in",
+                    "value_target": [2, 3, 4, 5, 6, 9],
+                    "action": "preserve"
+                }
+            ]
+        },
+        {
+            "in_pcloud": "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_212_feats.laz",
+            "fps_transformer": {
+                "num_points": 25000000,
+                "fast": true,
+                "num_encoding_neighbors": 1,
+                "num_decoding_neighbors": 1,
+                "release_encoding_neighbors": true,
+                "threads": -1
+            },
+            "conditions": [
+                {
+                    "value_name": "classification",
+                    "condition_type": "in",
+                    "value_target": [2, 3, 4, 5, 6, 9],
+                    "action": "preserve"
+                }
+            ]
+        },
+        {
+            "in_pcloud": "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_108_feats.laz",
+            "fps_transformer": {
+                "num_points": 25000000,
+                "fast": true,
+                "num_encoding_neighbors": 1,
+                "num_decoding_neighbors": 1,
+                "release_encoding_neighbors": true,
+                "threads": -1
+            },
+            "conditions": [
+                {
+                    "value_name": "classification",
+                    "condition_type": "in",
+                    "value_target": [2, 3, 4, 5, 6, 9],
+                    "action": "preserve"
+                }
+            ]
+        },
+        {
+            "in_pcloud": "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_fullraw_try3/training/MERGE_13_feats.laz",
+            "fps_transformer": {
+                "num_points": 25000000,
+                "fast": true,
+                "num_encoding_neighbors": 1,
+                "num_decoding_neighbors": 1,
+                "release_encoding_neighbors": true,
+                "threads": -1
+            },
+            "conditions": [
+                {
+                    "value_name": "classification",
+                    "condition_type": "in",
+                    "value_target": [2, 3, 4, 5, 6, 9],
+                    "action": "preserve"
+                }
+            ]
+        }
+    ],
+    "out_pcloud": [
+      "/mnt/netapp2/Store_uscciaep/lidar_data/pnoa2/vl3d/rf_XIr_fullraw_try3/*"
+    ],
+    "sequential_pipeline": [
+        {
+            "class_transformer": "ClassReducer",
+            "on_predictions": false,
+            "input_class_names": [
+                "miss0", "noclass", "ground", "lowveg", "midveg",
+                "highveg", "building", "noise", "miss8", "water",
+                "miss10", "miss11", "overlap", "miss13", "miss14",
+                "miss15", "miss16", "bridge", "miss18"
+            ],
+            "output_class_names": ["ground", "water", "lowveg", "midveg", "highveg", "building","ignore"],
+            "class_groups": [
+                ["ground"],
+                ["water"],
+                ["lowveg"],
+                ["midveg"],
+                ["highveg"],
+                ["building"],
+                [
+                    "bridge", "noclass", "noise", "overlap",
+                    "miss0", "miss8", "miss10", "miss11", "miss13",
+                    "miss14", "miss15", "miss16", "miss18"
+                ]
+            ],
+            "report_path": "*class_reduction.log",
+            "plot_path": "*class_reduction.svg"
+        },
+        {
+            "train": "RandomForestClassifier",
+            "fnames": [
+                "linearity_r10", "planarity_r10", "surface_variation_r10", "verticality_r10", "anisotropy_r10",
+                "linearity_r30", "planarity_r30", "surface_variation_r30", "verticality_r30", "anisotropy_r30",
+                "linearity_r60", "planarity_r60", "surface_variation_r60", "verticality_r60", "anisotropy_r60",
+                "floor_dist_r50", "ceil_distance_r50",
+                "floor_dist_r100", "ceil_distance_r100",
+                "ir_mean_r30",
+                "ir_mean_r90"
+            ],
+            "training_type": "base",
+            "random_seed": null,
+            "shuffle_points": true,
+            "num_folds": 5,
+            "model_args": {
+                "n_estimators": 100,
+                "criterion": "entropy",
+                "max_depth": 25,
+                "min_samples_split": 15,
+                "min_samples_leaf": 5,
+                "min_weight_fraction_leaf": 0.0,
+                "max_features": "sqrt",
+                "max_leaf_nodes": null,
+                "min_impurity_decrease": 0.0,
+                "bootstrap": true,
+                "oob_score": false,
+                "n_jobs": 8,
+                "warm_start": false,
+                "class_weight": null,
+                "ccp_alpha": 0.0,
+                "max_samples": 0.8
+            },
+            "autoval_metrics": ["OA", "P", "R", "F1", "IoU", "wP", "wR", "wF1", "wIoU", "MCC", "Kappa"],
+            "stratkfold_report_path": null,
+            "stratkfold_plot_path": null,
+            "hyperparameter_tuning": null,
+            "importance_report_path": "*report/RF_training_importances.log",
+            "importance_report_permutation": false,
+            "decision_plot_path": null,
+            "decision_plot_trees": 0,
+            "decision_plot_max_depth": 0
+        },
+        {
+          "writer": "PredictivePipelineWriter",
+          "out_pipeline": "*pipe/RF.pipe",
+          "include_writer": false,
+          "include_imputer": false,
+          "include_feature_transformer": false,
+          "include_miner": false,
+          "include_class_transformer": false,
+          "include_clustering": false,
+          "ignore_predictions": false
+        }
+    ]
+}
